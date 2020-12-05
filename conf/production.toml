@@ -1,0 +1,7 @@
+[postgresql]
+hostname = ""
+port = 0
+dbname = ""
+username = ""
+password = ""
+ssl_mode=""

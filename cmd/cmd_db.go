@@ -18,12 +18,12 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 
 	switch args[0] {
 	case "reset":
-		m, err := migrate.New("file://./migrationsV2", databaseAddress())
+		m, err := migrate.New("file://./migrations", databaseAddress())
 		if err != nil {
 			return err
 		}
 		if err := m.Drop(); err != nil && err != migrate.ErrNoChange {
-			return fmt.Errorf("failed to drop V2 migrations: %w", err)
+			return fmt.Errorf("failed to drop migrations: %w", err)
 		}
 		if version, dirty, err := m.Version(); err != nil && err != migrate.ErrNilVersion {
 			return err
@@ -32,12 +32,12 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 		}
 		return nil
 	case "migrate":
-		m, err := migrate.New("file://./migrationsV2", databaseAddress())
+		m, err := migrate.New("file://./migrations", databaseAddress())
 		if err != nil {
 			return err
 		}
 		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-			return fmt.Errorf("failed to apply V2 migrations: %w", err)
+			return fmt.Errorf("failed to apply migrations: %w", err)
 		}
 		if version, dirty, err := m.Version(); err != nil {
 			return err

@@ -44,7 +44,11 @@ func seedLogLabels(store log.Store) error {
 		{Name: "海阔天空", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "灰色轨迹", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "光辉岁月", ParentID: defaultParentLogLabels[5].ID},
+		{Name: "直到世界的尽头", ParentID: defaultParentLogLabels[5].ID},
+		{Name: "Back In Black", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "November Rain", ParentID: defaultParentLogLabels[5].ID},
+		{Name: "Seven Nation Army", ParentID: defaultParentLogLabels[5].ID},
+		{Name: "Note Memorization", ParentID: defaultParentLogLabels[6].ID},
 	}
 
 	inserted, err = store.BatchInsertLogLabels(defaultChildLogLabels...)

@@ -1,0 +1,7 @@
+[postgresql]
+hostname = "localhost"
+port = 5432
+dbname = "practicelog"
+username = "cfeng"
+password = "cfeng"
+ssl_mode="disable"
