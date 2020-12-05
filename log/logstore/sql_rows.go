@@ -8,11 +8,11 @@ import (
 	"github.com/google/uuid"
 )
 
-const logEntryTable = "log_entries"
-const logLabelTable = "log_labels"
-const associationLogEntryLabelTable = "association_log_entries_labels"
+const LogEntryTable = "log_entries"
+const LogLabelTable = "log_labels"
+const AssociationLogEntryLabelTable = "association_log_entries_labels"
 
-type logEntryRow struct {
+type DBLogEntry struct {
 	ID          uuid.UUID       `db:"id"`
 	UserID      string          `db:"user_id"`
 	Date        time.Time       `db:"date"`
@@ -22,7 +22,7 @@ type logEntryRow struct {
 	Assignments json.RawMessage `db:"assignments"`
 }
 
-func (row *logEntryRow) fromModel(model *log.Entry) *logEntryRow {
+func (row *DBLogEntry) fromModel(model *log.Entry) *DBLogEntry {
 	row.ID = model.ID
 	row.UserID = model.UserID
 	row.Date = model.Date
@@ -33,7 +33,7 @@ func (row *logEntryRow) fromModel(model *log.Entry) *logEntryRow {
 	return row
 }
 
-func (row *logEntryRow) toModel() *log.Entry {
+func (row *DBLogEntry) toModel() *log.Entry {
 	model := &log.Entry{
 		ID:          row.ID,
 		UserID:      row.UserID,
@@ -48,27 +48,27 @@ func (row *logEntryRow) toModel() *log.Entry {
 	return model
 }
 
-type logLabelRow struct {
+type DBLogLabel struct {
 	ID       uuid.UUID `db:"id"`
 	ParentID uuid.UUID `db:"parent_id"`
 	Name     string    `db:"name"`
 }
 
-type logLabelRowReadOnly struct {
+type DBReadOnlyLogLabel struct {
 	ID       uuid.UUID `db:"label_id"`
 	ParentID uuid.UUID `db:"parent_id"`
 	EntryID  uuid.UUID `db:"entry_id"`
 	Name     string    `db:"name"`
 }
 
-func (row *logLabelRow) fromModel(model *log.Label) *logLabelRow {
+func (row *DBLogLabel) fromModel(model *log.Label) *DBLogLabel {
 	row.ID = model.ID
 	row.ParentID = model.ParentID
 	row.Name = model.Name
 	return row
 }
 
-func (row *logLabelRow) toModel() *log.Label {
+func (row *DBLogLabel) toModel() *log.Label {
 	model := &log.Label{
 		ID:       row.ID,
 		ParentID: row.ParentID,
@@ -78,11 +78,11 @@ func (row *logLabelRow) toModel() *log.Label {
 	return model
 }
 
-// Association log entry label row represents the row data structure of a LEFT
-// JOIN.
-type associationLogEntryLabelRow struct {
+// DBAssocLogEntryLabel represents the row data structure of a LEFT JOIN using the association
+// table.
+type DBAssocLogEntryLabel struct {
 	AssociationID uuid.UUID `db:"association_id"`
 	EntryID       uuid.UUID `db:"entry_id"`
 	LabelID       uuid.UUID `db:"label_id"`
-	logLabelRow
+	DBLogLabel
 }

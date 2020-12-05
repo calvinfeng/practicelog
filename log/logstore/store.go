@@ -20,8 +20,8 @@ type store struct {
 }
 
 func (s *store) DeleteLogLabel(label *log.Label) error {
-	row := new(logLabelRow).fromModel(label)
-	deleteLabelQ := squirrel.Delete(logLabelTable).Where(squirrel.Eq{"id": row.ID.String()})
+	row := new(DBLogLabel).fromModel(label)
+	deleteLabelQ := squirrel.Delete(LogLabelTable).Where(squirrel.Eq{"id": row.ID.String()})
 
 	statement, args, err := deleteLabelQ.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
@@ -44,9 +44,9 @@ func (s *store) DeleteLogLabel(label *log.Label) error {
 }
 
 func (s *store) DeleteLogEntry(entry *log.Entry) error {
-	row := new(logEntryRow).fromModel(entry)
+	row := new(DBLogEntry).fromModel(entry)
 
-	deleteEntryQ := squirrel.Delete(logEntryTable).Where(squirrel.Eq{"id": row.ID.String()})
+	deleteEntryQ := squirrel.Delete(LogEntryTable).Where(squirrel.Eq{"id": row.ID.String()})
 
 	statement, args, err := deleteEntryQ.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
@@ -69,9 +69,9 @@ func (s *store) DeleteLogEntry(entry *log.Entry) error {
 }
 
 func (s *store) UpdateLogLabel(label *log.Label) error {
-	newRow := new(logLabelRow).fromModel(label)
+	newRow := new(DBLogLabel).fromModel(label)
 
-	updateQ := squirrel.Update(logLabelTable).
+	updateQ := squirrel.Update(LogLabelTable).
 		Where(squirrel.Eq{"id": newRow.ID.String()}).
 		Set("name", newRow.Name)
 	if newRow.ParentID == uuid.Nil {
@@ -104,12 +104,12 @@ func (s *store) CountLogEntries(filters ...log.SQLFilter) (int, error) {
 		f(eqCondition)
 	}
 
-	query := squirrel.Select("COUNT(*)").Where(eqCondition).From(logEntryTable)
+	query := squirrel.Select("COUNT(*)").Where(eqCondition).From(LogEntryTable)
 	if val, hasKey := eqCondition["label_id"]; hasKey {
 		if labelIDs, ok := val.([]string); ok && len(labelIDs) > 0 {
-			query = squirrel.Select(fmt.Sprintf("COUNT(DISTINCT %s.id)", logEntryTable)).
-				From(logEntryTable).
-				LeftJoin(fmt.Sprintf("%s ON %s.id = entry_id", associationLogEntryLabelTable, logEntryTable)).
+			query = squirrel.Select(fmt.Sprintf("COUNT(DISTINCT %s.id)", LogEntryTable)).
+				From(LogEntryTable).
+				LeftJoin(fmt.Sprintf("%s ON %s.id = entry_id", AssociationLogEntryLabelTable, LogEntryTable)).
 				Where(eqCondition)
 		}
 	}
@@ -134,7 +134,7 @@ func (s *store) SelectLogEntries(limit, offset uint64, filters ...log.SQLFilter)
 	}
 
 	query := squirrel.Select("*").
-		From(logEntryTable).
+		From(LogEntryTable).
 		Limit(limit).
 		Offset(offset).
 		Where(eqCondition).
@@ -143,12 +143,12 @@ func (s *store) SelectLogEntries(limit, offset uint64, filters ...log.SQLFilter)
 	if val, hasKey := eqCondition["label_id"]; hasKey {
 		if labelIDs, ok := val.([]string); ok && len(labelIDs) > 0 {
 			query = squirrel.Select("id", "user_id", "date", "duration", "message").
-				From(logEntryTable).
-				LeftJoin(fmt.Sprintf("%s ON %s.id = entry_id", associationLogEntryLabelTable, logEntryTable)).
+				From(LogEntryTable).
+				LeftJoin(fmt.Sprintf("%s ON %s.id = entry_id", AssociationLogEntryLabelTable, LogEntryTable)).
 				Limit(limit).
 				Offset(offset).
 				Where(eqCondition).
-				GroupBy(fmt.Sprintf("%s.id", logEntryTable)).
+				GroupBy(fmt.Sprintf("%s.id", LogEntryTable)).
 				OrderBy("date DESC")
 		}
 	}
@@ -158,7 +158,7 @@ func (s *store) SelectLogEntries(limit, offset uint64, filters ...log.SQLFilter)
 		return nil, err
 	}
 
-	rows := make([]*logEntryRow, 0)
+	rows := make([]*DBLogEntry, 0)
 	if err = s.db.Select(&rows, statement, args...); err != nil {
 		return nil, err
 	}
@@ -177,8 +177,8 @@ func (s *store) SelectLogEntries(limit, offset uint64, filters ...log.SQLFilter)
 	// But I want to have data consistency for labels.
 	query = squirrel.
 		Select("entry_id", "label_id", "parent_id", "name").
-		From(logLabelTable).
-		LeftJoin(fmt.Sprintf("%s ON id = label_id", associationLogEntryLabelTable)).
+		From(LogLabelTable).
+		LeftJoin(fmt.Sprintf("%s ON id = label_id", AssociationLogEntryLabelTable)).
 		Where(squirrel.Eq{
 			"entry_id": entryIDs,
 		})
@@ -188,7 +188,7 @@ func (s *store) SelectLogEntries(limit, offset uint64, filters ...log.SQLFilter)
 		return nil, err
 	}
 
-	labelRows := make([]*logLabelRowReadOnly, 0)
+	labelRows := make([]*DBReadOnlyLogLabel, 0)
 	if err = s.db.Select(&labelRows, statement, args...); err != nil {
 		return nil, err
 	}
@@ -221,14 +221,14 @@ func (s *store) SelectLogEntries(limit, offset uint64, filters ...log.SQLFilter)
 }
 
 func (s *store) SelectLogLabels() ([]*log.Label, error) {
-	query := squirrel.Select("*").From(logLabelTable)
+	query := squirrel.Select("*").From(LogLabelTable)
 
 	statement, args, err := query.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
 		return nil, err
 	}
 
-	rows := make([]*logLabelRow, 0)
+	rows := make([]*DBLogLabel, 0)
 	if err = s.db.Select(&rows, statement, args...); err != nil {
 		return nil, err
 	}
@@ -242,9 +242,9 @@ func (s *store) SelectLogLabels() ([]*log.Label, error) {
 }
 
 func (s *store) UpdateLogEntry(entry *log.Entry) error {
-	newRow := new(logEntryRow).fromModel(entry)
+	newRow := new(DBLogEntry).fromModel(entry)
 
-	updateQ := squirrel.Update(logEntryTable).
+	updateQ := squirrel.Update(LogEntryTable).
 		Set("user_id", newRow.UserID).
 		Set("date", newRow.Date).
 		Set("duration", newRow.Duration).
@@ -274,7 +274,7 @@ func (s *store) UpdateLogEntry(entry *log.Entry) error {
 	}
 
 	// Update association by removing everything and re-insert.
-	deleteQ := squirrel.Delete(associationLogEntryLabelTable).
+	deleteQ := squirrel.Delete(AssociationLogEntryLabelTable).
 		Where(squirrel.Eq{"entry_id": newRow.ID.String()})
 
 	statement, args, err = deleteQ.PlaceholderFormat(squirrel.Dollar).ToSql()
@@ -288,7 +288,7 @@ func (s *store) UpdateLogEntry(entry *log.Entry) error {
 	}
 
 	// Re-insert associations
-	joinQ := squirrel.Insert(associationLogEntryLabelTable).
+	joinQ := squirrel.Insert(AssociationLogEntryLabelTable).
 		Columns("association_id", "entry_id", "label_id")
 	for _, label := range entry.Labels {
 		joinQ = joinQ.Values(uuid.New(), entry.ID, label.ID)
@@ -317,9 +317,9 @@ func (s *store) UpdateLogEntry(entry *log.Entry) error {
 }
 
 func (s *store) UpdateLogAssignments(entry *log.Entry) error {
-	newRow := new(logEntryRow).fromModel(entry)
+	newRow := new(DBLogEntry).fromModel(entry)
 
-	updateQ := squirrel.Update(logEntryTable).
+	updateQ := squirrel.Update(LogEntryTable).
 		Set("assignments", newRow.Assignments).
 		Where(squirrel.Eq{"id": newRow.ID.String()})
 
@@ -342,12 +342,12 @@ func (s *store) UpdateLogAssignments(entry *log.Entry) error {
 }
 
 func (s *store) BatchInsertLogLabels(labels ...*log.Label) (int64, error) {
-	query := squirrel.Insert(logLabelTable).
+	query := squirrel.Insert(LogLabelTable).
 		Columns("id", "parent_id", "name")
 
 	for _, label := range labels {
 		label.ID = uuid.New()
-		row := new(logLabelRow).fromModel(label)
+		row := new(DBLogLabel).fromModel(label)
 		if row.ParentID == uuid.Nil {
 			query = query.Values(row.ID, nil, row.Name)
 		} else {
@@ -368,15 +368,15 @@ func (s *store) BatchInsertLogLabels(labels ...*log.Label) (int64, error) {
 }
 
 func (s *store) BatchInsertLogEntries(entries ...*log.Entry) (int64, error) {
-	entryInsertQ := squirrel.Insert(logEntryTable).
+	entryInsertQ := squirrel.Insert(LogEntryTable).
 		Columns("id", "user_id", "date", "duration", "message", "details", "assignments")
 
-	joinInsertQ := squirrel.Insert(associationLogEntryLabelTable).
+	joinInsertQ := squirrel.Insert(AssociationLogEntryLabelTable).
 		Columns("association_id", "entry_id", "label_id")
 
 	for _, entry := range entries {
 		entry.ID = uuid.New()
-		row := new(logEntryRow).fromModel(entry)
+		row := new(DBLogEntry).fromModel(entry)
 		entryInsertQ = entryInsertQ.Values(
 			row.ID, row.UserID, row.Date, row.Duration, row.Message, row.Details, row.Assignments)
 

@@ -38,7 +38,7 @@ func TestLogEntryConversion(t *testing.T) {
 		Labels: nil,
 	}
 
-	row := new(logEntryRow).fromModel(entry)
+	row := new(DBLogEntry).fromModel(entry)
 	assert.NotNil(t, row.Assignments)
 	assert.NotEmpty(t, row.Assignments)
 
