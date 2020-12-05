@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func playedRune(_ *cobra.Command, args []string) error {
+func practicedRuneE(_ *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		return errors.New("please provide label names")
 	}
@@ -55,7 +55,8 @@ func playedRune(_ *cobra.Command, args []string) error {
 		logrus.Infof("entry %s %04d-%02d-%02d %s", entry.ID, year, month, day, entry.Message)
 		dur += entry.Duration
 	}
-	logrus.Infof("total practicelog time %d hours and %d minutes", dur/60, dur%60)
+
+	logrus.Infof("total practiced time %d hours and %d minutes", dur/60, dur%60)
 
 	return nil
 }

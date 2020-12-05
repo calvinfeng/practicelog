@@ -79,9 +79,9 @@ func Execute() {
 		//	RunE:  experimentRunE,
 		//},
 		&cobra.Command{
-			Use:   "played",
+			Use:   "practiced",
 			Short: "calculate the total time in minutes spent on a particular log category",
-			RunE:  playedRune,
+			RunE:  practicedRuneE,
 		},
 	)
 
