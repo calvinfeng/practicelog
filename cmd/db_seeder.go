@@ -2,16 +2,18 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/calvinfeng/practicelog/log"
 	"github.com/calvinfeng/practicelog/log/logstore"
 	"github.com/calvinfeng/practicelog/trelloapi"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
-	"os"
-	"time"
 )
 
-const boardID = "woq8deqm"
+const board2020ID = "woq8deqm"
+const board2019ID = "B2VXMAm0"
 
 func seedLogLabels(store log.Store) error {
 	defaultParentLogLabels := []*log.Label{
@@ -48,6 +50,9 @@ func seedLogLabels(store log.Store) error {
 		{Name: "Back In Black", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "November Rain", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "Seven Nation Army", ParentID: defaultParentLogLabels[5].ID},
+		{Name: "21 Guns", ParentID: defaultParentLogLabels[5].ID},
+		{Name: "Perfect", ParentID: defaultParentLogLabels[5].ID},
+		{Name: "Comfortably Numb", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "Note Memorization", ParentID: defaultParentLogLabels[6].ID},
 	}
 
@@ -61,7 +66,7 @@ func seedLogLabels(store log.Store) error {
 	return nil
 }
 
-func seedLogEntries(api trelloapi.Service, store log.Store) error {
+func seedLogEntriesByBoardID(boardID string, api trelloapi.Service, store log.Store) error {
 	logLabelsByName := make(map[string]*log.Label)
 
 	logLabels, err := store.SelectLogLabels()
@@ -159,7 +164,7 @@ func seedLogEntries(api trelloapi.Service, store log.Store) error {
 
 		date, err := time.Parse(time.RFC3339, card.Due)
 		if err != nil {
-			logrus.WithError(err).Warn("failed to parse due date of card %s %s", card.ID, card.Name)
+			logrus.WithError(err).Warnf("failed to parse due date of card %s %s", card.ID, card.Name)
 			continue
 		}
 
@@ -196,7 +201,11 @@ func seedDB() error {
 		return fmt.Errorf("failed to seed log labels %w", err)
 	}
 
-	if err := seedLogEntries(api, store); err != nil {
+	if err := seedLogEntriesByBoardID(board2019ID, api, store); err != nil {
+		return fmt.Errorf("failed to seed log entries %w", err)
+	}
+
+	if err := seedLogEntriesByBoardID(board2020ID, api, store); err != nil {
 		return fmt.Errorf("failed to seed log entries %w", err)
 	}
 
