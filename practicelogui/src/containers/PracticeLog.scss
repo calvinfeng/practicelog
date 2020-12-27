@@ -1,0 +1,11 @@
+.PracticeLog {
+  display: flex;
+  flex-direction: column;
+  max-width: 1280px;
+  width: 100%;
+
+  .pagination-control-panel {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+}
