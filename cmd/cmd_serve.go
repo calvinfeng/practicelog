@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"github.com/calvinfeng/practicelog/practicelog/logserver"
+	"github.com/calvinfeng/practicelog/practicelog/logstore"
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
@@ -21,6 +24,29 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 		Root:   "practicelogui/build/",
 		Browse: true,
 	}))
+
+	pg, err := sqlx.Open("postgres", databaseAddress())
+	if err != nil {
+		return err
+	}
+
+	logrus.Infof("connected to RDS with credentials %s", databaseAddress())
+	srv := logserver.New(logstore.New(pg))
+
+	// Labels
+	e.GET("/api/v1/log/labels", srv.ListPracticeLogLabels)
+	e.POST("/api/v1/log/labels", srv.CreatePracticeLogLabel)
+	e.PUT("/api/v1/log/labels/:label_id", srv.UpdatePracticeLogLabel)
+	e.DELETE("/api/v1/log/labels/:label_id", srv.DeletePracticeLogLabel)
+
+	// Entries
+	e.GET("/api/v1/log/entries", srv.ListPracticeLogEntries)
+	e.POST("/api/v1/log/entries", srv.CreatePracticeLogEntry)
+	e.PUT("/api/v1/log/entries/:entry_id", srv.UpdatePracticeLogEntry)
+	e.DELETE("/api/v1/log/entries/:entry_id", srv.DeletePracticeLogEntry)
+
+	// Assignments
+	e.PUT("/api/v1/log/entries/:entry_id/assignments", srv.UpdatePracticeLogAssignments)
 
 	logrus.Infof("http server is listening on 8080")
 	return e.Start(":8080")
