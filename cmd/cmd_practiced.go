@@ -50,13 +50,13 @@ func practicedRuneE(_ *cobra.Command, args []string) error {
 	logrus.Infof("query returned %d practicelog log entries", len(entries))
 
 	var dur int32
-	for _, entry := range entries {
-		year, month, day := entry.Date.Date()
-		logrus.Infof("entry %s %04d-%02d-%02d %s", entry.ID, year, month, day, entry.Message)
-		dur += entry.Duration
+	for i := len(entries) - 1; i >= 0; i-- {
+		year, month, day := entries[i].Date.Date()
+		logrus.Infof("entry %04d-%02d-%02d %s", year, month, day, entries[i].Message)
+		dur += entries[i].Duration
 	}
 
-	logrus.Infof("total practiced time %d hours and %d minutes", dur/60, dur%60)
+	logrus.Infof("total practiced time for %s: %d hours and %d minutes", args[0], dur/60, dur%60)
 
 	return nil
 }

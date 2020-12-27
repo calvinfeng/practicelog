@@ -2,18 +2,58 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/calvinfeng/practicelog/log/logstore"
+	"github.com/jmoiron/sqlx"
 	"os"
 	"time"
 
 	"github.com/calvinfeng/practicelog/log"
-	"github.com/calvinfeng/practicelog/log/logstore"
 	"github.com/calvinfeng/practicelog/trelloapi"
-	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 )
 
 const board2020ID = "woq8deqm"
 const board2019ID = "B2VXMAm0"
+
+// TODO: Need to find a way to support data reloading/reseeding.
+func seedDB() error {
+	api := trelloapi.New(trelloapi.Config{
+		TrelloAPIKey:   os.Getenv("TRELLO_API_KEY"),
+		TrelloAPIToken: os.Getenv("TRELLO_API_TOKEN"),
+	})
+
+	pg, err := sqlx.Open("postgres", databaseAddress())
+	if err != nil {
+		return err
+	}
+
+	store := logstore.New(pg)
+	if err := seedLogLabels(store); err != nil {
+		return fmt.Errorf("failed to insert log labels %w", err)
+	}
+
+	if err := seedLogEntriesByBoardID(board2019ID, api, store); err != nil {
+		return fmt.Errorf("failed to insert log entries %w", err)
+	}
+
+	if err := seedLogEntriesByBoardID(board2020ID, api, store); err != nil {
+		return fmt.Errorf("failed to insert log entries %w", err)
+	}
+
+	count, err := store.CountLogEntries()
+	if err != nil {
+		return err
+	}
+
+	entries, err := store.SelectLogEntries(uint64(count), 0)
+	if err != nil {
+		return err
+	}
+
+	logrus.Infof("successfully inserted %d entries to database after loading data", len(entries))
+
+	return nil
+}
 
 func seedLogLabels(store log.Store) error {
 	defaultParentLogLabels := []*log.Label{
@@ -53,6 +93,7 @@ func seedLogLabels(store log.Store) error {
 		{Name: "21 Guns", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "Perfect", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "Comfortably Numb", ParentID: defaultParentLogLabels[5].ID},
+		{Name: "刻在我心底的名字", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "Note Memorization", ParentID: defaultParentLogLabels[6].ID},
 	}
 
@@ -182,44 +223,5 @@ func seedLogEntriesByBoardID(boardID string, api trelloapi.Service, store log.St
 	}
 
 	logrus.Infof("inserted %d entries", inserted)
-	return nil
-}
-
-func seedDB() error {
-	api := trelloapi.New(trelloapi.Config{
-		TrelloAPIKey:   os.Getenv("TRELLO_API_KEY"),
-		TrelloAPIToken: os.Getenv("TRELLO_API_TOKEN"),
-	})
-
-	pg, err := sqlx.Open("postgres", databaseAddress())
-	if err != nil {
-		return err
-	}
-
-	store := logstore.New(pg)
-	if err := seedLogLabels(store); err != nil {
-		return fmt.Errorf("failed to seed log labels %w", err)
-	}
-
-	if err := seedLogEntriesByBoardID(board2019ID, api, store); err != nil {
-		return fmt.Errorf("failed to seed log entries %w", err)
-	}
-
-	if err := seedLogEntriesByBoardID(board2020ID, api, store); err != nil {
-		return fmt.Errorf("failed to seed log entries %w", err)
-	}
-
-	count, err := store.CountLogEntries()
-	if err != nil {
-		return err
-	}
-
-	entries, err := store.SelectLogEntries(uint64(count), 0)
-	if err != nil {
-		return err
-	}
-
-	logrus.Infof("found %d entries from database after seeding", len(entries))
-
 	return nil
 }

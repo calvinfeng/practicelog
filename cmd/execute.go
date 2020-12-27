@@ -63,11 +63,11 @@ func Execute() {
 		StringVarP(&configName, "config", "c", "development", "config TOML file name")
 
 	root.AddCommand(
-		//&cobra.Command{
-		//	Use:   "serve",
-		//	Short: "start HTTP server and serve HTTP requests",
-		//	RunE:  serveRunE,
-		//},
+		&cobra.Command{
+			Use:   "serve",
+			Short: "start HTTP server and serve HTTP requests",
+			RunE:  serveRunE,
+		},
 		&cobra.Command{
 			Use:   "db",
 			Short: "manage database",
