@@ -1,4 +1,4 @@
-package log
+package practicelog
 
 import (
 	"fmt"

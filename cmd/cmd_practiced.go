@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/calvinfeng/practicelog/log"
-	"github.com/calvinfeng/practicelog/log/logstore"
+	"github.com/calvinfeng/practicelog/practicelog"
+	"github.com/calvinfeng/practicelog/practicelog/logstore"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -28,7 +28,7 @@ func practicedRuneE(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	labelByName := make(map[string]*log.Label)
+	labelByName := make(map[string]*practicelog.Label)
 	for _, label := range labels {
 		labelByName[label.Name] = label
 	}
@@ -47,7 +47,7 @@ func practicedRuneE(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	logrus.Infof("query returned %d practicelog log entries", len(entries))
+	logrus.Infof("query returned %d log entries", len(entries))
 
 	var dur int32
 	for i := len(entries) - 1; i >= 0; i-- {

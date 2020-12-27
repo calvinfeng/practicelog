@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/calvinfeng/practicelog/log/logstore"
+	"github.com/calvinfeng/practicelog/practicelog/logstore"
 	"github.com/jmoiron/sqlx"
 	"os"
 	"time"
 
-	"github.com/calvinfeng/practicelog/log"
+	"github.com/calvinfeng/practicelog/practicelog"
 	"github.com/calvinfeng/practicelog/trelloapi"
 	"github.com/sirupsen/logrus"
 )
@@ -29,15 +29,15 @@ func seedDB() error {
 
 	store := logstore.New(pg)
 	if err := seedLogLabels(store); err != nil {
-		return fmt.Errorf("failed to insert log labels %w", err)
+		return fmt.Errorf("failed to insert practicelog labels %w", err)
 	}
 
 	if err := seedLogEntriesByBoardID(board2019ID, api, store); err != nil {
-		return fmt.Errorf("failed to insert log entries %w", err)
+		return fmt.Errorf("failed to insert practicelog entries %w", err)
 	}
 
 	if err := seedLogEntriesByBoardID(board2020ID, api, store); err != nil {
-		return fmt.Errorf("failed to insert log entries %w", err)
+		return fmt.Errorf("failed to insert practicelog entries %w", err)
 	}
 
 	count, err := store.CountLogEntries()
@@ -55,8 +55,8 @@ func seedDB() error {
 	return nil
 }
 
-func seedLogLabels(store log.Store) error {
-	defaultParentLogLabels := []*log.Label{
+func seedLogLabels(store practicelog.Store) error {
+	defaultParentLogLabels := []*practicelog.Label{
 		{Name: "Acoustic"},
 		{Name: "Blues"},
 		{Name: "Finger Mechanics"},
@@ -71,9 +71,9 @@ func seedLogLabels(store log.Store) error {
 		return err
 	}
 
-	logrus.Infof("inserted %d parent log labels", inserted)
+	logrus.Infof("inserted %d parent practicelog labels", inserted)
 
-	defaultChildLogLabels := []*log.Label{
+	defaultChildLogLabels := []*practicelog.Label{
 		{Name: "Acoustic Rhythm", ParentID: defaultParentLogLabels[0].ID},
 		{Name: "Spider Walk", ParentID: defaultParentLogLabels[2].ID},
 		{Name: "Trills", ParentID: defaultParentLogLabels[2].ID},
@@ -107,8 +107,8 @@ func seedLogLabels(store log.Store) error {
 	return nil
 }
 
-func seedLogEntriesByBoardID(boardID string, api trelloapi.Service, store log.Store) error {
-	logLabelsByName := make(map[string]*log.Label)
+func seedLogEntriesByBoardID(boardID string, api trelloapi.Service, store practicelog.Store) error {
+	logLabelsByName := make(map[string]*practicelog.Label)
 
 	logLabels, err := store.SelectLogLabels()
 	if err != nil {
@@ -144,16 +144,16 @@ func seedLogEntriesByBoardID(boardID string, api trelloapi.Service, store log.St
 		return err
 	}
 
-	entries := make([]*log.Entry, 0, len(trelloCards))
+	entries := make([]*practicelog.Entry, 0, len(trelloCards))
 	for _, card := range trelloCards {
 		if card.IsTemplate {
 			continue
 		}
 
-		entry := new(log.Entry)
+		entry := new(practicelog.Entry)
 		entry.Message = card.Name
 		entry.Details = card.Description
-		entry.Labels = make([]*log.Label, 0)
+		entry.Labels = make([]*practicelog.Label, 0)
 		entry.UserID = "calvin.j.feng@gmail.com"
 		for _, labelID := range card.LabelIDs {
 			label, ok := trelloLabelsByID[labelID]
@@ -182,7 +182,7 @@ func seedLogEntriesByBoardID(boardID string, api trelloapi.Service, store log.St
 		}
 
 		var position int
-		entry.Assignments = make([]*log.Assignment, 0)
+		entry.Assignments = make([]*practicelog.Assignment, 0)
 		for _, listID := range card.ChecklistIDs {
 			checklist, ok := trelloChecklistsByID[listID]
 			if !ok {
@@ -190,7 +190,7 @@ func seedLogEntriesByBoardID(boardID string, api trelloapi.Service, store log.St
 			}
 
 			for _, item := range checklist.Items {
-				entry.Assignments = append(entry.Assignments, &log.Assignment{
+				entry.Assignments = append(entry.Assignments, &practicelog.Assignment{
 					Position:  position,
 					Name:      item.Name,
 					Completed: item.State == "complete",
@@ -211,7 +211,7 @@ func seedLogEntriesByBoardID(boardID string, api trelloapi.Service, store log.St
 
 		entry.Date = date
 		if len(entry.Labels) == 0 {
-			logrus.Warnf("log entry %s %s has no labels", entry.Message, entry.Date)
+			logrus.Warnf("practicelog entry %s %s has no labels", entry.Message, entry.Date)
 		}
 
 		entries = append(entries, entry)

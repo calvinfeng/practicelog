@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/calvinfeng/practicelog/log"
+	"github.com/calvinfeng/practicelog/practicelog"
 	"github.com/google/uuid"
 )
 
@@ -22,7 +22,7 @@ type DBLogEntry struct {
 	Assignments json.RawMessage `db:"assignments"`
 }
 
-func (row *DBLogEntry) fromModel(model *log.Entry) *DBLogEntry {
+func (row *DBLogEntry) fromModel(model *practicelog.Entry) *DBLogEntry {
 	row.ID = model.ID
 	row.UserID = model.UserID
 	row.Date = model.Date
@@ -33,8 +33,8 @@ func (row *DBLogEntry) fromModel(model *log.Entry) *DBLogEntry {
 	return row
 }
 
-func (row *DBLogEntry) toModel() *log.Entry {
-	model := &log.Entry{
+func (row *DBLogEntry) toModel() *practicelog.Entry {
+	model := &practicelog.Entry{
 		ID:          row.ID,
 		UserID:      row.UserID,
 		Date:        row.Date,
@@ -42,7 +42,7 @@ func (row *DBLogEntry) toModel() *log.Entry {
 		Message:     row.Message,
 		Details:     row.Details,
 		Labels:      nil,
-		Assignments: make([]*log.Assignment, 0),
+		Assignments: make([]*practicelog.Assignment, 0),
 	}
 	_ = json.Unmarshal(row.Assignments, &model.Assignments)
 	return model
@@ -61,15 +61,15 @@ type DBReadOnlyLogLabel struct {
 	Name     string    `db:"name"`
 }
 
-func (row *DBLogLabel) fromModel(model *log.Label) *DBLogLabel {
+func (row *DBLogLabel) fromModel(model *practicelog.Label) *DBLogLabel {
 	row.ID = model.ID
 	row.ParentID = model.ParentID
 	row.Name = model.Name
 	return row
 }
 
-func (row *DBLogLabel) toModel() *log.Label {
-	model := &log.Label{
+func (row *DBLogLabel) toModel() *practicelog.Label {
+	model := &practicelog.Label{
 		ID:       row.ID,
 		ParentID: row.ParentID,
 		Name:     row.Name,

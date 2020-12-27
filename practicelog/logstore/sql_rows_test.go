@@ -4,21 +4,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/calvinfeng/practicelog/log"
+	"github.com/calvinfeng/practicelog/practicelog"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestLogEntryConversion(t *testing.T) {
-	entry := &log.Entry{
+	entry := &practicelog.Entry{
 		ID:       uuid.New(),
 		UserID:   "calvin.j.feng@gmail.com",
 		Date:     time.Now(),
 		Duration: 90,
 		Message:  "Example",
 		Details:  "Example 1234",
-		Assignments: []*log.Assignment{
+		Assignments: []*practicelog.Assignment{
 			{
 				Position:  0,
 				Name:      "Do A",

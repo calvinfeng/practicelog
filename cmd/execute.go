@@ -56,7 +56,7 @@ func Execute() {
 
 	root := &cobra.Command{
 		Use:   "practicelog",
-		Short: "practice log for developing guitar mastery",
+		Short: "practice practicelog for developing guitar mastery",
 	}
 
 	root.PersistentFlags().
@@ -80,7 +80,7 @@ func Execute() {
 		//},
 		&cobra.Command{
 			Use:   "practiced",
-			Short: "calculate the total time in minutes spent on a particular log category",
+			Short: "calculate the total time in minutes spent on a particular practicelog category",
 			RunE:  practicedRuneE,
 		},
 	)

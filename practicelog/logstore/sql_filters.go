@@ -2,16 +2,16 @@ package logstore
 
 import (
 	"github.com/Masterminds/squirrel"
-	"github.com/calvinfeng/practicelog/log"
+	"github.com/calvinfeng/practicelog/practicelog"
 )
 
-func ByID(id string) log.SQLFilter {
+func ByID(id string) practicelog.SQLFilter {
 	return func(eq squirrel.Eq) {
 		eq["id"] = id
 	}
 }
 
-func ByLabelIDs(ids []string) log.SQLFilter {
+func ByLabelIDs(ids []string) practicelog.SQLFilter {
 	return func(eq squirrel.Eq) {
 		eq["label_id"] = ids
 	}
