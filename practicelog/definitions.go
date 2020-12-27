@@ -38,7 +38,7 @@ func (l Label) String() string {
 }
 
 type (
-	HTTPService interface {
+	HTTPServer interface {
 		ListPracticeLogLabels(echo.Context) error
 		CreatePracticeLogLabel(echo.Context) error
 		UpdatePracticeLogLabel(echo.Context) error
