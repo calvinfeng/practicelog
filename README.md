@@ -36,3 +36,11 @@ git archive -v -o practicelog-v2020.12.27.zip --format=zip HEAD
 ```
 
 Then upload it to Elastic Beanstalk.
+
+## Connect to DB
+
+```bash
+psql -h ebdb.cjtqga7l9c3u.us-west-2.rds.amazonaws.com -p 5432 -U postgres
+```
+
+Then enter password

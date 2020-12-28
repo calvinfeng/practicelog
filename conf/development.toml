@@ -1,3 +1,5 @@
+environment = "development"
+
 [postgresql]
 hostname = "localhost"
 port = 5432

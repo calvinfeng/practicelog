@@ -5,8 +5,11 @@ CREATE TABLE log_entries (
     duration INTEGER NOT NULL,
     message TEXT,
     details TEXT,
-    assignments bytea
+    assignments bytea,
+    trello_id VARCHAR(255)
 );
+
+CREATE INDEX log_entry_trello_id_index ON log_entries(trello_id);
 
 CREATE TABLE log_labels (
     id UUID PRIMARY KEY,

@@ -26,12 +26,12 @@ func initViper() {
 			logrus.Fatal(err)
 		}
 	}
-	try(viper.BindEnv("postgresql.hostname", "RDS_HOSTNAME"))
-	try(viper.BindEnv("postgresql.port", "RDS_PORT"))
-	try(viper.BindEnv("postgresql.dbname", "RDS_DB_NAME"))
-	try(viper.BindEnv("postgresql.username", "RDS_USERNAME"))
-	try(viper.BindEnv("postgresql.password", "RDS_PASSWORD"))
-	try(viper.BindEnv("postgresql.ssl_mode", "RDS_SSL_MODE"))
+	try(viper.BindEnv("ebdb.hostname", "RDS_HOSTNAME"))
+	try(viper.BindEnv("ebdb.port", "RDS_PORT"))
+	try(viper.BindEnv("ebdb.dbname", "RDS_DB_NAME"))
+	try(viper.BindEnv("ebdb.username", "RDS_USERNAME"))
+	try(viper.BindEnv("ebdb.password", "RDS_PASSWORD"))
+	try(viper.BindEnv("ebdb.ssl_mode", "RDS_SSL_MODE"))
 
 	if err := viper.ReadInConfig(); err != nil {
 		logrus.Fatal(err)
@@ -40,7 +40,7 @@ func initViper() {
 	logrus.Infof("configuration values are successfully loaded from %s", configName)
 }
 
-func databaseAddress() string {
+func localDBAddress() string {
 	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=%s",
 		viper.GetString("postgresql.username"),
 		viper.GetString("postgresql.password"),
@@ -48,6 +48,17 @@ func databaseAddress() string {
 		viper.GetInt("postgresql.port"),
 		viper.GetString("postgresql.dbname"),
 		viper.GetString("postgresql.ssl_mode"),
+	)
+}
+
+func ebDBAddress() string {
+	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=%s",
+		viper.GetString("ebdb.username"),
+		viper.GetString("ebdb.password"),
+		viper.GetString("ebdb.hostname"),
+		viper.GetInt("ebdb.port"),
+		viper.GetString("ebdb.dbname"),
+		viper.GetString("ebdb.ssl_mode"),
 	)
 }
 

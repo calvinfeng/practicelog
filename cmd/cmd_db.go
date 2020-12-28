@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/spf13/viper"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -17,9 +18,16 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 		return errors.New("provide an argument to manage database [reset, migrate, seed]")
 	}
 
+	addr := localDBAddress()
+	if viper.Get("environment") == "production" {
+		addr = ebDBAddress()
+	}
+
+	logrus.Infof("applying changes to database on %s", addr)
+
 	switch args[0] {
 	case "reset":
-		m, err := migrate.New("file://./migrations", databaseAddress())
+		m, err := migrate.New("file://./migrations", addr)
 		if err != nil {
 			return err
 		}
@@ -33,7 +41,7 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 		}
 		return nil
 	case "migrate":
-		m, err := migrate.New("file://./migrations", databaseAddress())
+		m, err := migrate.New("file://./migrations", addr)
 		if err != nil {
 			return err
 		}

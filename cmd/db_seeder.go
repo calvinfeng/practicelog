@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/calvinfeng/practicelog/practicelog/logstore"
 	"github.com/jmoiron/sqlx"
+	"github.com/spf13/viper"
 	"os"
 	"time"
 
@@ -16,13 +17,19 @@ const board2020ID = "woq8deqm"
 const board2019ID = "B2VXMAm0"
 
 // TODO: Need to find a way to support data reloading/reseeding.
+// For example, if label already exists, don't fail early. Same applies for log entries.
 func seedDB() error {
 	api := trelloapi.New(trelloapi.Config{
 		TrelloAPIKey:   os.Getenv("TRELLO_API_KEY"),
 		TrelloAPIToken: os.Getenv("TRELLO_API_TOKEN"),
 	})
 
-	pg, err := sqlx.Open("postgres", databaseAddress())
+	addr := localDBAddress()
+	if viper.Get("environment") == "production" {
+		addr = ebDBAddress()
+	}
+
+	pg, err := sqlx.Open("postgres", addr)
 	if err != nil {
 		return err
 	}
@@ -71,7 +78,7 @@ func seedLogLabels(store practicelog.Store) error {
 		return err
 	}
 
-	logrus.Infof("inserted %d parent practicelog labels", inserted)
+	logrus.Infof("inserted %d parent log labels", inserted)
 
 	defaultChildLogLabels := []*practicelog.Label{
 		{Name: "Acoustic Rhythm", ParentID: defaultParentLogLabels[0].ID},
@@ -150,7 +157,11 @@ func seedLogEntriesByBoardID(boardID string, api trelloapi.Service, store practi
 			continue
 		}
 
+		logrus.Infof("loaded card %s", card.ID)
+		trelloID := card.ID
+
 		entry := new(practicelog.Entry)
+		entry.TrelloID = &trelloID
 		entry.Message = card.Name
 		entry.Details = card.Description
 		entry.Labels = make([]*practicelog.Label, 0)
@@ -208,11 +219,7 @@ func seedLogEntriesByBoardID(boardID string, api trelloapi.Service, store practi
 			logrus.WithError(err).Warnf("failed to parse due date of card %s %s", card.ID, card.Name)
 			continue
 		}
-
 		entry.Date = date
-		if len(entry.Labels) == 0 {
-			logrus.Warnf("practicelog entry %s %s has no labels", entry.Message, entry.Date)
-		}
 
 		entries = append(entries, entry)
 	}

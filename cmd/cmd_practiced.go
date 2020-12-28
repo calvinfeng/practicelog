@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/spf13/viper"
 
 	"github.com/calvinfeng/practicelog/practicelog"
 	"github.com/calvinfeng/practicelog/practicelog/logstore"
@@ -16,7 +17,12 @@ func practicedRuneE(_ *cobra.Command, args []string) error {
 		return errors.New("please provide label names")
 	}
 
-	pg, err := sqlx.Open("postgres", databaseAddress())
+	addr := localDBAddress()
+	if viper.Get("environment") == "production" {
+		addr = ebDBAddress()
+	}
+
+	pg, err := sqlx.Open("postgres", addr)
 	if err != nil {
 		return err
 	}

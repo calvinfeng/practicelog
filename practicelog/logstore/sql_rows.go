@@ -20,6 +20,7 @@ type DBLogEntry struct {
 	Message     string          `db:"message"`
 	Details     string          `db:"details"`
 	Assignments json.RawMessage `db:"assignments"`
+	TrelloID    *string         `db:"trello_id"`
 }
 
 func (row *DBLogEntry) fromModel(model *practicelog.Entry) *DBLogEntry {
@@ -30,6 +31,7 @@ func (row *DBLogEntry) fromModel(model *practicelog.Entry) *DBLogEntry {
 	row.Details = model.Details
 	row.Duration = model.Duration
 	row.Assignments, _ = json.Marshal(model.Assignments)
+	row.TrelloID = model.TrelloID
 	return row
 }
 
@@ -43,6 +45,7 @@ func (row *DBLogEntry) toModel() *practicelog.Entry {
 		Details:     row.Details,
 		Labels:      nil,
 		Assignments: make([]*practicelog.Assignment, 0),
+		TrelloID:    row.TrelloID,
 	}
 	_ = json.Unmarshal(row.Assignments, &model.Assignments)
 	return model

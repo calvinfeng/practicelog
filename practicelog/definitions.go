@@ -18,6 +18,7 @@ type Entry struct {
 	Message     string        `json:"message" validate:"required"`
 	Details     string        `json:"details"`
 	Assignments []*Assignment `json:"assignments,omitempty"`
+	TrelloID    *string       `json:"-"`
 }
 
 type Assignment struct {

@@ -369,7 +369,7 @@ func (s *store) BatchInsertLogLabels(labels ...*practicelog.Label) (int64, error
 
 func (s *store) BatchInsertLogEntries(entries ...*practicelog.Entry) (int64, error) {
 	entryInsertQ := squirrel.Insert(LogEntryTable).
-		Columns("id", "user_id", "date", "duration", "message", "details", "assignments")
+		Columns("id", "user_id", "date", "duration", "message", "details", "assignments", "trello_id")
 
 	joinInsertQ := squirrel.Insert(AssociationLogEntryLabelTable).
 		Columns("association_id", "entry_id", "label_id")
@@ -378,7 +378,7 @@ func (s *store) BatchInsertLogEntries(entries ...*practicelog.Entry) (int64, err
 		entry.ID = uuid.New()
 		row := new(DBLogEntry).fromModel(entry)
 		entryInsertQ = entryInsertQ.Values(
-			row.ID, row.UserID, row.Date, row.Duration, row.Message, row.Details, row.Assignments)
+			row.ID, row.UserID, row.Date, row.Duration, row.Message, row.Details, row.Assignments, row.TrelloID)
 
 		for _, label := range entry.Labels {
 			joinInsertQ = joinInsertQ.Values(uuid.New(), entry.ID, label.ID)

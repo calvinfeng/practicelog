@@ -1,7 +1,9 @@
+environment = "production"
+
 [postgresql]
-hostname = ""
-port = 0
-dbname = ""
-username = ""
-password = ""
-ssl_mode=""
+hostname = "localhost"
+port = 5432
+dbname = "practicelog"
+username = "cfeng"
+password = "cfeng"
+ssl_mode="disable"

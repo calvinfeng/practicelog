@@ -8,10 +8,16 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"net/http"
 )
 
 func serveRunE(_ *cobra.Command, _ []string) error {
+	addr := localDBAddress()
+	if viper.Get("environment") == "production" {
+		addr = ebDBAddress()
+	}
+
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:3000"},
@@ -25,12 +31,12 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 		Browse: true,
 	}))
 
-	pg, err := sqlx.Open("postgres", databaseAddress())
+	pg, err := sqlx.Open("postgres", addr)
 	if err != nil {
 		return err
 	}
 
-	logrus.Infof("connected to RDS with credentials %s", databaseAddress())
+	logrus.Infof("connected to database with credentials %s", addr)
 	srv := logserver.New(logstore.New(pg))
 
 	// Labels
