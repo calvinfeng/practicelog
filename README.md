@@ -12,3 +12,27 @@ practicelog db seed
 ```bash
 practicelog practiced "<label name>"
 ```
+
+## Docker
+
+Build it
+
+```bash
+docker build -t practicelog .
+```
+
+Run it
+
+```bash
+docker run --rm -p 8080:8080 practicelog
+```
+
+## Deployment
+
+Create a zip using `git`,
+
+```bash
+git archive -v -o practicelog-v2020.12.27.zip --format=zip HEAD
+```
+
+Then upload it to Elastic Beanstalk.
