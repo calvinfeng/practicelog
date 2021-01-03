@@ -40,7 +40,7 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 		if err != nil {
 			return err
 		}
-		e.Use(auth.NewGoogleIDTokenValidateMiddlware(oauthSrv))
+		e.Use(auth.NewGoogleIDTokenValidateMiddleware(oauthSrv))
 	}
 
 	pg, err := sqlx.Open("postgres", addr)
@@ -50,6 +50,9 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 
 	logrus.Infof("connected to database with credentials %s", addr)
 	srv := logserver.New(logstore.New(pg))
+
+	// Authentication
+	e.GET("/api/v1/token/validate", auth.TokenValidationHandler)
 
 	// Labels
 	e.GET("/api/v1/log/labels", srv.ListPracticeLogLabels)

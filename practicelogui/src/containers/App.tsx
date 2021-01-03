@@ -10,25 +10,21 @@ import PracticeLog from './PracticeLog';
 import './App.scss'
 
 /**
-  It seems to me that Google user only has scopes for 
-  [email, profile, openid,
-    https://www.googleapis.com/auth/userinfo.profile,
-    https://www.googleapis.com/auth/userinfo.email ]
+  Token has scope [email, profile, openid, userinfo.profile, userinfo.email]
  */
 
-function App() {
-  const [user, setUser] = React.useState<GoogleUserProfile | null>(null);
+// TODO: Store the ID token in cache.
+// TODO: Check cached token expiration on every component load.
 
-  // TODO: Store the ID token in cache
-  // As soon as page is loaded, check the token and send it to backend to verify that token is
-  // still valid and return profile information.
+function App() {
+  const [userProfile, setUserProfile] = React.useState<GoogleUserProfile | null>(null);
+
   const handleLoginSuccess = (resp: GoogleLoginResponse | GoogleLoginResponseOffline) => {
     if ((resp as GoogleLoginResponseOffline).code) {
       resp = resp as GoogleLoginResponseOffline
     } else {
       resp = resp as GoogleLoginResponse
-
-      const userProfile: GoogleUserProfile = {
+      setUserProfile({
         token_id: resp.tokenId,
         access_token: resp.accessToken,
         granted_scopes: resp.getGrantedScopes(),
@@ -38,8 +34,7 @@ function App() {
         given_name: resp.getBasicProfile().getGivenName(),
         family_name: resp.getBasicProfile().getFamilyName(),
         image_url: resp.getBasicProfile().getImageUrl()
-      }
-      setUser(userProfile)
+      })
     }
   }
 
@@ -47,21 +42,22 @@ function App() {
     console.log('Google login failed', resp.error, resp.details)
   }
 
-  let content;
-  if (user !== null) {
-    content = <PracticeLog IDToken={user.token_id} />
-  } else {
-    content = <GoogleLogin
-      disabled={process.env.NODE_ENV !== "development"}
-      clientId={process.env.REACT_APP_OAUTH_CLIENT_ID as string}
-      buttonText={"Login with Google"}
-      onSuccess={handleLoginSuccess}
-      onFailure={handleLoginFailure} />
+  if (userProfile !== null) {
+    return (
+      <div className="App">
+        <PracticeLog IDToken={userProfile.token_id} />
+      </div>
+    )
   }
 
   return (
     <div className="App">
-      {content}
+      <GoogleLogin
+        disabled={process.env.NODE_ENV !== "development"}
+        clientId={process.env.REACT_APP_OAUTH_CLIENT_ID as string}
+        buttonText={"Login with Google"}
+        onSuccess={handleLoginSuccess}
+        onFailure={handleLoginFailure} />
     </div>
   );
 }

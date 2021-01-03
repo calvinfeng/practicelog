@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
@@ -8,7 +9,42 @@ import (
 	"net/http"
 )
 
-func NewGoogleIDTokenValidateMiddlware(srv *oauth2.Service) echo.MiddlewareFunc {
+var emailWhiteList = map[string]struct{}{
+	"calvin.j.feng@gmail.com": {},
+}
+
+type TokenValidationResponse struct {
+	UserID string `json:"user_id"`
+	Email  string `json:"email"`
+}
+
+func TokenValidationHandler(c echo.Context) error {
+	info, ok := c.Get("token_info").(*oauth2.Tokeninfo)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized,
+			"token information is not found in HTTP context, perhaps middleware failed to inject it")
+	}
+
+	if _, ok := emailWhiteList[info.Email]; !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized,
+			fmt.Sprintf("%s is not an accepted user email, only Calvin is allowed to access this service", info.Email))
+	}
+
+	return c.JSON(http.StatusOK, TokenValidationResponse{
+		UserID: info.UserId,
+		Email:  info.Email,
+	})
+}
+
+func GetEmailFromContext(c echo.Context) (string, error) {
+	info, ok := c.Get("token_info").(*oauth2.Tokeninfo)
+	if !ok {
+		return "", errors.New("token information is not found in context")
+	}
+	return info.Email, nil
+}
+
+func NewGoogleIDTokenValidateMiddleware(srv *oauth2.Service) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			token := c.Request().Header.Get("Authorization")
@@ -20,8 +56,16 @@ func NewGoogleIDTokenValidateMiddlware(srv *oauth2.Service) echo.MiddlewareFunc 
 			tokenInfoCall.IdToken(token)
 			tokenInfo, err := tokenInfoCall.Do()
 			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, fmt.Sprintf("provided token %s is invalid", token))
+				return echo.NewHTTPError(http.StatusUnauthorized,
+					fmt.Sprintf("provided token %s... is invalid", token[:20]))
 			}
+
+			if _, ok := emailWhiteList[tokenInfo.Email]; !ok {
+				return echo.NewHTTPError(http.StatusUnauthorized,
+					fmt.Sprintf("%s is not an accepted user email, only Calvin is allowed to access this service",
+						tokenInfo.Email))
+			}
+
 			c.Set("token_info", tokenInfo)
 			logrus.Infof("%s %s authenticated user: %s",
 				c.Request().Method,
