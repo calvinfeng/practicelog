@@ -1,5 +1,8 @@
 environment = "production"
 
+[authentication]
+enabled = true
+
 [postgresql]
 hostname = "localhost"
 port = 5432

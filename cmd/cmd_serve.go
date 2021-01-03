@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"context"
+	"github.com/calvinfeng/practicelog/auth"
 	"github.com/calvinfeng/practicelog/practicelog/logserver"
 	"github.com/calvinfeng/practicelog/practicelog/logstore"
 	"github.com/jmoiron/sqlx"
@@ -9,6 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"google.golang.org/api/oauth2/v2"
+	"google.golang.org/api/option"
 	"net/http"
 )
 
@@ -30,6 +34,14 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 		Root:   "practicelogui/build/",
 		Browse: true,
 	}))
+
+	if viper.GetBool("authentication.enabled") {
+		oauthSrv, err := oauth2.NewService(context.Background(), option.WithHTTPClient(http.DefaultClient))
+		if err != nil {
+			return err
+		}
+		e.Use(auth.NewGoogleIDTokenValidateMiddlware(oauthSrv))
+	}
 
 	pg, err := sqlx.Open("postgres", addr)
 	if err != nil {

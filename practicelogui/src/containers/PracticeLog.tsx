@@ -16,7 +16,9 @@ import LogEntryManagement from '../components/LogEntryManagement'
 import LogLabelManagement from '../components/LogLabelManagement'
 import AssignmentChecklistPopover from '../components/AssignmentChecklistPopover'
 
-type Props = {}
+type Props = {
+  IDToken: string
+}
 
 type State = {
   logEntries: LogEntryJSON[]
@@ -50,7 +52,9 @@ export default class PracticeLog extends React.Component<Props, State> {
     this.http = axios.create({
       baseURL: `${process.env.REACT_APP_API_URL}`,
       timeout: 1000,
-      headers: {'Authorization': 'Bearer 1234'}
+      headers: {
+        "Authorization": props.IDToken
+      }
     });
   }
 
