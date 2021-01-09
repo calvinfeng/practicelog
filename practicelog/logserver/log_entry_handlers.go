@@ -48,7 +48,7 @@ func (s *server) CreatePracticeLogEntry(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest,
 			errors.Wrap(err, "failed to parse JSON data").Error())
 	}
-	entry.UserID = email
+	entry.Username = email
 
 	if err := s.validate.Struct(entry); err != nil {
 		fieldErrors := err.(validator.ValidationErrors)
@@ -70,11 +70,17 @@ func (s *server) CreatePracticeLogEntry(c echo.Context) error {
 }
 
 func (s *server) UpdatePracticeLogEntry(c echo.Context) error {
+	email, err := auth.GetEmailFromContext(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
+	}
+
 	entry := new(practicelog.Entry)
 	if err := c.Bind(entry); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,
 			errors.Wrap(err, "failed to parse JSON data").Error())
 	}
+	entry.Username = email
 
 	if id, err := uuid.Parse(c.Param("entry_id")); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,

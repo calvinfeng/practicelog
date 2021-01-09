@@ -6,7 +6,8 @@ import {
 } from 'react-google-login';
 
 import { GoogleUserProfile, GoogleError } from '../shared/type_definitions'
-import PracticeLog from './PracticeLog';
+import PracticeLog from './PracticeLog'
+import Unauthorized from './Unauthorized'
 import './App.scss'
 
 /**
@@ -43,21 +44,29 @@ function App() {
   }
 
   if (userProfile !== null) {
+    if (userProfile.google_email == "calvin.j.feng@gmail.com") {
+      return (
+        <div className="App">
+          <PracticeLog IDToken={userProfile.token_id} />
+        </div>
+      )
+    }
     return (
       <div className="App">
-        <PracticeLog IDToken={userProfile.token_id} />
+        <Unauthorized userProfile={userProfile} />
       </div>
     )
   }
 
   return (
     <div className="App">
-      <GoogleLogin
-        disabled={process.env.NODE_ENV !== "development"}
-        clientId={process.env.REACT_APP_OAUTH_CLIENT_ID as string}
-        buttonText={"Login with Google"}
-        onSuccess={handleLoginSuccess}
-        onFailure={handleLoginFailure} />
+      <section style={{"margin": "1rem"}}>
+        <GoogleLogin
+          clientId={process.env.REACT_APP_OAUTH_CLIENT_ID as string}
+          buttonText={"Login with Google"}
+          onSuccess={handleLoginSuccess}
+          onFailure={handleLoginFailure} />
+      </section>
     </div>
   );
 }

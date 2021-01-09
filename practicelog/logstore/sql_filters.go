@@ -13,6 +13,6 @@ func ByID(id string) practicelog.SQLFilter {
 
 func ByLabelIDs(ids []string) practicelog.SQLFilter {
 	return func(eq squirrel.Eq) {
-		eq["label_id"] = ids
+		eq["label_id_list"] = ids
 	}
 }

@@ -1,6 +1,6 @@
 CREATE TABLE log_entries (
     id UUID PRIMARY KEY,
-    user_id VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL,
     date timestamp NOT NULL,
     duration INTEGER NOT NULL,
     message TEXT,
@@ -10,13 +10,17 @@ CREATE TABLE log_entries (
 );
 
 CREATE INDEX log_entry_trello_id_index ON log_entries(trello_id);
+CREATE INDEX log_entry_username_index on log_entries(username);
 
 CREATE TABLE log_labels (
     id UUID PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
     parent_id UUID REFERENCES log_labels(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     CONSTRAINT label_name_should_be_unique UNIQUE(name)
 );
+
+CREATE INDEX log_label_username_index on log_labels(username);
 
 CREATE TABLE association_log_entries_labels(
     association_id UUID PRIMARY KEY,

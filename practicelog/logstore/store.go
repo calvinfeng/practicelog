@@ -105,7 +105,7 @@ func (s *store) CountLogEntries(filters ...practicelog.SQLFilter) (int, error) {
 	}
 
 	query := squirrel.Select("COUNT(*)").Where(eqCondition).From(LogEntryTable)
-	if val, hasKey := eqCondition["label_id"]; hasKey {
+	if val, hasKey := eqCondition["label_id_list"]; hasKey {
 		if labelIDs, ok := val.([]string); ok && len(labelIDs) > 0 {
 			query = squirrel.Select(fmt.Sprintf("COUNT(DISTINCT %s.id)", LogEntryTable)).
 				From(LogEntryTable).
@@ -140,7 +140,7 @@ func (s *store) SelectLogEntries(limit, offset uint64, filters ...practicelog.SQ
 		Where(eqCondition).
 		OrderBy("date DESC")
 
-	if val, hasKey := eqCondition["label_id"]; hasKey {
+	if val, hasKey := eqCondition["label_id_list"]; hasKey {
 		if labelIDs, ok := val.([]string); ok && len(labelIDs) > 0 {
 			query = squirrel.Select("id", "user_id", "date", "duration", "message").
 				From(LogEntryTable).
@@ -176,7 +176,7 @@ func (s *store) SelectLogEntries(limit, offset uint64, filters ...practicelog.SQ
 	// This join can become expensive eventually.
 	// But I want to have data consistency for labels.
 	query = squirrel.
-		Select("entry_id", "label_id", "parent_id", "name").
+		Select("entry_id", "label_id", "username", "parent_id", "name").
 		From(LogLabelTable).
 		LeftJoin(fmt.Sprintf("%s ON id = label_id", AssociationLogEntryLabelTable)).
 		Where(squirrel.Eq{
@@ -202,6 +202,7 @@ func (s *store) SelectLogEntries(limit, offset uint64, filters ...practicelog.SQ
 			ID:       lbl.ID,
 			ParentID: lbl.ParentID,
 			Name:     lbl.Name,
+			Username: lbl.Username,
 		}
 	}
 
@@ -245,7 +246,7 @@ func (s *store) UpdateLogEntry(entry *practicelog.Entry) error {
 	newRow := new(DBLogEntry).fromModel(entry)
 
 	updateQ := squirrel.Update(LogEntryTable).
-		Set("user_id", newRow.UserID).
+		Set("username", newRow.Username).
 		Set("date", newRow.Date).
 		Set("duration", newRow.Duration).
 		Set("message", newRow.Message).
@@ -343,15 +344,15 @@ func (s *store) UpdateLogAssignments(entry *practicelog.Entry) error {
 
 func (s *store) BatchInsertLogLabels(labels ...*practicelog.Label) (int64, error) {
 	query := squirrel.Insert(LogLabelTable).
-		Columns("id", "parent_id", "name")
+		Columns("id", "username", "parent_id", "name")
 
 	for _, label := range labels {
 		label.ID = uuid.New()
 		row := new(DBLogLabel).fromModel(label)
 		if row.ParentID == uuid.Nil {
-			query = query.Values(row.ID, nil, row.Name)
+			query = query.Values(row.ID, row.Username, nil, row.Name)
 		} else {
-			query = query.Values(row.ID, row.ParentID, row.Name)
+			query = query.Values(row.ID, row.Username, row.ParentID, row.Name)
 		}
 	}
 
@@ -369,7 +370,7 @@ func (s *store) BatchInsertLogLabels(labels ...*practicelog.Label) (int64, error
 
 func (s *store) BatchInsertLogEntries(entries ...*practicelog.Entry) (int64, error) {
 	entryInsertQ := squirrel.Insert(LogEntryTable).
-		Columns("id", "user_id", "date", "duration", "message", "details", "assignments", "trello_id")
+		Columns("id", "username", "date", "duration", "message", "details", "assignments", "trello_id")
 
 	joinInsertQ := squirrel.Insert(AssociationLogEntryLabelTable).
 		Columns("association_id", "entry_id", "label_id")
@@ -378,7 +379,7 @@ func (s *store) BatchInsertLogEntries(entries ...*practicelog.Entry) (int64, err
 		entry.ID = uuid.New()
 		row := new(DBLogEntry).fromModel(entry)
 		entryInsertQ = entryInsertQ.Values(
-			row.ID, row.UserID, row.Date, row.Duration, row.Message, row.Details, row.Assignments, row.TrelloID)
+			row.ID, row.Username, row.Date, row.Duration, row.Message, row.Details, row.Assignments, row.TrelloID)
 
 		for _, label := range entry.Labels {
 			joinInsertQ = joinInsertQ.Values(uuid.New(), entry.ID, label.ID)

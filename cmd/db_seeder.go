@@ -13,6 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const board2021ID = "j3PmqolX"
 const board2020ID = "woq8deqm"
 const board2019ID = "B2VXMAm0"
 
@@ -39,12 +40,19 @@ func seedDB() error {
 		return fmt.Errorf("failed to insert practicelog labels %w", err)
 	}
 
+	logrus.Info("inserting entries from 2019")
 	if err := seedLogEntriesByBoardID(board2019ID, api, store); err != nil {
-		return fmt.Errorf("failed to insert practicelog entries %w", err)
+		return fmt.Errorf("failed to insert log entries %w", err)
 	}
 
+	logrus.Infof("inserting entries from 2020")
 	if err := seedLogEntriesByBoardID(board2020ID, api, store); err != nil {
-		return fmt.Errorf("failed to insert practicelog entries %w", err)
+		return fmt.Errorf("failed to insert log entries %w", err)
+	}
+
+	logrus.Infof("inserting entries from 2021")
+	if err := seedLogEntriesByBoardID(board2021ID, api, store); err != nil {
+		return fmt.Errorf("failed to insert log entries %w", err)
 	}
 
 	count, err := store.CountLogEntries()
@@ -71,6 +79,9 @@ func seedLogLabels(store practicelog.Store) error {
 		{Name: "Music Lessons"},
 		{Name: "Songs"},
 		{Name: "Scales"},
+	}
+	for _, label := range defaultParentLogLabels {
+		label.Username = "calvin.j.feng@gmail.com"
 	}
 
 	inserted, err := store.BatchInsertLogLabels(defaultParentLogLabels...)
@@ -101,7 +112,12 @@ func seedLogLabels(store practicelog.Store) error {
 		{Name: "Perfect", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "Comfortably Numb", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "刻在我心底的名字", ParentID: defaultParentLogLabels[5].ID},
+		{Name: "Afterglow", ParentID: defaultParentLogLabels[5].ID},
 		{Name: "Note Memorization", ParentID: defaultParentLogLabels[6].ID},
+	}
+
+	for _, label := range defaultChildLogLabels {
+		label.Username = "calvin.j.feng@gmail.com"
 	}
 
 	inserted, err = store.BatchInsertLogLabels(defaultChildLogLabels...)
@@ -165,7 +181,7 @@ func seedLogEntriesByBoardID(boardID string, api trelloapi.Service, store practi
 		entry.Message = card.Name
 		entry.Details = card.Description
 		entry.Labels = make([]*practicelog.Label, 0)
-		entry.UserID = "calvin.j.feng@gmail.com"
+		entry.Username = "calvin.j.feng@gmail.com"
 		for _, labelID := range card.LabelIDs {
 			label, ok := trelloLabelsByID[labelID]
 			if !ok {

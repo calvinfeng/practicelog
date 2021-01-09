@@ -2,6 +2,7 @@ package logserver
 
 import (
 	"fmt"
+	"github.com/calvinfeng/practicelog/auth"
 	"github.com/calvinfeng/practicelog/practicelog"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -23,11 +24,17 @@ func (s *server) ListPracticeLogLabels(c echo.Context) error {
 }
 
 func (s *server) CreatePracticeLogLabel(c echo.Context) error {
+	email, err := auth.GetEmailFromContext(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
+	}
+
 	label := new(practicelog.Label)
 	if err := c.Bind(label); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,
 			errors.Wrap(err, "failed to parse JSON data").Error())
 	}
+	label.Username = email
 
 	if err := s.validate.Struct(label); err != nil {
 		fieldErrors := err.(validator.ValidationErrors)
@@ -49,11 +56,17 @@ func (s *server) CreatePracticeLogLabel(c echo.Context) error {
 }
 
 func (s *server) UpdatePracticeLogLabel(c echo.Context) error {
+	email, err := auth.GetEmailFromContext(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
+	}
+
 	label := new(practicelog.Label)
 	if err := c.Bind(label); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,
 			errors.Wrap(err, "failed to parse JSON data").Error())
 	}
+	label.Username = email
 
 	if id, err := uuid.Parse(c.Param("label_id")); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,

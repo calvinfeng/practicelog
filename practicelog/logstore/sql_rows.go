@@ -14,7 +14,7 @@ const AssociationLogEntryLabelTable = "association_log_entries_labels"
 
 type DBLogEntry struct {
 	ID          uuid.UUID       `db:"id"`
-	UserID      string          `db:"user_id"`
+	Username    string          `db:"username"`
 	Date        time.Time       `db:"date"`
 	Duration    int32           `db:"duration"`
 	Message     string          `db:"message"`
@@ -25,7 +25,7 @@ type DBLogEntry struct {
 
 func (row *DBLogEntry) fromModel(model *practicelog.Entry) *DBLogEntry {
 	row.ID = model.ID
-	row.UserID = model.UserID
+	row.Username = model.Username
 	row.Date = model.Date
 	row.Message = model.Message
 	row.Details = model.Details
@@ -38,7 +38,7 @@ func (row *DBLogEntry) fromModel(model *practicelog.Entry) *DBLogEntry {
 func (row *DBLogEntry) toModel() *practicelog.Entry {
 	model := &practicelog.Entry{
 		ID:          row.ID,
-		UserID:      row.UserID,
+		Username:    row.Username,
 		Date:        row.Date,
 		Duration:    row.Duration,
 		Message:     row.Message,
@@ -53,19 +53,14 @@ func (row *DBLogEntry) toModel() *practicelog.Entry {
 
 type DBLogLabel struct {
 	ID       uuid.UUID `db:"id"`
+	Username string    `db:"username"`
 	ParentID uuid.UUID `db:"parent_id"`
-	Name     string    `db:"name"`
-}
-
-type DBReadOnlyLogLabel struct {
-	ID       uuid.UUID `db:"label_id"`
-	ParentID uuid.UUID `db:"parent_id"`
-	EntryID  uuid.UUID `db:"entry_id"`
 	Name     string    `db:"name"`
 }
 
 func (row *DBLogLabel) fromModel(model *practicelog.Label) *DBLogLabel {
 	row.ID = model.ID
+	row.Username = model.Username
 	row.ParentID = model.ParentID
 	row.Name = model.Name
 	return row
@@ -74,6 +69,7 @@ func (row *DBLogLabel) fromModel(model *practicelog.Label) *DBLogLabel {
 func (row *DBLogLabel) toModel() *practicelog.Label {
 	model := &practicelog.Label{
 		ID:       row.ID,
+		Username: row.Username,
 		ParentID: row.ParentID,
 		Name:     row.Name,
 		Children: nil,
@@ -88,4 +84,12 @@ type DBAssocLogEntryLabel struct {
 	EntryID       uuid.UUID `db:"entry_id"`
 	LabelID       uuid.UUID `db:"label_id"`
 	DBLogLabel
+}
+
+type DBReadOnlyLogLabel struct {
+	ID       uuid.UUID `db:"label_id"`
+	Username string    `db:"username"`
+	ParentID uuid.UUID `db:"parent_id"`
+	EntryID  uuid.UUID `db:"entry_id"`
+	Name     string    `db:"name"`
 }

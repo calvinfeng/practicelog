@@ -11,7 +11,7 @@ import (
 
 type Entry struct {
 	ID          uuid.UUID     `json:"id"`
-	UserID      string        `json:"user_id" validate:"required,email"`
+	Username    string        `json:"username" validate:"required,email"`
 	Date        time.Time     `json:"date" validate:"required"`
 	Duration    int32         `json:"duration" validate:"required"`
 	Labels      []*Label      `json:"labels,omitempty" validate:"required,min=1"`
@@ -29,6 +29,7 @@ type Assignment struct {
 
 type Label struct {
 	ID       uuid.UUID   `json:"id"`
+	Username string      `json:"username" validate:"required,email"`
 	ParentID uuid.UUID   `json:"parent_id,omitempty"`
 	Name     string      `json:"name" validate:"required"`
 	Children []uuid.UUID `json:"children,omitempty"`
