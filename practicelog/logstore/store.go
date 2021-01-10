@@ -105,7 +105,7 @@ func (s *store) CountLogEntries(filters ...practicelog.SQLFilter) (int, error) {
 	}
 
 	query := squirrel.Select("COUNT(*)").Where(eqCondition).From(LogEntryTable)
-	if val, hasKey := eqCondition["label_id_list"]; hasKey {
+	if val, hasKey := eqCondition["label_id"]; hasKey {
 		if labelIDs, ok := val.([]string); ok && len(labelIDs) > 0 {
 			query = squirrel.Select(fmt.Sprintf("COUNT(DISTINCT %s.id)", LogEntryTable)).
 				From(LogEntryTable).
@@ -140,9 +140,9 @@ func (s *store) SelectLogEntries(limit, offset uint64, filters ...practicelog.SQ
 		Where(eqCondition).
 		OrderBy("date DESC")
 
-	if val, hasKey := eqCondition["label_id_list"]; hasKey {
+	if val, hasKey := eqCondition["label_id"]; hasKey {
 		if labelIDs, ok := val.([]string); ok && len(labelIDs) > 0 {
-			query = squirrel.Select("id", "user_id", "date", "duration", "message").
+			query = squirrel.Select("id", "username", "date", "duration", "message").
 				From(LogEntryTable).
 				LeftJoin(fmt.Sprintf("%s ON %s.id = entry_id", AssociationLogEntryLabelTable, LogEntryTable)).
 				Limit(limit).
