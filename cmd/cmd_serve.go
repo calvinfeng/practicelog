@@ -28,8 +28,7 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
 	}))
 
-	e.File("/", "practicelogui/build/index.html")
-
+	// e.File("/", "practicelogui/build/index.html")
 	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 		Root:   "practicelogui/build/",
 		Browse: true,
