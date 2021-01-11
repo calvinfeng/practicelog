@@ -48,7 +48,7 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	}
 
 	logrus.Infof("connected to database with credentials %s", addr)
-	srv := logserver.New(logstore.New(pg))
+	srv := logserver.New(logstore.New(pg), viper.GetBool("authentication.enabled"))
 
 	// Authentication
 	e.GET("/api/v1/token/validate", auth.TokenValidationHandler)

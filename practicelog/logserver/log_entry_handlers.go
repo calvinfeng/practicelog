@@ -38,9 +38,13 @@ func (s *server) ListPracticeLogEntries(c echo.Context) error {
 }
 
 func (s *server) CreatePracticeLogEntry(c echo.Context) error {
-	email, err := auth.GetEmailFromContext(c)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
+	email := defaultUsername
+	if s.auth {
+		var err error
+		email, err = auth.GetEmailFromContext(c)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
+		}
 	}
 
 	entry := new(practicelog.Entry)
@@ -70,9 +74,13 @@ func (s *server) CreatePracticeLogEntry(c echo.Context) error {
 }
 
 func (s *server) UpdatePracticeLogEntry(c echo.Context) error {
-	email, err := auth.GetEmailFromContext(c)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
+	email := defaultUsername
+	if s.auth {
+		var err error
+		email, err = auth.GetEmailFromContext(c)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
+		}
 	}
 
 	entry := new(practicelog.Entry)

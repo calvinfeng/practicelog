@@ -44,6 +44,14 @@ func GetEmailFromContext(c echo.Context) (string, error) {
 	return info.Email, nil
 }
 
+func formatLongToken(token string, maxLen int) string {
+	tokenRunes := []rune(token)
+	if len(tokenRunes) > maxLen {
+		return fmt.Sprintf("%s...", string(tokenRunes[:maxLen]))
+	}
+	return token
+}
+
 func NewGoogleIDTokenValidateMiddleware(srv *oauth2.Service) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -57,7 +65,7 @@ func NewGoogleIDTokenValidateMiddleware(srv *oauth2.Service) echo.MiddlewareFunc
 			tokenInfo, err := tokenInfoCall.Do()
 			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized,
-					fmt.Sprintf("provided token %s... is invalid", token[:20]))
+					fmt.Sprintf("provided token %s is invalid", formatLongToken(token, 20)))
 			}
 
 			if _, ok := emailWhiteList[tokenInfo.Email]; !ok {

@@ -58,6 +58,14 @@ function App() {
     )
   }
 
+  if (process.env.NODE_ENV !== 'production') {
+    return (
+      <div className="App">
+        <PracticeLog IDToken={"anything"} />
+      </div>
+    )
+  }
+
   return (
     <div className="App">
       <section style={{"margin": "1rem"}}>

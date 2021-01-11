@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { LogLabelJSON, LogEntryJSON } from '../shared/type_definitions'
+import { LogLabelJSON, LogEntryJSON, LogAssignmentJSON } from '../shared/type_definitions'
 import './LogTable.scss'
 
 import {
@@ -18,6 +18,8 @@ import { MusicNote } from '@material-ui/icons'
 import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
 import AssignmentIcon from '@material-ui/icons/Assignment';
+import AssignmentTurnedInSharpIcon from '@material-ui/icons/AssignmentTurnedInSharp';
+import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 
 type Props = {
@@ -25,6 +27,12 @@ type Props = {
   handleHTTPDeleteLogEntry: (log: LogEntryJSON) => void
   handleSetLogEntryEdit: (log: LogEntryJSON) => void
   handleSetLogEntryViewAndAnchorEl: (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => void
+}
+
+function hasAllAssignmentCompleted(list: LogAssignmentJSON[]): boolean {
+  return list.filter((assignment: LogAssignmentJSON) => {
+    return assignment.completed
+  }).length === list.length
 }
 
 export default function LogTable(props: Props) {
@@ -58,6 +66,15 @@ export default function LogTable(props: Props) {
       ))
     }
 
+    let assignmentIcon: JSX.Element
+    if (log.assignments === null || log.assignments === undefined || log.assignments.length === 0) {
+      assignmentIcon = <AssignmentOutlinedIcon />
+    } else if (hasAllAssignmentCompleted(log.assignments)) {
+      assignmentIcon = <AssignmentTurnedInSharpIcon />
+    } else {
+      assignmentIcon = <AssignmentIcon />
+    }
+
     tableRows.push(
       <TableRow>
         <TableCell style={cellStyle}>{log.date.toDateString()}</TableCell>
@@ -66,7 +83,7 @@ export default function LogTable(props: Props) {
         <TableCell style={cellStyle}>{log.message}</TableCell>
         <TableCell style={cellStyle}>
         <IconButton color="primary" component="span" onClick={makeHandlerSetLogViewAndAssignment(log)}>
-          <AssignmentIcon/>
+          {assignmentIcon}
         </IconButton>
         <IconButton color="primary" component="span" onClick={makeHandlerSetLogEdit(log)}>
           <EditIcon />
