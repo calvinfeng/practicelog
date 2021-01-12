@@ -158,6 +158,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
             format="MM/dd/yyyy"
             margin="normal"
             label="Date"
+            animateYearScrolling={true}
             value={this.state.inputFieldDate}
             onChange={handleDateChange} />
         </MuiPickersUtilsProvider>
@@ -248,7 +249,11 @@ export default class LogEntryManagement extends React.Component<Props, State> {
           </FormControl>  
           </Grid>
           <Grid item>
-            <Button variant="outlined" color="primary" style={{marginLeft: "0.5rem"}} onClick={handleLabelAdd}
+            <Button
+              variant="outlined"
+              color="primary"
+              style={{marginLeft: "0.5rem"}}
+              onClick={handleLabelAdd}
               startIcon={<AddIcon/>}>
               Add Label
             </Button>
@@ -399,6 +404,10 @@ export default class LogEntryManagement extends React.Component<Props, State> {
                   assignments: this.state.inputFieldAssignments,
                   details: "",
                 }
+                if (this.state.inputFieldDate !== null) {
+                  logEntry.date = this.state.inputFieldDate
+                }
+                console.log("update log entry with date", logEntry.date)
                 this.props.handleHTTPUpdateLogEntry(logEntry)
               }}>
               Save
@@ -427,6 +436,10 @@ export default class LogEntryManagement extends React.Component<Props, State> {
                   assignments: this.state.inputFieldAssignments,
                   details: "",
                 }
+                if (this.state.inputFieldDate !== null) {
+                  logEntry.date = this.state.inputFieldDate
+                }
+                console.log("create log entry with date", logEntry.date)
                 this.props.handleHTTPCreateLogEntry(logEntry)
               }}>
               Add
