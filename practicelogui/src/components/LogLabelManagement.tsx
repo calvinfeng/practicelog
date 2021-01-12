@@ -1,6 +1,6 @@
 import React from 'react'
 import './LogLabelManagement.scss'
-import { LogLabelJSON } from '../shared/type_definitions'
+import { DeleteConfirmationTarget, LogLabelJSON } from '../shared/type_definitions'
 
 import {
   Grid,
@@ -9,12 +9,11 @@ import {
   Divider,
   Typography,
   Button,
-  TextField
+  TextField,
 } from '@material-ui/core'
-import {
-  MusicNote
-} from '@material-ui/icons'
-import DoneIcon from '@material-ui/icons/Done'
+
+import { MusicNote } from '@material-ui/icons'
+import DeleteConfirmation from './DeleteConfirmation'
 
 const nilUUID = '00000000-0000-0000-0000-000000000000'
 
@@ -23,6 +22,8 @@ type State = {
   selectedChildLabel: LogLabelJSON | null
   inputParentLabelName: string
   inputChildLabelName: string
+  showDeleteDialog: boolean
+  deleteTarget: DeleteConfirmationTarget
 }
 
 type Props = {
@@ -36,7 +37,9 @@ const defaultState: State = {
   selectedParentLabel: null,
   selectedChildLabel: null,
   inputParentLabelName: "",
-  inputChildLabelName: ""
+  inputChildLabelName: "",
+  showDeleteDialog: false,
+  deleteTarget: DeleteConfirmationTarget.None
 }
 
 export default class LabelManagement extends React.Component<Props, State> {
@@ -46,15 +49,20 @@ export default class LabelManagement extends React.Component<Props, State> {
   }
 
   newHandlerSelectParentLabel = (label: LogLabelJSON | null) => () => {
+    // Whenever parent is selected, child states should be cleared.
     if (label === null) {
       this.setState({
         inputParentLabelName: "",
-        selectedParentLabel: null
+        inputChildLabelName: "",
+        selectedParentLabel: null,
+        selectedChildLabel: null
       })
     } else {
       this.setState({
         inputParentLabelName: label.name,
-        selectedParentLabel: label
+        inputChildLabelName: "",
+        selectedParentLabel: label,
+        selectedChildLabel: null,
       })
     }
   }
@@ -224,86 +232,116 @@ export default class LabelManagement extends React.Component<Props, State> {
     this.setState({ inputChildLabelName: ev.target.value })
   }
 
+  handleCloseDeleteDialog = () => {
+    this.setState({ showDeleteDialog: false, deleteTarget: DeleteConfirmationTarget.None })
+  }
+
+  get selectedChildLabelButtonGroup() {
+    if (this.state.selectedParentLabel === null || this.state.selectedChildLabel === null) {
+      return []
+    }
+    return [
+      <Grid item>
+        <Typography variant="subtitle1">
+          Selected Child Label: {this.state.selectedChildLabel.name}
+        </Typography>
+      </Grid>,
+      <Grid item>
+        <TextField label="Child Label Name" value={this.state.inputChildLabelName}
+          onChange={this.handleChildLabelNameChange} fullWidth InputLabelProps={{ shrink: true }} />
+      </Grid>,
+      <Grid item>
+        <Button style={{margin: "0.1rem"}} onClick={this.handleUpdateChildLabel}
+          disabled={this.state.inputChildLabelName === this.state.selectedChildLabel.name}
+          variant="contained" color="primary">
+          Update
+        </Button>
+        <Button style={{margin: "0.1rem"}} onClick={
+            () => {
+              this.setState({ showDeleteDialog: true, deleteTarget: DeleteConfirmationTarget.Child})
+            }
+          }
+          variant="contained" color="secondary">
+          Delete {this.state.selectedChildLabel.name}
+        </Button>
+      </Grid>
+    ]
+  }
+
+  get selectedParentLabelButtonGroup() {
+    if (this.state.selectedParentLabel === null) {
+      return []
+    }
+    return [
+      <Grid item>
+        <Typography variant="subtitle1">
+          Selected Parent Label: {this.state.selectedParentLabel.name}
+        </Typography>
+      </Grid>,
+      <Grid item>
+        <TextField
+          label="Parent Label Name" value={this.state.inputParentLabelName} onChange={this.handleParentLabelNameChange}
+          fullWidth InputLabelProps={{ shrink: true }} />
+      </Grid>,
+      <Grid item>
+      <TextField
+        label="Child Label Name" value={this.state.inputChildLabelName} onChange={this.handleChildLabelNameChange}
+        fullWidth InputLabelProps={{ shrink: true }} />
+      </Grid>,
+      <Grid item>
+        <Button style={{margin: "0.1rem"}} onClick={this.handleClickCreateChildLabel}
+          disabled={this.state.inputChildLabelName.length === 0}
+          variant="contained" color="primary">
+            Create Child
+        </Button>
+        <Button style={{margin: "0.1rem"}} onClick={this.handleUpdateParentLabel}
+          disabled={this.state.inputParentLabelName === this.state.selectedParentLabel.name}
+          variant="contained" color="primary">
+            Update
+        </Button>
+        <Button style={{margin: "0.1rem"}} onClick={
+            () => {
+              this.setState({ showDeleteDialog: true, deleteTarget: DeleteConfirmationTarget.Parent})
+            }
+          }
+          variant="contained" color="secondary">
+          Delete {this.state.selectedParentLabel.name}
+        </Button>
+      </Grid>
+    ]
+  }
+
+  get selectedNoneLabelButtonGroup() {
+    return [
+      <Grid item>
+        <TextField
+          label="New Label Name"
+          value={this.state.inputParentLabelName}
+          onChange={this.handleParentLabelNameChange}
+          fullWidth
+          InputLabelProps={{ shrink: true }} />
+        </Grid>,
+      <Grid item>
+        <Button style={{margin: "0.1rem"}} onClick={this.handleCreateParentLabel}
+          variant="contained" color="primary">
+          Create
+        </Button>
+      </Grid>
+    ]
+  }
+
   get panelEditLabel() {
     let gridItems: JSX.Element[]
 
+    // Case 1: Parent & child are selected
+    // Case 2: Parent is selected
+    // Case 3: None is selected
     if (this.state.selectedParentLabel !== null && this.state.selectedChildLabel !== null) {
-      // Parent & child are selected
-      gridItems = [
-        <Grid item>
-          <Typography variant="subtitle1">
-            Selected Child Label: {this.state.selectedChildLabel.name}
-          </Typography>
-        </Grid>,
-        <Grid item>
-          <TextField label="Child Label Name" value={this.state.inputChildLabelName}
-            onChange={this.handleChildLabelNameChange} fullWidth InputLabelProps={{ shrink: true }} />
-        </Grid>,
-        <Grid item>
-          <Button style={{margin: "0.1rem"}} onClick={this.handleUpdateChildLabel}
-            disabled={this.state.inputChildLabelName === this.state.selectedChildLabel.name}
-            variant="contained" color="primary">
-            Update
-          </Button>
-          <Button style={{margin: "0.1rem"}} onClick={this.handleDeleteChildLabel}
-            variant="contained" color="secondary">
-            Delete
-          </Button>
-        </Grid>
-      ]
+      gridItems = this.selectedChildLabelButtonGroup
     } else if (this.state.selectedParentLabel !== null && this.state.selectedChildLabel === null) {
-      // Parent is selected
-      gridItems = [
-        <Grid item>
-          <Typography variant="subtitle1">
-            Selected Parent Label: {this.state.selectedParentLabel.name}
-          </Typography>
-        </Grid>,
-        <Grid item>
-          <TextField
-            label="Parent Label Name" value={this.state.inputParentLabelName} onChange={this.handleParentLabelNameChange}
-            fullWidth InputLabelProps={{ shrink: true }} />
-          </Grid>,
-        <Grid item>
-          <TextField
-            label="Child Label Name" value={this.state.inputChildLabelName} onChange={this.handleChildLabelNameChange}
-            fullWidth InputLabelProps={{ shrink: true }} />
-        </Grid>,
-        <Grid item>
-          <Button style={{margin: "0.1rem"}} onClick={this.handleClickCreateChildLabel}
-            disabled={this.state.inputChildLabelName.length === 0}
-            variant="contained" color="primary">
-              Create Child
-          </Button>
-          <Button style={{margin: "0.1rem"}} onClick={this.handleUpdateParentLabel}
-            disabled={this.state.inputParentLabelName === this.state.selectedParentLabel.name}
-            variant="contained" color="primary">
-              Update
-          </Button>
-          <Button style={{margin: "0.1rem"}} onClick={this.handleDeleteParentLabel}
-            variant="contained" color="secondary">
-            Delete {this.state.selectedParentLabel.name}
-          </Button>
-        </Grid>
-      ]
+      gridItems = this.selectedParentLabelButtonGroup
     } else {
-      // None is selected
-      gridItems = [
-        <Grid item>
-          <TextField
-            label="New Label Name"
-            value={this.state.inputParentLabelName}
-            onChange={this.handleParentLabelNameChange}
-            fullWidth
-            InputLabelProps={{ shrink: true }} />
-        </Grid>,
-        <Grid item>
-          <Button style={{margin: "0.1rem"}} onClick={this.handleCreateParentLabel}
-            variant="contained" color="primary">
-            Create
-          </Button>
-        </Grid>
-      ]
+      gridItems = this.selectedNoneLabelButtonGroup
     }
 
     return (
@@ -336,6 +374,14 @@ export default class LabelManagement extends React.Component<Props, State> {
           <Divider orientation="vertical" flexItem />
           {this.panelEditLabel}
         </Grid>
+        <DeleteConfirmation
+          target={this.state.deleteTarget}
+          open={this.state.showDeleteDialog}
+          selectedChildLabel={this.state.selectedChildLabel}
+          selectedParentLabel={this.state.selectedParentLabel}
+          handleClose={this.handleCloseDeleteDialog}
+          handleDeleteChildLabel={this.handleDeleteChildLabel}
+          handleDeleteParentLabel={this.handleDeleteParentLabel} />
       </Paper>
     )
   }

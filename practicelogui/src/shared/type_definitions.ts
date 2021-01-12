@@ -38,3 +38,9 @@ export type GoogleError = {
   error: string
   details: string
 }
+
+export enum DeleteConfirmationTarget {
+  None = "NONE",
+  Child = "CHILD",
+  Parent = "PARENT"
+}
