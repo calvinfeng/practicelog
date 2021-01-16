@@ -32,10 +32,10 @@ docker run --rm -p 8080:8080 practicelog
 Create a zip using `git`,
 
 ```bash
-git archive -v -o practicelog-v2020.12.27.zip --format=zip HEAD
+git archive -v -o practicelog-v2021-01-01.zip --format=zip HEAD
 ```
 
-Then upload it to Elastic Beanstalk.
+Then upload it to Elastic Beanstalk. It's better to use `-` instead of `.` because `.` is a HTTP URL reserved keyword.
 
 ### Connect to DB
 
