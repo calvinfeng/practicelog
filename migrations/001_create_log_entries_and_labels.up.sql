@@ -17,7 +17,7 @@ CREATE TABLE log_labels (
     username VARCHAR(255) NOT NULL,
     parent_id UUID REFERENCES log_labels(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
-    CONSTRAINT label_name_should_be_unique UNIQUE(name)
+    CONSTRAINT label_name_should_be_unique UNIQUE(name, username)
 );
 
 CREATE INDEX log_label_username_index on log_labels(username);
