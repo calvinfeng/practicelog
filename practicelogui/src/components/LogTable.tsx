@@ -14,7 +14,7 @@ import {
   TableHead,
   TableBody,
 } from '@material-ui/core'
-import { MusicNote } from '@material-ui/icons'
+import MusicNote from '@material-ui/icons/MusicNote'
 import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
 import AssignmentIcon from '@material-ui/icons/Assignment';
@@ -77,13 +77,29 @@ export default function LogTable(props: Props) {
       ))
     }
 
-    let assignmentIcon: JSX.Element
+    /**
+     * When assignments are null, the icon is disabled
+     */
+    let assignmentIconButton: JSX.Element
     if (log.assignments === null || log.assignments === undefined || log.assignments.length === 0) {
-      assignmentIcon = <AssignmentOutlinedIcon />
+      assignmentIconButton = (
+        <IconButton color="primary" component="span" onClick={makeHandlerSetLogViewAndAssignment(log)}
+          disabled={true}>
+          <AssignmentOutlinedIcon />
+        </IconButton>
+      )
     } else if (hasAllAssignmentCompleted(log.assignments)) {
-      assignmentIcon = <AssignmentTurnedInSharpIcon />
+      assignmentIconButton = (
+        <IconButton color="primary" component="span" onClick={makeHandlerSetLogViewAndAssignment(log)}>
+          <AssignmentTurnedInSharpIcon />
+        </IconButton>
+      )
     } else {
-      assignmentIcon = <AssignmentIcon />
+      assignmentIconButton = (
+        <IconButton color="primary" component="span" onClick={makeHandlerSetLogViewAndAssignment(log)}>
+          <AssignmentIcon />
+        </IconButton>
+      )
     }
 
     tableRows.push(
@@ -93,9 +109,7 @@ export default function LogTable(props: Props) {
         <TableCell style={longCellStyle}>{labels}</TableCell>
         <TableCell style={longCellStyle}>{log.message}</TableCell>
         <TableCell style={cellStyle}>
-        <IconButton color="primary" component="span" onClick={makeHandlerSetLogViewAndAssignment(log)}>
-          {assignmentIcon}
-        </IconButton>
+        {assignmentIconButton}
         <IconButton color="primary" component="span" onClick={makeHandlerSetLogEdit(log)}>
           <EditIcon />
         </IconButton>
