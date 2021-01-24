@@ -25,7 +25,9 @@ import {
 import AddIcon from '@material-ui/icons/Add'
 import SaveIcon from '@material-ui/icons/Save'
 import DeleteIcon from '@material-ui/icons/Delete'
-import { MusicNote } from '@material-ui/icons'
+import FormatListBulletedIcon from '@material-ui/icons/FormatListBulleted';
+import MusicNote from '@material-ui/icons/MusicNote'
+import EditIcon from '@material-ui/icons/Edit'
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date'
 
 import './LogEntryManagement.scss'
@@ -53,6 +55,7 @@ type State = {
   inputFieldLabels: LogLabelJSON[]
   inputFieldAssignments: LogAssignmentJSON[]
   selectorFieldLabelID: string | null
+  editAssignment: LogAssignmentJSON | null
 }
 
 enum Mode {
@@ -69,8 +72,14 @@ const defaultState: State = {
   inputFieldLabels: [],
   inputFieldNewAssignmentName: "",
   inputFieldAssignments: [],
-  selectorFieldLabelID: null
+  selectorFieldLabelID: null,
+  editAssignment: null
 }
+
+/**
+ * TODO: Refactor this into multiple smaller components
+ * - Assignment Panel is one
+ */
 
 export default class LogEntryManagement extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -93,7 +102,8 @@ export default class LogEntryManagement extends React.Component<Props, State> {
         inputFieldMessage: props.editLogEntry.message,
         inputFieldAssignments: props.editLogEntry.assignments,
         selectorFieldLabelID: null,
-        inputFieldNewAssignmentName: ""
+        inputFieldNewAssignmentName: "",
+        editAssignment: null
       }
     }
   }
@@ -118,7 +128,8 @@ export default class LogEntryManagement extends React.Component<Props, State> {
       inputFieldMessage: nextProps.editLogEntry.message,
       inputFieldAssignments: nextProps.editLogEntry.assignments,
       selectorFieldLabelID: null,
-      inputFieldNewAssignmentName: ""
+      inputFieldNewAssignmentName: "",
+      editAssignment: null
     })
   }
 
@@ -320,11 +331,22 @@ export default class LogEntryManagement extends React.Component<Props, State> {
       this.setState({ inputFieldAssignments: newAssignments })
     }
 
+    const newHandlerEditAssignment =(assignment: LogAssignmentJSON) => () => {
+      this.setState({
+        editAssignment: assignment, 
+        inputFieldNewAssignmentName: assignment.name
+      })
+    }
+
     const items = this.state.inputFieldAssignments.map((assignment: LogAssignmentJSON) => {
       return (
         <ListItem>
-          <ListItemText primary={assignment.name} secondary={`position: ${assignment.position}`} />
+          <FormatListBulletedIcon color="action" />
+          <ListItemText primary={assignment.name} style={{"marginLeft": "1rem"}}/>
           <ListItemSecondaryAction>
+            <IconButton edge="end" aria-label="Edit" onClick={newHandlerEditAssignment(assignment)}>
+              <EditIcon />
+            </IconButton>
             <IconButton edge="end" aria-label="Delete" onClick={newHandlerDeleteAssignment(assignment)}>
               <DeleteIcon />
             </IconButton>
@@ -339,47 +361,90 @@ export default class LogEntryManagement extends React.Component<Props, State> {
   get editPanelNewAssignment() {
     const handleNewAssignmentSubmit = (ev: React.FormEvent<HTMLFormElement>) => {
       ev.preventDefault()
-      let newAssignments: LogAssignmentJSON[] = []
+      let newAssignmentList: LogAssignmentJSON[] = []
       if (Boolean(this.state.inputFieldAssignments)) {
-        newAssignments = [...this.state.inputFieldAssignments]
+        newAssignmentList = [...this.state.inputFieldAssignments]
       }
-      newAssignments.push({
-        position: newAssignments.length,
-        name: this.state.inputFieldNewAssignmentName,
-        completed: false
-      })
+      
+      if (this.state.editAssignment !== null) {
+        newAssignmentList[this.state.editAssignment.position].name = this.state.inputFieldNewAssignmentName
+        newAssignmentList[this.state.editAssignment.position].completed = false
+      } else {
+        newAssignmentList.push({
+          position: newAssignmentList.length,
+          name: this.state.inputFieldNewAssignmentName,
+          completed: false
+        })
+      }
 
       this.setState({
-        inputFieldAssignments: newAssignments,
-        inputFieldNewAssignmentName: ""
+        inputFieldAssignments: newAssignmentList,
+        inputFieldNewAssignmentName: "",
+        editAssignment: null
       })
     }
 
-    const handleNewAssignmentNameChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAssignmentNameTextFieldChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
       this.setState({
         inputFieldNewAssignmentName: ev.target.value
       })
     }
 
+    const handleClearEditAssignment = () => {
+      this.setState({ editAssignment: null, inputFieldNewAssignmentName: "" })
+    }
+
+    const gridItems: JSX.Element[] = [
+      <Grid item>
+        <TextField
+          style={{width: "500px"}}
+          label="Assignment Name"
+          value={this.state.inputFieldNewAssignmentName}
+          onChange={handleAssignmentNameTextFieldChange}
+          fullWidth
+          InputLabelProps={{ shrink: true }} />
+      </Grid>
+    ]
+
+    if (this.state.editAssignment !== null) {
+      gridItems.push(
+        <Grid item>
+          <Button variant="outlined" color="primary" type="submit" form="assignment-form"
+            style={{marginLeft: "0.5rem"}}>
+              Save Assignment {this.state.editAssignment.position}
+          </Button>
+        </Grid>
+      )
+    } else {
+      let newPosition: number = 0
+      if (this.state.inputFieldAssignments) {
+        newPosition = this.state.inputFieldAssignments.length
+      }
+      gridItems.push(
+        <Grid item>
+          <Button variant="outlined" color="primary" type="submit" form="assignment-form"
+            style={{marginLeft: "0.5rem"}}>
+              Add Assignment {newPosition}
+          </Button>
+        </Grid>
+      )
+    }
+
+    gridItems.push(
+      <Grid item>
+        <Button variant="outlined" color="secondary" onClick={handleClearEditAssignment}
+          disabled={this.state.editAssignment === null}
+          style={{marginLeft: "0.5rem"}}>
+            Clear
+        </Button>
+      </Grid>
+    )
+
     return (
       <form className="assignment-input" id="assignment-form" onSubmit={handleNewAssignmentSubmit}>
         <Grid container 
           direction="row" justify="flex-end" alignItems="flex-end" spacing={0} style={{ marginTop: "1rem "}}>
-          <Grid item>
-            <TextField
-            style={{width: "500px"}}
-            label="New Assignment Name"
-            value={this.state.inputFieldNewAssignmentName}
-            onChange={handleNewAssignmentNameChange}
-            fullWidth
-            InputLabelProps={{ shrink: true }} />
-          </Grid>
-          <Grid item>
-            <Button variant="outlined" color="primary" type="submit" form="assignment-form"
-              style={{marginLeft: "0.5rem"}}>
-                Add Assignment
-            </Button>
-          </Grid>
+          {gridItems}
         </Grid>
       </form>
     )
@@ -410,7 +475,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
                 console.log("update log entry with date", logEntry.date)
                 this.props.handleHTTPUpdateLogEntry(logEntry)
               }}>
-              Save
+              Save Entry
             </Button>
           </Grid>,
           <Grid item>
@@ -442,7 +507,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
                 console.log("create log entry with date", logEntry.date)
                 this.props.handleHTTPCreateLogEntry(logEntry)
               }}>
-              Add
+              New Entry
             </Button>
           </Grid>,
           <Grid item>
