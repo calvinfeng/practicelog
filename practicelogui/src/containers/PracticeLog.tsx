@@ -69,7 +69,6 @@ export default class PracticeLog extends React.Component<Props, State> {
   componentDidMount() {
     this.fetchLogEntriesByPage(this.state.pageNum)
     this.fetchLogLabels()
-    this.scrollToBottom()
   }
 
   /**
@@ -258,7 +257,8 @@ export default class PracticeLog extends React.Component<Props, State> {
           this.setState({
             alertShown: true,
             alertMessage: "Successfully created new log entry",
-            alertSeverity: "success"
+            alertSeverity: "success",
+            editLogEntry: null
           })
         }
       })
@@ -405,9 +405,9 @@ export default class PracticeLog extends React.Component<Props, State> {
 
   render() {
     const handleClearPopoverAnchorEl = () => this.setState({ popoverAnchor: null, viewLogEntry: null })
-    const handleSetLogEntryEdit = (log: LogEntryJSON) => this.setState({ editLogEntry: log })
-    const handleClearLogEntryEdit = () => this.setState({ editLogEntry: null })
-    const handleSetLogEntryViewAndAnchorEl = (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => {
+    const handleSetEditLogEntry = (log: LogEntryJSON) => this.setState({ editLogEntry: log })
+    const handleClearEditLogEntry = () => this.setState({ editLogEntry: null })
+    const handleSetViewLogEntryAndAnchorEl = (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => {
       this.setState({
         viewLogEntry: log,
         popoverAnchor: event.currentTarget 
@@ -431,14 +431,14 @@ export default class PracticeLog extends React.Component<Props, State> {
         <LogTable
           scrollToBottom={this.scrollToBottom}
           logEntries={this.state.logEntries} 
-          handleSetLogEntryViewAndAnchorEl={handleSetLogEntryViewAndAnchorEl}
-          handleSetLogEntryEdit={handleSetLogEntryEdit}
+          handleSetViewLogEntryAndAnchorEl={handleSetViewLogEntryAndAnchorEl}
+          handleSetEditLogEntry={handleSetEditLogEntry}
           handleHTTPDeleteLogEntry={this.handleHTTPDeleteLogEntry} />
         {this.PaginationControlPanel}
         <LogEntryManagement
           logLabels={this.state.logLabels} 
           editLogEntry={this.state.editLogEntry}
-          handleClearEditLogEntry={handleClearLogEntryEdit} 
+          handleClearEditLogEntry={handleClearEditLogEntry} 
           handleHTTPUpdateLogEntry={this.handleHTTPUpdateLogEntry}
           handleHTTPCreateLogEntry={this.handleHTTPCreateLogEntry} />
         <LogLabelManagement

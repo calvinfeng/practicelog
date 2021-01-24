@@ -444,6 +444,12 @@ export default class LogEntryManagement extends React.Component<Props, State> {
               }}>
               Add
             </Button>
+          </Grid>,
+          <Grid item>
+            <Button style={buttonStyle} variant="contained" color="secondary"
+              onClick={this.props.handleClearEditLogEntry}>
+              Cancel
+            </Button>
           </Grid>
         ]
         break

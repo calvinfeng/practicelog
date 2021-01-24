@@ -26,8 +26,8 @@ type Props = {
   logEntries: LogEntryJSON[]
   scrollToBottom: () => void
   handleHTTPDeleteLogEntry: (log: LogEntryJSON) => void
-  handleSetLogEntryEdit: (log: LogEntryJSON) => void
-  handleSetLogEntryViewAndAnchorEl: (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => void
+  handleSetEditLogEntry: (log: LogEntryJSON) => void
+  handleSetViewLogEntryAndAnchorEl: (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => void
 }
 
 function hasAllAssignmentCompleted(list: LogAssignmentJSON[]): boolean {
@@ -40,8 +40,10 @@ export default function LogTable(props: Props) {
   const tableRows: JSX.Element[] = []
   const cellStyle = { "padding": "5px" }
   const longCellStyle = { "padding": "5px", "width": "35%" }
+  
   const makeHandlerSetLogEdit = (log: LogEntryJSON) => () => {
-    props.handleSetLogEntryEdit(log)
+    props.handleSetEditLogEntry(log)
+    props.scrollToBottom()
   }
 
   const makeHandlerDeleteLogEntry = (log: LogEntryJSON) => () => {
@@ -57,12 +59,12 @@ export default function LogTable(props: Props) {
         assignment.completed = false
       })
     }
-    props.handleSetLogEntryEdit(copy)
+    props.handleSetEditLogEntry(copy)
     props.scrollToBottom()
   }
 
   const makeHandlerSetLogViewAndAssignment = (log: LogEntryJSON) => (event: React.MouseEvent<HTMLButtonElement>) => {
-    props.handleSetLogEntryViewAndAnchorEl(event, log)
+    props.handleSetViewLogEntryAndAnchorEl(event, log)
   }
   
   props.logEntries.forEach((log: LogEntryJSON) => {
