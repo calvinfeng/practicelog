@@ -58,6 +58,8 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 		return seedDB()
 	case "dump":
 		return dumpDB()
+	case "load":
+		return loadDB(args)
 	default:
 		return fmt.Errorf("%s is not a recognized command", args[0])
 	}

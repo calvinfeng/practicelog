@@ -347,7 +347,9 @@ func (s *store) BatchInsertLogLabels(labels ...*practicelog.Label) (int64, error
 		Columns("id", "username", "parent_id", "name")
 
 	for _, label := range labels {
-		label.ID = uuid.New()
+		if label.ID == uuid.Nil {
+			label.ID = uuid.New()
+		}
 		row := new(DBLogLabel).fromModel(label)
 		if row.ParentID == uuid.Nil {
 			query = query.Values(row.ID, row.Username, nil, row.Name)
@@ -376,7 +378,9 @@ func (s *store) BatchInsertLogEntries(entries ...*practicelog.Entry) (int64, err
 		Columns("association_id", "entry_id", "label_id")
 
 	for _, entry := range entries {
-		entry.ID = uuid.New()
+		if entry.ID == uuid.Nil {
+			entry.ID = uuid.New()
+		}
 		row := new(DBLogEntry).fromModel(entry)
 		entryInsertQ = entryInsertQ.Values(
 			row.ID, row.Username, row.Date, row.Duration, row.Message, row.Details, row.Assignments, row.TrelloID)
