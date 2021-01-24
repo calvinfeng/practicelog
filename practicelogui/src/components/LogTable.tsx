@@ -38,7 +38,7 @@ function hasAllAssignmentCompleted(list: LogAssignmentJSON[]): boolean {
 export default function LogTable(props: Props) {
   const tableRows: JSX.Element[] = []
   const cellStyle = { "padding": "5px" }
-
+  const longCellStyle = { "padding": "5px", "width": "35%" }
   const makeHandlerSetLogEdit = (log: LogEntryJSON) => () => {
     props.handleSetLogEntryEdit(log)
   }
@@ -78,9 +78,9 @@ export default function LogTable(props: Props) {
     tableRows.push(
       <TableRow>
         <TableCell style={cellStyle}>{log.date.toDateString()}</TableCell>
-        <TableCell style={cellStyle}>{log.duration} minutes</TableCell>
-        <TableCell style={cellStyle}>{labels}</TableCell>
-        <TableCell style={cellStyle}>{log.message}</TableCell>
+        <TableCell style={cellStyle}>{log.duration} mins</TableCell>
+        <TableCell style={longCellStyle}>{labels}</TableCell>
+        <TableCell style={longCellStyle}>{log.message}</TableCell>
         <TableCell style={cellStyle}>
         <IconButton color="primary" component="span" onClick={makeHandlerSetLogViewAndAssignment(log)}>
           {assignmentIcon}
