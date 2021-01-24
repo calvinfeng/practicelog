@@ -35,6 +35,7 @@ type State = {
 
 export default class PracticeLog extends React.Component<Props, State> {
   private http: AxiosInstance
+  private pageAnchor: HTMLDivElement | null
   constructor(props: Props) {
     super(props)
     this.state = {
@@ -56,6 +57,7 @@ export default class PracticeLog extends React.Component<Props, State> {
         "Authorization": props.IDToken
       }
     });
+    this.pageAnchor = null
   }
 
   componentDidUpdate(_: Props, prevState: State) {
@@ -67,6 +69,7 @@ export default class PracticeLog extends React.Component<Props, State> {
   componentDidMount() {
     this.fetchLogEntriesByPage(this.state.pageNum)
     this.fetchLogLabels()
+    this.scrollToBottom()
   }
 
   /**
@@ -350,6 +353,12 @@ export default class PracticeLog extends React.Component<Props, State> {
       })
   }
 
+  scrollToBottom = () => {
+    if (this.pageAnchor) {
+      this.pageAnchor.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
   get PaginationControlPanel() {
     const handlePrevPage = () => {
       this.setState({ pageNum: this.state.pageNum - 1 })
@@ -420,6 +429,7 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleClearAssignment={handleClearPopoverAnchorEl} 
           handleHTTPUpdateLogAssignments={this.handleHTTPUpdateLogAssignments} /> 
         <LogTable
+          scrollToBottom={this.scrollToBottom}
           logEntries={this.state.logEntries} 
           handleSetLogEntryViewAndAnchorEl={handleSetLogEntryViewAndAnchorEl}
           handleSetLogEntryEdit={handleSetLogEntryEdit}
@@ -441,6 +451,7 @@ export default class PracticeLog extends React.Component<Props, State> {
             {this.state.alertMessage}
           </Alert>
         </Snackbar>
+        <div ref={pageAnchor => { this.pageAnchor = pageAnchor; }} />  
       </section>
     )
   }

@@ -24,6 +24,7 @@ import FileCopyIcon from '@material-ui/icons/FileCopy';
 
 type Props = {
   logEntries: LogEntryJSON[]
+  scrollToBottom: () => void
   handleHTTPDeleteLogEntry: (log: LogEntryJSON) => void
   handleSetLogEntryEdit: (log: LogEntryJSON) => void
   handleSetLogEntryViewAndAnchorEl: (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => void
@@ -49,7 +50,15 @@ export default function LogTable(props: Props) {
 
   const makeHandlerSetLogCopy = (log: LogEntryJSON) => () => {
     const copy: LogEntryJSON = Object.assign({}, log, {id: ""})
+    copy.date = new Date()
+    if (copy.assignments) {
+      // Default assignment to be incompleted
+      copy.assignments.forEach((assignment) => {
+        assignment.completed = false
+      })
+    }
     props.handleSetLogEntryEdit(copy)
+    props.scrollToBottom()
   }
 
   const makeHandlerSetLogViewAndAssignment = (log: LogEntryJSON) => (event: React.MouseEvent<HTMLButtonElement>) => {
