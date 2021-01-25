@@ -293,7 +293,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
           step={5}
           marks={true}
           min={0}
-          max={120} />
+          max={180} />
       </section>
     )
   }
