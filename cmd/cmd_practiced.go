@@ -49,17 +49,9 @@ func practicedRuneE(_ *cobra.Command, args []string) error {
 		labelIDs = append(labelIDs, label.ID.String())
 	}
 
-	entries, err := store.SelectLogEntries(1000, 0, logstore.ByLabelIDs(labelIDs))
+	dur, err := store.SumDurationLogEntries(logstore.ByLabelIDList(labelIDs))
 	if err != nil {
 		return err
-	}
-	logrus.Infof("query returned %d log entries", len(entries))
-
-	var dur int32
-	for i := len(entries) - 1; i >= 0; i-- {
-		year, month, day := entries[i].Date.Date()
-		logrus.Infof("entry %04d-%02d-%02d %s", year, month, day, entries[i].Message)
-		dur += entries[i].Duration
 	}
 
 	logrus.Infof("total practiced time for %s: %d hours and %d minutes", args[0], dur/60, dur%60)

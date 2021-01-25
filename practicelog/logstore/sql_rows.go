@@ -93,3 +93,11 @@ type DBReadOnlyLogLabel struct {
 	EntryID  uuid.UUID `db:"entry_id"`
 	Name     string    `db:"name"`
 }
+
+type DBReadOnlyLogEntryDuration struct {
+	ID       uuid.UUID `db:"id"`
+	Date     time.Time `db:"date"`
+	Duration int32     `db:"duration"`
+	Message  string    `db:"message"`
+	Username string    `db:"username"`
+}

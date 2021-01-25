@@ -11,7 +11,7 @@ func ByID(id string) practicelog.SQLFilter {
 	}
 }
 
-func ByLabelIDs(ids []string) practicelog.SQLFilter {
+func ByLabelIDList(ids []string) practicelog.SQLFilter {
 	return func(eq squirrel.Eq) {
 		eq["label_id"] = ids
 	}

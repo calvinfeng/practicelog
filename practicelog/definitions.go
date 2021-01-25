@@ -67,5 +67,8 @@ type (
 		BatchInsertLogLabels(...*Label) (int64, error)
 		UpdateLogLabel(*Label) error
 		DeleteLogLabel(*Label) error
+
+		// Helpers
+		SumDurationLogEntries(...SQLFilter) (sum int32, err error)
 	}
 )
