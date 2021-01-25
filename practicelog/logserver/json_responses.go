@@ -19,3 +19,8 @@ type PracticeLogLabelListJSONResponse struct {
 type IDResponse struct {
 	ID uuid.UUID `json:"id"`
 }
+
+type PracticeLogLabelDurationResponse struct {
+	practicelog.Label
+	Duration int32 `json:"duration"`
+}
