@@ -101,10 +101,10 @@ export default function LogTable(props: Props) {
         </IconButton>
       )
     }
-
+    
     tableRows.push(
       <TableRow>
-        <TableCell style={cellStyle}>{log.date.toDateString()}</TableCell>
+        <TableCell style={cellStyle}>{formatDate(log.date)}</TableCell>
         <TableCell style={cellStyle}>{log.duration} mins</TableCell>
         <TableCell style={longCellStyle}>{labels}</TableCell>
         <TableCell style={longCellStyle}>{log.message}</TableCell>
@@ -142,4 +142,22 @@ export default function LogTable(props: Props) {
       </Table>
     </TableContainer>
   )
+}
+
+function formatDate(d: Date): string {
+  const parts = [`${d.getFullYear()}`]
+  
+  if (d.getMonth() < 9) {
+    parts.push(`0${d.getMonth()+1}`)
+  } else {
+    parts.push(`${d.getMonth()+1}`)
+  }
+
+  if (d.getDate() < 10) {
+    parts.push(`0${d.getDate()}`)
+  } else {
+    parts.push(`${d.getDate()}`)
+  }
+
+  return parts.join("-")
 }
