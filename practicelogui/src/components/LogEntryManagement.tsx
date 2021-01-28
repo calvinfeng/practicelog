@@ -543,3 +543,100 @@ export default class LogEntryManagement extends React.Component<Props, State> {
     )
   }
 }
+
+type AssignmentPanelProps = {
+  currentAssignmentList: LogAssignmentJSON[]
+  editingAssignment: LogAssignmentJSON | null
+
+  setAssignmentList: (list: LogAssignmentJSON[]) => void
+  clearEditingAssignment: () => void
+}
+
+function AssignmentPanel(props: AssignmentPanelProps) {
+
+  const [newAssignmentName, setNewAssignmentName] = React.useState("")
+
+  const handleFormSubmitAssignment = (ev: React.FormEvent<HTMLFormElement>) => {
+    ev.preventDefault()
+    let newAssignmentList: LogAssignmentJSON[] = []
+    if (Boolean(props.currentAssignmentList)) {
+      newAssignmentList = [...props.currentAssignmentList]
+    }
+    
+    if (props.editingAssignment !== null) {
+      newAssignmentList[props.editingAssignment.position].name = newAssignmentName
+      newAssignmentList[props.editingAssignment.position].completed = false
+    } else {
+      newAssignmentList.push({
+        position: newAssignmentList.length,
+        name: newAssignmentName,
+        completed: false
+      })
+    }
+
+    setNewAssignmentName("")
+    props.setAssignmentList(newAssignmentList)
+    props.clearEditingAssignment()
+  }
+
+  const handleTFChangeAssignmentName = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    setNewAssignmentName(ev.target.value)
+  }
+
+  const gridItems: JSX.Element[] = [
+    <Grid item>
+      <TextField
+        style={{width: "500px"}}
+        label="Assignment Name"
+        value={newAssignmentName}
+        onChange={handleTFChangeAssignmentName}
+        fullWidth
+        InputLabelProps={{ shrink: true }} />
+    </Grid>
+  ]
+
+  if (props.editingAssignment !== null) {
+    gridItems.push(
+      <Grid item>
+        <Button variant="outlined" color="primary" type="submit" form="assignment-form"
+          style={{marginLeft: "0.5rem"}}>
+            Save Assignment {props.editingAssignment.position}
+        </Button>
+      </Grid>
+    )
+  } else {
+    let newPosition: number = 0
+    if (props.currentAssignmentList) {
+      newPosition = props.currentAssignmentList.length
+    }
+
+    gridItems.push(
+      <Grid item>
+        <Button variant="outlined" color="primary" type="submit" form="assignment-form"
+          style={{marginLeft: "0.5rem"}}>
+            Add Assignment {newPosition}
+        </Button>
+      </Grid>
+    )
+  }
+
+  gridItems.push(
+    <Grid item>
+      <Button variant="outlined" color="secondary"
+        onClick={props.clearEditingAssignment}
+        disabled={props.editingAssignment === null}
+        style={{marginLeft: "0.5rem"}}>
+          Clear
+      </Button>
+    </Grid>
+  )
+
+  return (
+    <form className="assignment-text-input" id="assignment-form" onSubmit={handleFormSubmitAssignment}>
+      <Grid container 
+        direction="row" justify="flex-end" alignItems="flex-end" spacing={0} style={{ marginTop: "1rem "}}>
+        {gridItems}
+      </Grid>
+    </form>
+  )
+}
