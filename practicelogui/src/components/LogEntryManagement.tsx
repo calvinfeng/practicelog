@@ -207,30 +207,30 @@ export default class LogEntryManagement extends React.Component<Props, State> {
       if (this.state.selectorFieldLabelID === null) {
         return
       }
-  
+
       if (this.isLabelSelectedAlready(this.state.selectorFieldLabelID)) {
         return
       }
-  
+
       const newInputFieldLabels = [...this.state.inputFieldLabels]
-  
+
       const labelToAdd = this.findLabelFromProps(this.state.selectorFieldLabelID)
       if (labelToAdd) {
         newInputFieldLabels.push(labelToAdd)
       }
-      
-      if (labelToAdd && 
+
+      if (labelToAdd &&
           labelToAdd.parent_id !== null &&
           !this.isLabelSelectedAlready(labelToAdd.parent_id)
       ) {
           const parentToAdd = this.findLabelFromProps(labelToAdd.parent_id)
           if (parentToAdd) {
             newInputFieldLabels.push(parentToAdd)
-          }      
+          }
         }
       this.setState({ inputFieldLabels: newInputFieldLabels })
     }
-     
+
     const handleSelectorFieldLabelChange = (ev: React.ChangeEvent<{ name?: string; value: unknown }>) => {
       this.setState({
         selectorFieldLabelID: ev.target.value as string
@@ -365,7 +365,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
       if (Boolean(this.state.inputFieldAssignments)) {
         newAssignmentList = [...this.state.inputFieldAssignments]
       }
-      
+
       if (this.state.editAssignment !== null) {
         newAssignmentList[this.state.editAssignment.position].name = this.state.inputFieldNewAssignmentName
         newAssignmentList[this.state.editAssignment.position].completed = false
@@ -460,12 +460,12 @@ export default class LogEntryManagement extends React.Component<Props, State> {
             <Button style={buttonStyle} variant="contained" color="primary" startIcon={<SaveIcon />}
               onClick={ () => {
                 const logEntry: LogEntryJSON = {
-                  id: this.state.inputFieldLogID as string, 
-                  user_id: "calvin.j.feng@gmail.com",  
+                  id: this.state.inputFieldLogID as string,
+                  user_id: "calvin.j.feng@gmail.com",
                   date: new Date(),
                   duration: this.state.inputFieldDuration,
                   message: this.state.inputFieldMessage,
-                  labels: this.state.inputFieldLabels, 
+                  labels: this.state.inputFieldLabels,
                   assignments: this.state.inputFieldAssignments,
                   details: "",
                 }
@@ -645,7 +645,7 @@ type AssignmentListViewProps = {
   currentAssignmentList: LogAssignmentJSON[]
 
   setInputFieldAssignmentName: (name: string) => void
-  
+
   setAssignmentList: (list: LogAssignmentJSON[]) => void
   setEditingAssignment: (assignment: LogAssignmentJSON) => void
 }

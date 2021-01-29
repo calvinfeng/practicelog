@@ -40,7 +40,7 @@ export default function LogTable(props: Props) {
   const tableRows: JSX.Element[] = []
   const cellStyle = { "padding": "5px" }
   const longCellStyle = { "padding": "5px", "width": "35%" }
-  
+
   const makeHandlerSetLogEdit = (log: LogEntryJSON) => () => {
     props.handleSetEditLogEntry(log)
     props.scrollToBottom()
@@ -66,7 +66,7 @@ export default function LogTable(props: Props) {
   const makeHandlerSetLogViewAndAssignment = (log: LogEntryJSON) => (event: React.MouseEvent<HTMLButtonElement>) => {
     props.handleSetViewLogEntryAndAnchorEl(event, log)
   }
-  
+
   props.logEntries.forEach((log: LogEntryJSON) => {
     const chipStyle = { "margin": "0.1rem" }
 
