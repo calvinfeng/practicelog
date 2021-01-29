@@ -544,7 +544,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
   }
 }
 
-type AssignmentPanelProps = {
+type AssignmentTextInputProps = {
   currentAssignmentList: LogAssignmentJSON[]
   editingAssignment: LogAssignmentJSON | null
 
@@ -552,7 +552,7 @@ type AssignmentPanelProps = {
   clearEditingAssignment: () => void
 }
 
-function AssignmentPanel(props: AssignmentPanelProps) {
+function AssignmentTextInput(props: AssignmentTextInputProps) {
 
   const [newAssignmentName, setNewAssignmentName] = React.useState("")
 
@@ -639,4 +639,54 @@ function AssignmentPanel(props: AssignmentPanelProps) {
       </Grid>
     </form>
   )
+}
+
+type AssignmentListViewProps = {
+  currentAssignmentList: LogAssignmentJSON[]
+
+  setInputFieldAssignmentName: (name: string) => void
+  
+  setAssignmentList: (list: LogAssignmentJSON[]) => void
+  setEditingAssignment: (assignment: LogAssignmentJSON) => void
+}
+
+function AssigmentListView(props: AssignmentListViewProps) {
+  if (!Boolean(props.currentAssignmentList)) {
+    return <List dense={false}></List>
+  }
+
+  // Optional Input: event: React.MouseEvent<HTMLButtonElement, MouseEvent> for button
+  const newHandlerDeleteAssignment = (assignment: LogAssignmentJSON) => () => {
+    const newAssignmentList = [...props.currentAssignmentList]
+    newAssignmentList.splice(assignment.position, 1)
+    for (let i = 0; i < newAssignmentList.length; i++) {
+      newAssignmentList[i].position = i
+    }
+
+    props.setAssignmentList(newAssignmentList)
+  }
+
+  const newHandlerEditAssignment =(assignment: LogAssignmentJSON) => () => {
+    props.setEditingAssignment(assignment)
+    props.setInputFieldAssignmentName(assignment.name)
+  }
+
+  const items = props.currentAssignmentList.map((assignment: LogAssignmentJSON) => {
+    return (
+      <ListItem>
+        <FormatListBulletedIcon color="action" />
+        <ListItemText primary={assignment.name} style={{"marginLeft": "1rem"}}/>
+        <ListItemSecondaryAction>
+          <IconButton edge="end" aria-label="Edit" onClick={newHandlerEditAssignment(assignment)}>
+            <EditIcon />
+          </IconButton>
+          <IconButton edge="end" aria-label="Delete" onClick={newHandlerDeleteAssignment(assignment)}>
+            <DeleteIcon />
+          </IconButton>
+        </ListItemSecondaryAction>
+      </ListItem>
+    )
+  })
+
+  return <List dense={false}>{items}</List>
 }
