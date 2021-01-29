@@ -18,7 +18,7 @@ export default function DateSelector(props: Props) {
   }
 
   return (
-    <section className="edit-panel-date">
+    <section className="date-selector">
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <KeyboardDatePicker
         value={props.inputDate}
