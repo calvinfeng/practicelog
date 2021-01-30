@@ -26,7 +26,7 @@ export default function LabelSelector(props: Props) {
 
   const [selectedLabelID, setSelectLabelID] = React.useState<string | null>(null)
 
-  if (props.inputLabelList.length === 0) {
+  if (props.logLabels.length === 0) {
     return <Typography>Create a Label</Typography>
   }
 

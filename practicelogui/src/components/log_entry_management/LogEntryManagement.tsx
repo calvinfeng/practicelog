@@ -122,7 +122,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
     this.setState({ inputMessage: value })
   }
 
-  handleRemoveFromInputLabelList = (labelID: string) => () => {
+  handleRemoveFromInputLabelList = (labelID: string) => {
     this.setState({
       inputLabelList: this.state.inputLabelList.filter((label: LogLabelJSON) => {
        return label.id !== labelID

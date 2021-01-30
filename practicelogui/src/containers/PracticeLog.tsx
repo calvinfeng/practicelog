@@ -12,7 +12,7 @@ import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 
 import { LogEntryJSON, LogLabelJSON } from '../shared/type_definitions'
 import LogTable from '../components/LogTable'
-import LogEntryManagement from '../components/LogEntryManagement'
+import LogEntryManagement from '../components/log_entry_management/LogEntryManagement'
 import LogLabelManagement from '../components/LogLabelManagement'
 import AssignmentChecklistPopover from '../components/AssignmentChecklistPopover'
 
@@ -437,7 +437,7 @@ export default class PracticeLog extends React.Component<Props, State> {
         {this.PaginationControlPanel}
         <LogEntryManagement
           logLabels={this.state.logLabels} 
-          editLogEntry={this.state.editLogEntry}
+          selectedLogEntry={this.state.editLogEntry}
           handleClearEditLogEntry={handleClearEditLogEntry} 
           handleHTTPUpdateLogEntry={this.handleHTTPUpdateLogEntry}
           handleHTTPCreateLogEntry={this.handleHTTPCreateLogEntry} />

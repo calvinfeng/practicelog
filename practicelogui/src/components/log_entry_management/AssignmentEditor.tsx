@@ -38,23 +38,26 @@ export default function AssignmentEditor(props: Props) {
     setTextFieldAssignmentName(assignment.name)
   }
 
-  const assignmentListItems = props.inputAssignmentList.map((assignment: LogAssignmentJSON) => {
-    return (
-      <ListItem>
-        <FormatListBulletedIcon color="action" />
-        <ListItemText primary={assignment.name} style={{"marginLeft": "1rem"}}/>
-        <ListItemSecondaryAction>
-          <IconButton edge="end" aria-label="Edit" onClick={makeHandlerEditAssignment(assignment)}>
-            <EditIcon />
-          </IconButton>
-          <IconButton edge="end" aria-label="Delete" onClick={makeHandlerDeleteAssignment(assignment)}>
-            <DeleteIcon />
-          </IconButton>
-        </ListItemSecondaryAction>
-      </ListItem>
-    )
-  })
-  
+  let assignmentListItems: JSX.Element[] = []
+  if (props.inputAssignmentList) {
+    assignmentListItems = props.inputAssignmentList.map((assignment: LogAssignmentJSON) => {
+      return (
+        <ListItem>
+          <FormatListBulletedIcon color="action" />
+          <ListItemText primary={assignment.name} style={{"marginLeft": "1rem"}}/>
+          <ListItemSecondaryAction>
+            <IconButton edge="end" aria-label="Edit" onClick={makeHandlerEditAssignment(assignment)}>
+              <EditIcon />
+            </IconButton>
+            <IconButton edge="end" aria-label="Delete" onClick={makeHandlerDeleteAssignment(assignment)}>
+              <DeleteIcon />
+            </IconButton>
+          </ListItemSecondaryAction>
+        </ListItem>
+      )
+    })
+  }
+
   const handleFormSubmitAssignment = (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault()
     let newAssignmentList: LogAssignmentJSON[] = []
