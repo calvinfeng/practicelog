@@ -19,17 +19,17 @@ export default function DateSelector(props: Props) {
 
   return (
     <section className="date-selector">
-    <MuiPickersUtilsProvider utils={DateFnsUtils}>
-      <KeyboardDatePicker
-        value={props.inputDate}
-        disableToolbar
-        variant="inline"
-        format="MM/dd/yyyy"
-        margin="normal"
-        label="Date"
-        animateYearScrolling={true}
-        onChange={handleDateChange} />
-    </MuiPickersUtilsProvider>
-  </section>
+      <MuiPickersUtilsProvider utils={DateFnsUtils}>
+        <KeyboardDatePicker
+          value={props.inputDate}
+          disableToolbar
+          variant="inline"
+          format="MM/dd/yyyy"
+          margin="normal"
+          label="Date"
+          animateYearScrolling={true}
+          onChange={handleDateChange} />
+      </MuiPickersUtilsProvider>
+    </section>
   )
 }

@@ -5,6 +5,7 @@ import { LogAssignmentJSON, LogEntryJSON, LogLabelJSON } from '../../shared/type
 import { Paper } from '@material-ui/core'
 import DateSelector from './DateSelector'
 import LabelSelector from './LabelSelector'
+import DurationSelector from './DurationSelector'
 
 enum Mode {
   EditEntry = "EDIT_ENTRY",
@@ -108,16 +109,20 @@ export default class LogEntryManagement extends React.Component<Props, State> {
     })
   }
 
-  handleSetInputDate = (date: Date | null) => {
-    this.setState({ inputDate: date })
+  handleSetInputDate = (value: Date | null) => {
+    this.setState({ inputDate: value })
   }
 
-  handleSetInputLabelList = (list:  LogLabelJSON[]) => {
-    this.setState({ inputLabelList: list })
+  handleSetInputDuration = (value: number) => {
+    this.setState({ inputDuration: value})
   }
 
-  handleSetSelectedLabelID = (id: string | null) => {
-    this.setState({ selectedLabelID: id })
+  handleSetInputLabelList = (value:  LogLabelJSON[]) => {
+    this.setState({ inputLabelList: value })
+  }
+
+  handleSetSelectedLabelID = (value: string | null) => {
+    this.setState({ selectedLabelID: value })
   }
 
   handleRemoveFromInputLabelList = (labelID: string) => () => {
@@ -151,6 +156,9 @@ export default class LogEntryManagement extends React.Component<Props, State> {
           setInputLabelList={this.handleSetInputLabelList}
           selectedLabelID={this.state.selectedLabelID}
           setSelectLabelID={this.handleSetSelectedLabelID} />
+        <DurationSelector
+          inputDuration={this.state.inputDuration}
+          setInputDuration={this.handleSetInputDuration} />
       </Paper>
     )
   }

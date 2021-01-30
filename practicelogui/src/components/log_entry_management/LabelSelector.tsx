@@ -1,10 +1,15 @@
-import { MenuItem } from "@material-ui/core"
-import { Button } from "@material-ui/core"
-import { FormControl } from "@material-ui/core"
-import { Chip, Grid, Typography, InputLabel, Select} from "@material-ui/core"
+import React from "react"
+import {
+  Button,
+  FormControl,
+  Chip,
+  Grid,
+  Typography,
+  InputLabel,
+  Select,
+  MenuItem } from "@material-ui/core"
 import MusicNote from "@material-ui/icons/MusicNote"
 import AddIcon from '@material-ui/icons/Add'
-import React from "react"
 import { LogLabelJSON } from "../../shared/type_definitions"
 
 type Props = {
@@ -88,7 +93,7 @@ export default function LabelSelector(props: Props) {
   })
 
   return (
-    <section className="edit-panel-labels">
+    <section className="label-selector">
       <Grid direction="row" justify="flex-start" alignItems="center" container spacing={0}>
         {chips}
       </Grid>
