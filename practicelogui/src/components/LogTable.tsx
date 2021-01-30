@@ -101,7 +101,7 @@ export default function LogTable(props: Props) {
         </IconButton>
       )
     }
-    
+
     tableRows.push(
       <TableRow>
         <TableCell style={cellStyle}>{formatDate(log.date)}</TableCell>
@@ -123,7 +123,7 @@ export default function LogTable(props: Props) {
       </TableRow>
     )
   })
-  
+
   return (
     <TableContainer className="LogTable" component={Paper}>
       <Table>

@@ -10,14 +10,15 @@ import { LogLabelJSON } from "../../shared/type_definitions"
 type Props = {
   logLabels: LogLabelJSON[] // All log labels
 
-  removeLabelFromList: (id: string) => void
-  setInputLabelList: (list: LogLabelJSON[]) => void
-  setInEditLabelID: (id: string | null) => void
+  removeFromInputLabelList: (id: string) => void
 
-  inEditLabelID: string | null
   inputLabelList: LogLabelJSON[]
+  setInputLabelList: (list: LogLabelJSON[]) => void
+
+  selectedLabelID: string | null
+  setSelectLabelID: (id: string | null) => void
 }
-  
+
 export default function LabelSelector(props: Props) {
 
   if (props.inputLabelList.length === 0) {
@@ -37,26 +38,26 @@ export default function LabelSelector(props: Props) {
     )
   }
 
-  const makeHandlerRemoveLabelFromList = (labelID: string) => () => {
-    props.removeLabelFromList(labelID)
+  const makeHandlerRemoveFromInputLabelList = (labelID: string) => () => {
+    props.removeFromInputLabelList(labelID)
   }
 
-  const handleSelectOnChange = (ev: React.ChangeEvent<{ name?: string; value: unknown }>) => {
-    props.setInEditLabelID(ev.target.value as string)
+  const handleOnChange = (ev: React.ChangeEvent<{ name?: string; value: unknown }>) => {
+    props.setSelectLabelID(ev.target.value as string)
   }
 
   const handleAddLabel = () => {
-    if (props.inEditLabelID === null) {
+    if (props.selectedLabelID === null) {
       return
     }
 
-    if (isLabelSelectedAlready(props.inEditLabelID)) {
+    if (isLabelSelectedAlready(props.selectedLabelID)) {
       return
     }
 
     const newInputLabelList = [...props.inputLabelList]
 
-    const labelToAdd = findLabelFromProps(props.inEditLabelID)
+    const labelToAdd = findLabelFromProps(props.selectedLabelID)
     if (labelToAdd) {
       newInputLabelList.push(labelToAdd)
     }
@@ -76,12 +77,12 @@ export default function LabelSelector(props: Props) {
   const chips = props.inputLabelList.map((label: LogLabelJSON) => {
     return (
       <Grid item>
-        <Chip 
+        <Chip
           style={{ margin: "0.1rem" }}
           label={label.name}
           icon={<MusicNote />}
           color="primary"
-          onDelete={makeHandlerRemoveLabelFromList(label.id)} />
+          onDelete={makeHandlerRemoveFromInputLabelList(label.id)} />
       </Grid>
     )
   })
@@ -98,15 +99,15 @@ export default function LabelSelector(props: Props) {
             <Select
               labelId="label-selector-label"
               id="label-selector"
-              value={props.inEditLabelID}
-              onChange={handleSelectOnChange}>
+              value={props.selectedLabelID}
+              onChange={handleOnChange}>
                 {props.logLabels.map((label: LogLabelJSON) => {
                   return <MenuItem value={label.id}>
                     {label.name}
                   </MenuItem>
                 })}
             </Select>
-        </FormControl>  
+        </FormControl>
         </Grid>
         <Grid item>
           <Button

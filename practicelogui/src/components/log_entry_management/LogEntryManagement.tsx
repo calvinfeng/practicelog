@@ -4,6 +4,7 @@ import { Typography } from '@material-ui/core'
 import { LogAssignmentJSON, LogEntryJSON, LogLabelJSON } from '../../shared/type_definitions'
 import { Paper } from '@material-ui/core'
 import DateSelector from './DateSelector'
+import LabelSelector from './LabelSelector'
 
 enum Mode {
   EditEntry = "EDIT_ENTRY",
@@ -11,8 +12,13 @@ enum Mode {
 }
 
 type Props = {
+  // Prefix selected means the current entity is selected for modification.
+  // The assumption is that the entity already exists.
+  selectedLogEntry: LogEntryJSON | null
+
+  // Collection of all labels
   logLabels: LogLabelJSON[]
-  inEditLogEntry: LogEntryJSON | null
+
   handleClearEditLogEntry: () => void
   handleHTTPCreateLogEntry: (logEntry: LogEntryJSON) => void
   handleHTTPUpdateLogEntry: (logEntry: LogEntryJSON) => void
@@ -30,11 +36,11 @@ type State = {
   inputAssignmentName: string
   inputLabelList: LogLabelJSON[]
   inputAssignmentList: LogAssignmentJSON[]
-  
-  // Prefix in-edit means the current entity is being modified.
+
+  // Prefix selected means the current entity is selected for modification.
   // The assumption is that the entity already exists.
-  inEditLabelID: string | null
-  inEditAssignment: LogAssignmentJSON | null
+  selectedLabelID: string | null
+  selectedAssignment: LogAssignmentJSON | null
 }
 
 const defaultState: State = {
@@ -46,59 +52,59 @@ const defaultState: State = {
   inputAssignmentName: "",
   inputLabelList: [],
   inputAssignmentList: [],
-  inEditLabelID: null,
-  inEditAssignment: null
+  selectedLabelID: null,
+  selectedAssignment: null
 }
 
 export default class LogEntryManagement extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    if (props.inEditLogEntry == null) {
+    if (props.selectedLogEntry == null) {
       this.state = defaultState
     } else {
-      // If inEditLogEntry has a nil ID, we are creating a new entry.
+      // If selectedLogEntry has a nil ID, we are creating a new entry.
       let mode: Mode = Mode.EditEntry
-      if (props.inEditLogEntry.id.length === 0) {
+      if (props.selectedLogEntry.id.length === 0) {
         mode = Mode.NewEntry
       }
 
       this.state = {
         mode: mode,
-        inputID: props.inEditLogEntry.id,
-        inputDate: props.inEditLogEntry.date,
-        inputDuration: props.inEditLogEntry.duration,
-        inputMessage: props.inEditLogEntry.message,
+        inputID: props.selectedLogEntry.id,
+        inputDate: props.selectedLogEntry.date,
+        inputDuration: props.selectedLogEntry.duration,
+        inputMessage: props.selectedLogEntry.message,
         inputAssignmentName: "",
-        inputLabelList: props.inEditLogEntry.labels,
-        inputAssignmentList: props.inEditLogEntry.assignments,
-        inEditLabelID: null,
-        inEditAssignment: null
+        inputLabelList: props.selectedLogEntry.labels,
+        inputAssignmentList: props.selectedLogEntry.assignments,
+        selectedLabelID: null,
+        selectedAssignment: null
       }
     }
   }
 
   componentWillReceiveProps(nextProps: Props) {
-    if (nextProps.inEditLogEntry === null) {
+    if (nextProps.selectedLogEntry === null) {
       this.setState(defaultState)
       return
     }
 
     let mode: Mode = Mode.EditEntry
-    if (nextProps.inEditLogEntry.id.length === 0) {
+    if (nextProps.selectedLogEntry.id.length === 0) {
       mode = Mode.NewEntry
     }
 
     this.setState({
       mode: mode,
-      inputID: nextProps.inEditLogEntry.id,
-      inputDate: nextProps.inEditLogEntry.date,
-      inputDuration: nextProps.inEditLogEntry.duration,
-      inputMessage: nextProps.inEditLogEntry.message,
+      inputID: nextProps.selectedLogEntry.id,
+      inputDate: nextProps.selectedLogEntry.date,
+      inputDuration: nextProps.selectedLogEntry.duration,
+      inputMessage: nextProps.selectedLogEntry.message,
       inputAssignmentName: "",
-      inputLabelList: nextProps.inEditLogEntry.labels,
-      inputAssignmentList: nextProps.inEditLogEntry.assignments,
-      inEditLabelID: null,
-      inEditAssignment: null
+      inputLabelList: nextProps.selectedLogEntry.labels,
+      inputAssignmentList: nextProps.selectedLogEntry.assignments,
+      selectedLabelID: null,
+      selectedAssignment: null
     })
   }
 
@@ -106,12 +112,28 @@ export default class LogEntryManagement extends React.Component<Props, State> {
     this.setState({ inputDate: date })
   }
 
+  handleSetInputLabelList = (list:  LogLabelJSON[]) => {
+    this.setState({ inputLabelList: list })
+  }
+
+  handleSetSelectedLabelID = (id: string | null) => {
+    this.setState({ selectedLabelID: id })
+  }
+
+  handleRemoveFromInputLabelList = (labelID: string) => () => {
+    this.setState({
+      inputLabelList: this.state.inputLabelList.filter((label: LogLabelJSON) => {
+       return label.id !== labelID
+     })
+    })
+  }
+
   get header() {
     switch(this.state.mode) {
       case Mode.EditEntry:
         return <Typography variant="h5">Edit Log Entry {this.state.inputID}</Typography>
       case Mode.NewEntry:
-        return <Typography variant="h5">Add Log Entry</Typography>  
+        return <Typography variant="h5">Add Log Entry</Typography>
     }
   }
 
@@ -122,6 +144,13 @@ export default class LogEntryManagement extends React.Component<Props, State> {
         <DateSelector
           inputDate={this.state.inputDate}
           setInputDate={this.handleSetInputDate} />
+        <LabelSelector
+          logLabels={this.props.logLabels}
+          removeFromInputLabelList={this.handleRemoveFromInputLabelList}
+          inputLabelList={this.state.inputLabelList}
+          setInputLabelList={this.handleSetInputLabelList}
+          selectedLabelID={this.state.selectedLabelID}
+          setSelectLabelID={this.handleSetSelectedLabelID} />
       </Paper>
     )
   }

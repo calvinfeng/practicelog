@@ -4,7 +4,7 @@ import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker
 } from '@material-ui/pickers'
-import { 
+import {
   Grid,
   Chip,
   Typography,
@@ -187,7 +187,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
        inputFieldLabels: this.state.inputFieldLabels.filter((label: LogLabelJSON) => {
          return label.id !== labelID
        })
-      }) 
+      })
     }
 
     const chips = this.state.inputFieldLabels.map((label: LogLabelJSON) => {
@@ -257,7 +257,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
                     </MenuItem>
                   })}
               </Select>
-          </FormControl>  
+          </FormControl>
           </Grid>
           <Grid item>
             <Button
