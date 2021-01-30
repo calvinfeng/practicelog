@@ -1,11 +1,17 @@
 import React from 'react'
-import { Typography } from '@material-ui/core'
+import {
+  Typography,
+  Paper } from '@material-ui/core'
+import {
+  LogAssignmentJSON,
+  LogEntryJSON,
+  LogLabelJSON } from '../../shared/type_definitions'
 
-import { LogAssignmentJSON, LogEntryJSON, LogLabelJSON } from '../../shared/type_definitions'
-import { Paper } from '@material-ui/core'
 import DateSelector from './DateSelector'
 import LabelSelector from './LabelSelector'
 import DurationSelector from './DurationSelector'
+import MessageTextField from './MessageTextField'
+import AssignmentEditor from './AssignmentEditor'
 
 enum Mode {
   EditEntry = "EDIT_ENTRY",
@@ -34,7 +40,6 @@ type State = {
   inputDate: Date | null
   inputDuration: number
   inputMessage: string
-  inputAssignmentName: string
   inputLabelList: LogLabelJSON[]
   inputAssignmentList: LogAssignmentJSON[]
 
@@ -50,7 +55,6 @@ const defaultState: State = {
   inputDate: new Date(),
   inputDuration: 0,
   inputMessage: "",
-  inputAssignmentName: "",
   inputLabelList: [],
   inputAssignmentList: [],
   selectedLabelID: null,
@@ -75,7 +79,6 @@ export default class LogEntryManagement extends React.Component<Props, State> {
         inputDate: props.selectedLogEntry.date,
         inputDuration: props.selectedLogEntry.duration,
         inputMessage: props.selectedLogEntry.message,
-        inputAssignmentName: "",
         inputLabelList: props.selectedLogEntry.labels,
         inputAssignmentList: props.selectedLogEntry.assignments,
         selectedLabelID: null,
@@ -101,7 +104,6 @@ export default class LogEntryManagement extends React.Component<Props, State> {
       inputDate: nextProps.selectedLogEntry.date,
       inputDuration: nextProps.selectedLogEntry.duration,
       inputMessage: nextProps.selectedLogEntry.message,
-      inputAssignmentName: "",
       inputLabelList: nextProps.selectedLogEntry.labels,
       inputAssignmentList: nextProps.selectedLogEntry.assignments,
       selectedLabelID: null,
@@ -120,9 +122,21 @@ export default class LogEntryManagement extends React.Component<Props, State> {
   handleSetInputLabelList = (value:  LogLabelJSON[]) => {
     this.setState({ inputLabelList: value })
   }
+  
+  handleSetInputAssignmentList = (value: LogAssignmentJSON[]) => {
+    this.setState({ inputAssignmentList: value})
+  }
 
   handleSetSelectedLabelID = (value: string | null) => {
     this.setState({ selectedLabelID: value })
+  }
+
+  handleSetSelectedAssignment = (value: LogAssignmentJSON | null) => {
+    this.setState({ selectedAssignment: value })
+  }
+
+  handleSetInputMessage = (value: string) => {
+    this.setState({ inputMessage: value })
   }
 
   handleRemoveFromInputLabelList = (labelID: string) => () => {
@@ -159,6 +173,12 @@ export default class LogEntryManagement extends React.Component<Props, State> {
         <DurationSelector
           inputDuration={this.state.inputDuration}
           setInputDuration={this.handleSetInputDuration} />
+        <MessageTextField
+          inputMessage={this.state.inputMessage}
+          setInputMessage={this.handleSetInputMessage} />
+        <AssignmentEditor
+          inputAssignmentList={this.state.inputAssignmentList}
+          setInputAssignmentList={this.handleSetInputAssignmentList} />
       </Paper>
     )
   }
