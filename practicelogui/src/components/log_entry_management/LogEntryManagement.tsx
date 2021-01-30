@@ -46,7 +46,6 @@ type State = {
   // Prefix selected means the current entity is selected for modification.
   // The assumption is that the entity already exists.
   selectedLabelID: string | null
-  selectedAssignment: LogAssignmentJSON | null
 }
 
 const defaultState: State = {
@@ -58,7 +57,6 @@ const defaultState: State = {
   inputLabelList: [],
   inputAssignmentList: [],
   selectedLabelID: null,
-  selectedAssignment: null
 }
 
 export default class LogEntryManagement extends React.Component<Props, State> {
@@ -82,7 +80,6 @@ export default class LogEntryManagement extends React.Component<Props, State> {
         inputLabelList: props.selectedLogEntry.labels,
         inputAssignmentList: props.selectedLogEntry.assignments,
         selectedLabelID: null,
-        selectedAssignment: null
       }
     }
   }
@@ -107,7 +104,6 @@ export default class LogEntryManagement extends React.Component<Props, State> {
       inputLabelList: nextProps.selectedLogEntry.labels,
       inputAssignmentList: nextProps.selectedLogEntry.assignments,
       selectedLabelID: null,
-      selectedAssignment: null
     })
   }
 
@@ -127,16 +123,12 @@ export default class LogEntryManagement extends React.Component<Props, State> {
     this.setState({ inputAssignmentList: value})
   }
 
-  handleSetSelectedLabelID = (value: string | null) => {
-    this.setState({ selectedLabelID: value })
-  }
-
-  handleSetSelectedAssignment = (value: LogAssignmentJSON | null) => {
-    this.setState({ selectedAssignment: value })
-  }
-
   handleSetInputMessage = (value: string) => {
     this.setState({ inputMessage: value })
+  }
+
+  handleSetSelectedLabelID = (value: string | null) => {
+    this.setState({ selectedLabelID: value })
   }
 
   handleRemoveFromInputLabelList = (labelID: string) => () => {
