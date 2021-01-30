@@ -5,7 +5,8 @@ import {
 import {
   LogAssignmentJSON,
   LogEntryJSON,
-  LogLabelJSON } from '../../shared/type_definitions'
+  LogLabelJSON, 
+  Mode } from '../../shared/type_definitions'
 
 import DateSelector from './DateSelector'
 import LabelSelector from './LabelSelector'
@@ -14,11 +15,7 @@ import MessageEditor from './MessageEditor'
 import AssignmentEditor from './AssignmentEditor'
 
 import './LogEntryManagement.scss'
-
-enum Mode {
-  EditEntry = "EDIT_ENTRY",
-  NewEntry = "NEW_ENTRY"
-}
+import Submission from './Submission'
 
 type Props = {
   // Prefix selected means the current entity is selected for modification.
@@ -160,6 +157,17 @@ export default class LogEntryManagement extends React.Component<Props, State> {
         <AssignmentEditor
           inputAssignmentList={this.state.inputAssignmentList}
           setInputAssignmentList={this.handleSetInputAssignmentList} />
+        <Submission 
+          mode={this.state.mode}
+          inputID={this.state.inputID}
+          inputDate={this.state.inputDate}
+          inputDuration={this.state.inputDuration}
+          inputMessage={this.state.inputMessage}
+          inputLabelList={this.state.inputLabelList}
+          inputAssignmentList={this.state.inputAssignmentList}
+          handleHTTPUpdateLogEntry={this.props.handleHTTPUpdateLogEntry}
+          handleHTTPCreateLogEntry={this.props.handleHTTPCreateLogEntry}
+          handleDeselectLogEntry={this.props.handleClearEditLogEntry} />
       </Paper>
     )
   }

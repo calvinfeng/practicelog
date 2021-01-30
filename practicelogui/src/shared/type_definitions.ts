@@ -44,3 +44,8 @@ export enum DeleteConfirmationTarget {
   Child = "CHILD",
   Parent = "PARENT"
 }
+
+export enum Mode {
+  EditEntry = "EDIT_ENTRY",
+  NewEntry = "NEW_ENTRY"
+}
