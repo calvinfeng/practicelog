@@ -13,18 +13,18 @@ import AddIcon from '@material-ui/icons/Add'
 import { LogLabelJSON } from "../../shared/type_definitions"
 
 type Props = {
+  // Root data
   logLabels: LogLabelJSON[] // All log labels
 
-  removeFromInputLabelList: (id: string) => void
-
+  // Users modifiable fields
   inputLabelList: LogLabelJSON[]
   setInputLabelList: (list: LogLabelJSON[]) => void
-
-  selectedLabelID: string | null
-  setSelectLabelID: (id: string | null) => void
+  removeFromInputLabelList: (id: string) => void
 }
 
 export default function LabelSelector(props: Props) {
+
+  const [selectedLabelID, setSelectLabelID] = React.useState<string | null>(null)
 
   if (props.inputLabelList.length === 0) {
     return <Typography>Create a Label</Typography>
@@ -48,21 +48,21 @@ export default function LabelSelector(props: Props) {
   }
 
   const handleOnChange = (ev: React.ChangeEvent<{ name?: string; value: unknown }>) => {
-    props.setSelectLabelID(ev.target.value as string)
+    setSelectLabelID(ev.target.value as string)
   }
 
   const handleAddLabel = () => {
-    if (props.selectedLabelID === null) {
+    if (selectedLabelID === null) {
       return
     }
 
-    if (isLabelSelectedAlready(props.selectedLabelID)) {
+    if (isLabelSelectedAlready(selectedLabelID)) {
       return
     }
 
     const newInputLabelList = [...props.inputLabelList]
 
-    const labelToAdd = findLabelFromProps(props.selectedLabelID)
+    const labelToAdd = findLabelFromProps(selectedLabelID)
     if (labelToAdd) {
       newInputLabelList.push(labelToAdd)
     }
@@ -93,7 +93,7 @@ export default function LabelSelector(props: Props) {
   })
 
   return (
-    <section className="label-selector">
+    <section className="LabelSelector">
       <Grid direction="row" justify="flex-start" alignItems="center" container spacing={0}>
         {chips}
       </Grid>
@@ -104,7 +104,7 @@ export default function LabelSelector(props: Props) {
             <Select
               labelId="label-selector-label"
               id="label-selector"
-              value={props.selectedLabelID}
+              value={selectedLabelID}
               onChange={handleOnChange}>
                 {props.logLabels.map((label: LogLabelJSON) => {
                   return <MenuItem value={label.id}>

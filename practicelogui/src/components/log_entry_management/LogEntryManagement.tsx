@@ -10,8 +10,10 @@ import {
 import DateSelector from './DateSelector'
 import LabelSelector from './LabelSelector'
 import DurationSelector from './DurationSelector'
-import MessageTextField from './MessageTextField'
+import MessageEditor from './MessageEditor'
 import AssignmentEditor from './AssignmentEditor'
+
+import './LogEntryManagement.scss'
 
 enum Mode {
   EditEntry = "EDIT_ENTRY",
@@ -42,10 +44,6 @@ type State = {
   inputMessage: string
   inputLabelList: LogLabelJSON[]
   inputAssignmentList: LogAssignmentJSON[]
-
-  // Prefix selected means the current entity is selected for modification.
-  // The assumption is that the entity already exists.
-  selectedLabelID: string | null
 }
 
 const defaultState: State = {
@@ -56,7 +54,6 @@ const defaultState: State = {
   inputMessage: "",
   inputLabelList: [],
   inputAssignmentList: [],
-  selectedLabelID: null,
 }
 
 export default class LogEntryManagement extends React.Component<Props, State> {
@@ -79,7 +76,6 @@ export default class LogEntryManagement extends React.Component<Props, State> {
         inputMessage: props.selectedLogEntry.message,
         inputLabelList: props.selectedLogEntry.labels,
         inputAssignmentList: props.selectedLogEntry.assignments,
-        selectedLabelID: null,
       }
     }
   }
@@ -103,7 +99,6 @@ export default class LogEntryManagement extends React.Component<Props, State> {
       inputMessage: nextProps.selectedLogEntry.message,
       inputLabelList: nextProps.selectedLogEntry.labels,
       inputAssignmentList: nextProps.selectedLogEntry.assignments,
-      selectedLabelID: null,
     })
   }
 
@@ -125,10 +120,6 @@ export default class LogEntryManagement extends React.Component<Props, State> {
 
   handleSetInputMessage = (value: string) => {
     this.setState({ inputMessage: value })
-  }
-
-  handleSetSelectedLabelID = (value: string | null) => {
-    this.setState({ selectedLabelID: value })
   }
 
   handleRemoveFromInputLabelList = (labelID: string) => () => {
@@ -157,15 +148,13 @@ export default class LogEntryManagement extends React.Component<Props, State> {
           setInputDate={this.handleSetInputDate} />
         <LabelSelector
           logLabels={this.props.logLabels}
-          removeFromInputLabelList={this.handleRemoveFromInputLabelList}
           inputLabelList={this.state.inputLabelList}
-          setInputLabelList={this.handleSetInputLabelList}
-          selectedLabelID={this.state.selectedLabelID}
-          setSelectLabelID={this.handleSetSelectedLabelID} />
+          removeFromInputLabelList={this.handleRemoveFromInputLabelList}
+          setInputLabelList={this.handleSetInputLabelList} />
         <DurationSelector
           inputDuration={this.state.inputDuration}
           setInputDuration={this.handleSetInputDuration} />
-        <MessageTextField
+        <MessageEditor
           inputMessage={this.state.inputMessage}
           setInputMessage={this.handleSetInputMessage} />
         <AssignmentEditor

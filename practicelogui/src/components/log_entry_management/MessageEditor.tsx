@@ -6,13 +6,13 @@ type Props = {
   setInputMessage: (message: string) => void
 }
 
-export default function MessageTextField(props: Props) {
+export default function MessageEditor(props: Props) {
   const handleOnChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
     props.setInputMessage(ev.target.value)
   }
 
   return (
-    <section className="message-text-field">
+    <section className="MessageEditor">
       <TextField
         label="Log Message"
         value={props.inputMessage}

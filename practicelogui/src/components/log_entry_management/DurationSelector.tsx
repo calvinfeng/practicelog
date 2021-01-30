@@ -12,7 +12,7 @@ export default function DurationSelector(props: Props) {
   }
 
   return (
-    <section className="duration-selector">
+    <section className="DurationSelector">
       <Typography id="discrete-minute-slider" gutterBottom>
         Duration: {props.inputDuration} minutes
       </Typography>
