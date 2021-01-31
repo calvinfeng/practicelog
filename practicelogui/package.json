@@ -18,6 +18,7 @@
     "@types/react-dom": "^16.9.10",
     "axios": "^0.21.1",
     "date-fns": "^2.16.1",
+    "immutable": "^4.0.0-rc.12",
     "luxon": "^1.25.0",
     "node-sass": "^4.14.1",
     "react": "^17.0.1",

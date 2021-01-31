@@ -10,11 +10,13 @@ import {
 import MuiAlert, { AlertProps, Color } from '@material-ui/lab/Alert';
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 
-import { LogEntryJSON, LogLabelJSON } from '../shared/type_definitions'
+import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON } from '../shared/type_definitions'
 import LogTable from '../components/LogTable'
 import LogEntryManagement from '../components/log_entry_management/LogEntryManagement'
 import LogLabelManagement from '../components/LogLabelManagement'
 import AssignmentChecklistPopover from '../components/AssignmentChecklistPopover'
+import DurationViewer from '../components/DurationViewer';
+import { Map } from 'immutable'
 
 type Props = {
   IDToken: string
@@ -24,6 +26,7 @@ type State = {
   // Store
   logEntries: LogEntryJSON[]
   logLabels: LogLabelJSON[]
+  logLabelDurations: Map<string, number>
 
   // User interaction
   selectedLogEntry: LogEntryJSON | null
@@ -50,6 +53,7 @@ export default class PracticeLog extends React.Component<Props, State> {
     this.state = {
       logEntries: [],
       logLabels: [],
+      logLabelDurations: Map<string, number>(),
       selectedLogEntry: null,
       focusedLogEntry: null,
       pageNum: 1,
@@ -87,7 +91,7 @@ export default class PracticeLog extends React.Component<Props, State> {
     this.http.get('/api/v1/log/labels')
       .then((resp: AxiosResponse) => {
         const labels: LogLabelJSON[] = resp.data.results
-        const childrenIDByParentID = new Map<string, string[]>()
+        let childrenIDByParentID = Map<string, string[]>()
         labels.forEach((label: LogLabelJSON) => {
           if (label.parent_id) {
             let children = childrenIDByParentID.get(label.parent_id)
@@ -95,7 +99,8 @@ export default class PracticeLog extends React.Component<Props, State> {
               children = []
             }
             children.push(label.id)
-            childrenIDByParentID.set(label.parent_id, children)
+            // WARNING: Using immutable map
+            childrenIDByParentID = childrenIDByParentID.set(label.parent_id, children)
           }
         })
         labels.forEach((label: LogLabelJSON) => {
@@ -113,6 +118,27 @@ export default class PracticeLog extends React.Component<Props, State> {
         this.setState({
           alertShown: true,
           alertMessage: `Failed to list log labels due to ${reason}`,
+          alertSeverity: "error"
+        })
+      })
+  }
+
+  /**
+   * This fetches log label duration from server.
+   * @param labelID indicates which label to fetch duration from.
+   */
+  fetchLogLabelDuration = (labelID: string) => {
+    this.http.get(`/api/v1/log/labels/${labelID}/duration`)
+      .then((resp: AxiosResponse) => {
+        const payload: LogLabelDurationJSON = resp.data
+        this.setState({
+          logLabelDurations: this.state.logLabelDurations.set(payload.id, payload.duration)
+        })
+      })
+      .catch((reason: any) => {
+        this.setState({
+          alertShown: true,
+          alertMessage: `Failed to list log label duration due to ${reason}`,
           alertSeverity: "error"
         })
       })
@@ -373,6 +399,32 @@ export default class PracticeLog extends React.Component<Props, State> {
     }
   }
 
+  handleClearPopoverAnchorEl = () => {
+    this.setState({ popoverAnchor: null, focusedLogEntry: null })
+  }
+
+  handleSelectLogEntry = (log: LogEntryJSON) => {
+    this.setState({ selectedLogEntry: log })
+  }
+
+  handleDeselectLogEntry = () => {
+    this.setState({ selectedLogEntry: null })
+  }
+  
+  handleFocusLogEntryAndAnchorEl = (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => {
+    this.setState({
+      focusedLogEntry: log,
+      popoverAnchor: event.currentTarget 
+    })
+  }
+  
+  handleCloseAlert = (_ ?: React.SyntheticEvent, reason?: string) => {
+    if (reason !== 'clickaway') {
+      this.setState({alertShown: false});
+    }
+  };
+
+  // TODO: Refactor this out
   get PaginationControlPanel() {
     const handlePrevPage = () => {
       this.setState({ pageNum: this.state.pageNum - 1 })
@@ -417,37 +469,16 @@ export default class PracticeLog extends React.Component<Props, State> {
     )
   }
 
-  handleClearPopoverAnchorEl = () => {
-    this.setState({ popoverAnchor: null, focusedLogEntry: null })
-  }
-
-  handleSelectLogEntry = (log: LogEntryJSON) => {
-    this.setState({ selectedLogEntry: log })
-  }
-
-  handleDeselectLogEntry = () => {
-    this.setState({ selectedLogEntry: null })
-  }
-  
-  handleFocusLogEntryAndAnchorEl = (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => {
-    this.setState({
-      focusedLogEntry: log,
-      popoverAnchor: event.currentTarget 
-    })
-  }
-  
-  handleCloseAlert = (_ ?: React.SyntheticEvent, reason?: string) => {
-    if (reason !== 'clickaway') {
-      this.setState({alertShown: false});
-    }
-  };
-
   render() {
 
     // Due to the lack of a Redux store, function to set states have to be passed around.
     // TODO Pass SelectedLogEntry to LogAssignmentManagement
     return (
       <section className="PracticeLog">
+        <DurationViewer 
+          fetchLogLabelDuration={this.fetchLogLabelDuration}
+          logLabels={this.state.logLabels}
+          logLabelDurations={this.state.logLabelDurations} />
         <AssignmentChecklistPopover 
           focusedLogEntry={this.state.focusedLogEntry} 
           popoverAnchor={this.state.popoverAnchor} 
