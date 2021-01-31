@@ -142,10 +142,15 @@ export default class PracticeLog extends React.Component<Props, State> {
             assignments: resp.data.results[i].assignments
           })
         }
-        // For some reason, this would set SelectedLogEntry as null.
+
+        let selectedLogEntry = this.state.selectedLogEntry
+        if (selectedLogEntry !== null) {
+          entries.find((entry: LogEntryJSON) => entry.id === (selectedLogEntry as LogEntryJSON).id)
+        }        
         this.setState({
           logEntries: entries,
-          hasNextPage: resp.data.more
+          hasNextPage: resp.data.more,
+          selectedLogEntry: selectedLogEntry
         })
       })
       .catch((reason: any) => {
@@ -347,7 +352,7 @@ export default class PracticeLog extends React.Component<Props, State> {
         }
         this.setState({ 
           logEntries: entries,
-          selectedLogEntry: updatedEntry,
+          selectedLogEntry: null,
           alertShown: true,
           alertSeverity: "success",
           alertMessage: `Successfully updated entry ${entry.id}`
@@ -466,8 +471,13 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
           handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
           handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
-        <Snackbar open={this.state.alertShown} autoHideDuration={6000} onClose={this.handleCloseAlert}>
-          <Alert onClose={this.handleCloseAlert} severity={this.state.alertSeverity}>
+        <Snackbar
+          open={this.state.alertShown}
+          autoHideDuration={6000}
+          onClose={this.handleCloseAlert}>
+          <Alert
+            onClose={this.handleCloseAlert}
+            severity={this.state.alertSeverity}>
             {this.state.alertMessage}
           </Alert>
         </Snackbar>

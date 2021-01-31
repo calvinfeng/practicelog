@@ -45,7 +45,7 @@ export default function Submission(props: Props) {
               if (props.inputDate !== null) {
                 entry.date = props.inputDate
               }
-              console.log("update log entry with date", entry.date)
+              console.log("update log entry with date", entry.date.toISOString())
               props.handleHTTPUpdateLogEntry(entry)
             }}>
             Save Entry
@@ -77,7 +77,7 @@ export default function Submission(props: Props) {
               if (props.inputDate !== null) {
                 entry.date = props.inputDate
               }
-              console.log("create log entry with date", entry.date)
+              console.log("create log entry with date", entry.date.toISOString())
               props.handleHTTPCreateLogEntry(entry)
             }}>
             New Entry
