@@ -2,6 +2,7 @@ import React from 'react'
 
 import { LogLabelJSON, LogEntryJSON, LogAssignmentJSON } from '../shared/type_definitions'
 import './LogTable.scss'
+import { DateTime }from 'luxon'
 
 import {
   Chip,
@@ -41,7 +42,7 @@ export default function LogTable(props: Props) {
   const cellStyle = { "padding": "5px" }
   const longCellStyle = { "padding": "5px", "width": "35%" }
 
-  const makeHandlerSetLogEdit = (log: LogEntryJSON) => () => {
+  const makeHandlerSelectLogEntry = (log: LogEntryJSON) => () => {
     props.handleSelectLogEntry(log)
     props.scrollToBottom()
   }
@@ -110,7 +111,7 @@ export default function LogTable(props: Props) {
         <TableCell style={longCellStyle}>{log.message}</TableCell>
         <TableCell style={cellStyle}>
         {assignmentIconButton}
-        <IconButton color="primary" component="span" onClick={makeHandlerSetLogEdit(log)}>
+        <IconButton color="primary" component="span" onClick={makeHandlerSelectLogEntry(log)}>
           <EditIcon />
         </IconButton>
         <IconButton color="primary" component="span" onClick={makeHandlerSetLogCopy(log)}>
@@ -145,18 +146,22 @@ export default function LogTable(props: Props) {
 }
 
 function formatDate(d: Date): string {
-  const parts = [`${d.getFullYear()}`]
+  const dt = DateTime.fromISO(d.toISOString())
+  dt.setZone("America/Los_Angeles")
   
-  if (d.getMonth() < 9) {
-    parts.push(`0${d.getMonth()+1}`)
+  return dt.toLocaleString(DateTime.DATETIME_MED).toString()
+  const parts = [`${dt.year}`]
+  
+  if (dt.month < 9) {
+    parts.push(`0${dt.month}`)
   } else {
-    parts.push(`${d.getMonth()+1}`)
+    parts.push(`${dt.month}`)
   }
 
-  if (d.getDate() < 10) {
-    parts.push(`0${d.getDate()}`)
+  if (dt.day < 10) {
+    parts.push(`0${dt.day}`)
   } else {
-    parts.push(`${d.getDate()}`)
+    parts.push(`${dt.day}`)
   }
 
   return parts.join("-")
