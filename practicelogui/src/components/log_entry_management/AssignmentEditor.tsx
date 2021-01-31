@@ -64,7 +64,6 @@ export default function AssignmentEditor(props: Props) {
     if (Boolean(props.inputAssignmentList)) {
       newAssignmentList = [...props.inputAssignmentList]
     }
-    
     if (selectedAssignment !== null) {
       newAssignmentList[selectedAssignment.position].name = textFieldAssignmentName
       newAssignmentList[selectedAssignment.position].completed = false
@@ -100,7 +99,11 @@ export default function AssignmentEditor(props: Props) {
   if (selectedAssignment !== null) {
     buttons.push(
       <Grid item>
-        <Button variant="outlined" color="primary" type="submit" form="assignment-form"
+        <Button
+          form="assignment-submission-form"
+          type="submit"
+          variant="outlined"
+          color="primary"
           style={{marginLeft: "0.5rem"}}>
             Save Assignment {selectedAssignment.position}
         </Button>
@@ -114,7 +117,11 @@ export default function AssignmentEditor(props: Props) {
 
     buttons.push(
       <Grid item>
-        <Button variant="outlined" color="primary" type="submit" form="assignment-form"
+        <Button
+          form="assignment-submission-form"
+          type="submit"
+          variant="outlined"
+          color="primary"
           style={{marginLeft: "0.5rem"}}>
             Add Assignment {newPosition}
         </Button>
@@ -124,7 +131,9 @@ export default function AssignmentEditor(props: Props) {
 
   buttons.push(
     <Grid item>
-      <Button variant="outlined" color="secondary"
+      <Button
+        variant="outlined"
+        color="secondary"
         onClick={() => { setSelectedAssignment(null) }}
         disabled={selectedAssignment === null}
         style={{marginLeft: "0.5rem"}}>
@@ -136,7 +145,9 @@ export default function AssignmentEditor(props: Props) {
   return (
     <section className="AssignmentEditor">
       <List dense={false}>{assignmentListItems}</List>
-      <form id="assignment-submission-form" onSubmit={handleFormSubmitAssignment}>
+      <form
+        id="assignment-submission-form"
+        onSubmit={handleFormSubmitAssignment}>
         <Grid container 
           direction="row"
           justify="flex-end"

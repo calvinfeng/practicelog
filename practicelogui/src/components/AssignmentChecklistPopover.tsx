@@ -1,7 +1,6 @@
 import React from 'react'
 import {
   Popover,
-  Typography,
   TableHead,
   TableRow,
   Table,
@@ -16,23 +15,23 @@ import { LogEntryJSON, LogAssignmentJSON } from '../shared/type_definitions'
 import './AssignmentChecklistPopover.scss'
 
 type Props = {
-  viewLogEntry: LogEntryJSON | null
+  focusedLogEntry: LogEntryJSON | null
   popoverAnchor: HTMLButtonElement | null
-  handleClearAssignment: () => void
+  handleClearPopoverAnchorEl: () => void
   handleHTTPUpdateLogAssignments: (entry: LogEntryJSON) => void
 }
 
 export default function AssignmentChecklistPopover(props: Props) {
   let assignments: LogAssignmentJSON[] = []
-  if (props.viewLogEntry !== null && props.viewLogEntry.assignments) {
-    assignments = props.viewLogEntry.assignments
+  if (props.focusedLogEntry !== null && props.focusedLogEntry.assignments) {
+    assignments = props.focusedLogEntry.assignments
   }
 
   const makeHandlerBoxCheck = (position: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (props.viewLogEntry === null) {
+    if (props.focusedLogEntry === null) {
       return
     }
-    const entryToUpdate: LogEntryJSON = props.viewLogEntry as LogEntryJSON
+    const entryToUpdate: LogEntryJSON = props.focusedLogEntry as LogEntryJSON
     entryToUpdate.assignments[position].completed = event.target.checked
     console.log(entryToUpdate.assignments[position].name, 'set to', event.target.checked)
     props.handleHTTPUpdateLogAssignments(entryToUpdate)
@@ -74,7 +73,7 @@ export default function AssignmentChecklistPopover(props: Props) {
       id={"assignment-popover"}
       open={Boolean(props.popoverAnchor)}
       anchorEl={props.popoverAnchor}
-      onClose={props.handleClearAssignment}
+      onClose={props.handleClearPopoverAnchorEl}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       transformOrigin={{ vertical: 'top', horizontal: 'center' }}>
       {content}

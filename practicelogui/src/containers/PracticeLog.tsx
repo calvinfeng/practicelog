@@ -21,13 +21,22 @@ type Props = {
 }
 
 type State = {
+  // Store
   logEntries: LogEntryJSON[]
   logLabels: LogLabelJSON[]
-  editLogEntry: LogEntryJSON | null
-  viewLogEntry: LogEntryJSON | null
+
+  // User interaction
+  selectedLogEntry: LogEntryJSON | null
+  focusedLogEntry: LogEntryJSON | null
+  
+  // Paginations
   pageNum: number
   hasNextPage: boolean
+  
+  // Popover
   popoverAnchor: HTMLButtonElement | null
+  
+  // Alerts
   alertShown: boolean
   alertMessage: string
   alertSeverity: Color
@@ -41,8 +50,8 @@ export default class PracticeLog extends React.Component<Props, State> {
     this.state = {
       logEntries: [],
       logLabels: [],
-      editLogEntry: null,
-      viewLogEntry: null,
+      selectedLogEntry: null,
+      focusedLogEntry: null,
       pageNum: 1,
       hasNextPage: false,
       popoverAnchor: null,
@@ -133,7 +142,7 @@ export default class PracticeLog extends React.Component<Props, State> {
             assignments: resp.data.results[i].assignments
           })
         }
-        // For some reason, this would set editLogEntry as null.
+        // For some reason, this would set SelectedLogEntry as null.
         this.setState({
           logEntries: entries,
           hasNextPage: resp.data.more
@@ -258,7 +267,7 @@ export default class PracticeLog extends React.Component<Props, State> {
             alertShown: true,
             alertMessage: "Successfully created new log entry",
             alertSeverity: "success",
-            editLogEntry: null
+            selectedLogEntry: null
           })
         }
       })
@@ -297,7 +306,7 @@ export default class PracticeLog extends React.Component<Props, State> {
         }
         this.setState({
           logEntries: entries,
-          viewLogEntry: updatedEntry,
+          focusedLogEntry: updatedEntry,
           alertShown: true,
           alertSeverity: "success",
           alertMessage: `Successfully updated entry ${entry.id} assignments`
@@ -338,7 +347,7 @@ export default class PracticeLog extends React.Component<Props, State> {
         }
         this.setState({ 
           logEntries: entries,
-          editLogEntry: updatedEntry,
+          selectedLogEntry: updatedEntry,
           alertShown: true,
           alertSeverity: "success",
           alertMessage: `Successfully updated entry ${entry.id}`
@@ -403,51 +412,62 @@ export default class PracticeLog extends React.Component<Props, State> {
     )
   }
 
-  render() {
-    const handleClearPopoverAnchorEl = () => this.setState({ popoverAnchor: null, viewLogEntry: null })
-    const handleSetEditLogEntry = (log: LogEntryJSON) => this.setState({ editLogEntry: log })
-    const handleClearEditLogEntry = () => this.setState({ editLogEntry: null })
-    const handleSetViewLogEntryAndAnchorEl = (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => {
-      this.setState({
-        viewLogEntry: log,
-        popoverAnchor: event.currentTarget 
-      })
+  handleClearPopoverAnchorEl = () => {
+    this.setState({ popoverAnchor: null, focusedLogEntry: null })
+  }
+
+  handleSelectLogEntry = (log: LogEntryJSON) => {
+    this.setState({ selectedLogEntry: log })
+  }
+
+  handleDeselectLogEntry = () => {
+    this.setState({ selectedLogEntry: null })
+  }
+  
+  handleFocusLogEntryAndAnchorEl = (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => {
+    this.setState({
+      focusedLogEntry: log,
+      popoverAnchor: event.currentTarget 
+    })
+  }
+  
+  handleCloseAlert = (_ ?: React.SyntheticEvent, reason?: string) => {
+    if (reason !== 'clickaway') {
+      this.setState({alertShown: false});
     }
-    const handleCloseAlert = (event?: React.SyntheticEvent, reason?: string) => {
-      if (reason !== 'clickaway') {
-        this.setState({alertShown: false});
-      }
-    };
+  };
+
+  render() {
 
     // Due to the lack of a Redux store, function to set states have to be passed around.
-    // TODO Pass editLogEntry to LogAssignmentManagement
+    // TODO Pass SelectedLogEntry to LogAssignmentManagement
     return (
       <section className="PracticeLog">
         <AssignmentChecklistPopover 
-          viewLogEntry={this.state.viewLogEntry} 
+          focusedLogEntry={this.state.focusedLogEntry} 
           popoverAnchor={this.state.popoverAnchor} 
-          handleClearAssignment={handleClearPopoverAnchorEl} 
+          handleClearPopoverAnchorEl={this.handleClearPopoverAnchorEl} 
           handleHTTPUpdateLogAssignments={this.handleHTTPUpdateLogAssignments} /> 
         <LogTable
           scrollToBottom={this.scrollToBottom}
           logEntries={this.state.logEntries} 
-          handleSetViewLogEntryAndAnchorEl={handleSetViewLogEntryAndAnchorEl}
-          handleSetEditLogEntry={handleSetEditLogEntry}
+          handleFocusLogEntryAndAnchorEl={this.handleFocusLogEntryAndAnchorEl}
+          handleSelectLogEntry={this.handleSelectLogEntry}
           handleHTTPDeleteLogEntry={this.handleHTTPDeleteLogEntry} />
         {this.PaginationControlPanel}
         <LogEntryManagement
           logLabels={this.state.logLabels} 
-          selectedLogEntry={this.state.editLogEntry}
-          handleClearEditLogEntry={handleClearEditLogEntry} 
+          selectedLogEntry={this.state.selectedLogEntry}
+          handleDeselectLogEntry={this.handleDeselectLogEntry} 
           handleHTTPUpdateLogEntry={this.handleHTTPUpdateLogEntry}
           handleHTTPCreateLogEntry={this.handleHTTPCreateLogEntry} />
         <LogLabelManagement
+          logLabels={this.state.logLabels}
           handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
           handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
-          handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel}
-          logLabels={this.state.logLabels} />
-        <Snackbar open={this.state.alertShown} autoHideDuration={6000} onClose={handleCloseAlert}>
-          <Alert onClose={handleCloseAlert} severity={this.state.alertSeverity}>
+          handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
+        <Snackbar open={this.state.alertShown} autoHideDuration={6000} onClose={this.handleCloseAlert}>
+          <Alert onClose={this.handleCloseAlert} severity={this.state.alertSeverity}>
             {this.state.alertMessage}
           </Alert>
         </Snackbar>

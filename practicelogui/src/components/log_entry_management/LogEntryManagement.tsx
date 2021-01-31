@@ -25,7 +25,7 @@ type Props = {
   // Collection of all labels
   logLabels: LogLabelJSON[]
 
-  handleClearEditLogEntry: () => void
+  handleDeselectLogEntry: () => void
   handleHTTPCreateLogEntry: (logEntry: LogEntryJSON) => void
   handleHTTPUpdateLogEntry: (logEntry: LogEntryJSON) => void
 }
@@ -167,7 +167,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
           inputAssignmentList={this.state.inputAssignmentList}
           handleHTTPUpdateLogEntry={this.props.handleHTTPUpdateLogEntry}
           handleHTTPCreateLogEntry={this.props.handleHTTPCreateLogEntry}
-          handleDeselectLogEntry={this.props.handleClearEditLogEntry} />
+          handleDeselectLogEntry={this.props.handleDeselectLogEntry} />
       </Paper>
     )
   }
