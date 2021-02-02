@@ -475,10 +475,6 @@ export default class PracticeLog extends React.Component<Props, State> {
     // TODO Pass SelectedLogEntry to LogAssignmentManagement
     return (
       <section className="PracticeLog">
-        <DurationViewer 
-          fetchLogLabelDuration={this.fetchLogLabelDuration}
-          logLabels={this.state.logLabels}
-          logLabelDurations={this.state.logLabelDurations} />
         <AssignmentChecklistPopover 
           focusedLogEntry={this.state.focusedLogEntry} 
           popoverAnchor={this.state.popoverAnchor} 
@@ -502,6 +498,11 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
           handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
           handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
+        <div ref={pageAnchor => { this.pageAnchor = pageAnchor; }} />  
+        <DurationViewer 
+          fetchLogLabelDuration={this.fetchLogLabelDuration}
+          logLabels={this.state.logLabels}
+          logLabelDurations={this.state.logLabelDurations} />
         <Snackbar
           open={this.state.alertShown}
           autoHideDuration={6000}
@@ -512,7 +513,6 @@ export default class PracticeLog extends React.Component<Props, State> {
             {this.state.alertMessage}
           </Alert>
         </Snackbar>
-        <div ref={pageAnchor => { this.pageAnchor = pageAnchor; }} />  
       </section>
     )
   }

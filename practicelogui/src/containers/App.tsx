@@ -44,7 +44,7 @@ function App() {
   }
 
   if (userProfile !== null) {
-    if (userProfile.google_email == "calvin.j.feng@gmail.com") {
+    if (userProfile.google_email === "calvin.j.feng@gmail.com") {
       return (
         <div className="App">
           <PracticeLog IDToken={userProfile.token_id} />

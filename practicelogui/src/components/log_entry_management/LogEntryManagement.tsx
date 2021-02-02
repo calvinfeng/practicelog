@@ -137,6 +137,8 @@ export default class LogEntryManagement extends React.Component<Props, State> {
         return <Typography variant="h5">Edit Log Entry {this.state.inputID}</Typography>
       case Mode.NewEntry:
         return <Typography variant="h5">Add Log Entry</Typography>
+      default:
+        return <Typography variant="h5"></Typography>
     }
   }
 

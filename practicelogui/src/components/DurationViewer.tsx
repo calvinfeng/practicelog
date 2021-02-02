@@ -4,13 +4,14 @@ import {
   AccordionSummary,
   Typography,
   AccordionDetails, 
-  ButtonGroup,
-  Button} from '@material-ui/core';
+  Checkbox,
+  FormControlLabel} from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { Map } from 'immutable'
 
 import './DurationViewer.scss'
 import { LogLabelJSON } from '../shared/type_definitions';
+import { FormGroup } from '@material-ui/core';
 
 type Props = {
   logLabels: LogLabelJSON[]
@@ -18,11 +19,15 @@ type Props = {
   fetchLogLabelDuration: (labelID: string) => void
 }
 
+// TODO: Separate the check boxes into two lists
+// One for parents
+// One for child
+// If none is selected, display the total duration spent on guitar.
 export default function DurationViewer(props: Props) {
   const [expanded, setExpanded] = React.useState<boolean | undefined>(false)
   const [selectedLabelID, selectLabelID] = React.useState<string | null>(null)
 
-  const makeClickHandler = (labelID: string) => (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const makeCheckHandler = (labelID: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     event.stopPropagation()
     if (selectedLabelID === labelID) {
       selectLabelID(null)
@@ -35,18 +40,24 @@ export default function DurationViewer(props: Props) {
     }
   }
 
-  let buttons: JSX.Element[] = []
+  let checkBoxes: JSX.Element[] = []
   if (props.logLabels) {
-    buttons = props.logLabels.map((label: LogLabelJSON) => {
-      if (selectedLabelID !== null && selectedLabelID === label.id) {
-        return (
-          <Button variant={"contained"}
-            onClick={makeClickHandler(label.id)}>
-            {label.name}
-          </Button>
-        )
+    checkBoxes = props.logLabels.map((label: LogLabelJSON) => {
+      let checked = false
+      if (selectLabelID !== null) {
+        checked = selectedLabelID === label.id
       }
-      return <Button onClick={makeClickHandler(label.id)}>{label.name}</Button>
+      return (
+        <FormControlLabel
+          onClick={(event: React.MouseEvent<HTMLLabelElement, MouseEvent>) => event.stopPropagation()}
+          control={
+            <Checkbox
+              checked={checked}
+              onChange={makeCheckHandler(label.id)}
+              name={label.name}
+              color="primary" />}
+          label={label.name} />
+      )
     })
   }
   
@@ -60,12 +71,14 @@ export default function DurationViewer(props: Props) {
     content = `You have spent ${Math.floor(mins as number /60)} hours and ${mins as number %60} minutes on it`
   }
 
+  // TODO: Switch to Checkboxes instead of Button Groups
   return (
     <Accordion className="DurationViewer" expanded={expanded} onClick={handleExpand}>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <ButtonGroup variant="outlined" color="primary">
-          {buttons}
-        </ButtonGroup>
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}>
+        <FormGroup row>
+          {checkBoxes}
+        </FormGroup>
       </AccordionSummary>
       <AccordionDetails>
         <Typography>
