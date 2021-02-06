@@ -65,6 +65,7 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	e.POST("/api/v1/log/entries", srv.CreatePracticeLogEntry)
 	e.PUT("/api/v1/log/entries/:entry_id", srv.UpdatePracticeLogEntry)
 	e.DELETE("/api/v1/log/entries/:entry_id", srv.DeletePracticeLogEntry)
+	e.GET("/api/v1/log/entries/duration", srv.GetLogEntryDurationSum)
 
 	// Assignments
 	e.PUT("/api/v1/log/entries/:entry_id/assignments", srv.UpdatePracticeLogAssignments)

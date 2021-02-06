@@ -35,7 +35,7 @@ func (s *server) GetLogLabelDurationSum(c echo.Context) error {
 	}
 
 	// TODO: Implement a single GET for label from store
-	labels, err :=  s.store.SelectLogLabels()
+	labels, err := s.store.SelectLogLabels()
 	var target *practicelog.Label
 	for _, label := range labels {
 		if label.ID == id {
@@ -47,14 +47,27 @@ func (s *server) GetLogLabelDurationSum(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, fmt.Errorf("label %s not found", id))
 	}
 
-	dur, err := s.store.SumDurationLogEntries(logstore.ByLabelIDList([]string{c.Param("label_id")}))
+	dur, err := s.store.SumLogEntryDuration(logstore.ByLabelIDList([]string{c.Param("label_id")}))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrap(err, "failed to query database"))
 	}
 
 	return c.JSON(http.StatusOK, PracticeLogLabelDurationResponse{
-		Label: *target,
+		Label:    *target,
 		Duration: dur,
+	})
+}
+
+func (s *server) GetLogEntryDurationSum(c echo.Context) error {
+	mins, err := s.store.SumAllLogEntryDuration()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError,
+			errors.Wrap(err, "failed to query database"))
+	}
+
+	return c.JSON(http.StatusOK, PracticeLogEntryTotalDurationResponse{
+		InMinutes: mins,
+		InHours:   float64(mins) / 60,
 	})
 }

@@ -53,6 +53,7 @@ type (
 		DeletePracticeLogEntry(echo.Context) error
 
 		GetLogLabelDurationSum(echo.Context) error
+		GetLogEntryDurationSum(echo.Context) error
 	}
 
 	SQLFilter func(squirrel.Eq)
@@ -71,6 +72,7 @@ type (
 		DeleteLogLabel(*Label) error
 
 		// Helpers
-		SumDurationLogEntries(...SQLFilter) (sum int32, err error)
+		SumLogEntryDuration(...SQLFilter) (sum int32, err error)
+		SumAllLogEntryDuration() (sum int32, err error)
 	}
 )

@@ -49,7 +49,7 @@ func practicedRuneE(_ *cobra.Command, args []string) error {
 		labelIDs = append(labelIDs, label.ID.String())
 	}
 
-	dur, err := store.SumDurationLogEntries(logstore.ByLabelIDList(labelIDs))
+	dur, err := store.SumLogEntryDuration(logstore.ByLabelIDList(labelIDs))
 	if err != nil {
 		return err
 	}

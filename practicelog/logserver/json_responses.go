@@ -24,3 +24,8 @@ type PracticeLogLabelDurationResponse struct {
 	practicelog.Label
 	Duration int32 `json:"duration"`
 }
+
+type PracticeLogEntryTotalDurationResponse struct {
+	InHours   float64 `json:"in_hours"`
+	InMinutes int32   `json:"in_minutes"`
+}

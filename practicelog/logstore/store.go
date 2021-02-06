@@ -16,7 +16,26 @@ type store struct {
 	db *sqlx.DB
 }
 
-func (s *store) SumDurationLogEntries(filters ...practicelog.SQLFilter) (sum int32, err error) {
+func (s *store) SumAllLogEntryDuration() (sum int32, err error) {
+	query := squirrel.Select("SUM(duration)").From(LogEntryTable)
+	statement, args, qErr := query.PlaceholderFormat(squirrel.Dollar).ToSql()
+	if qErr != nil {
+		err = qErr
+		return
+	}
+
+	if err = s.db.Get(&sum, statement, args...); err != nil {
+		return
+
+	}
+	return
+}
+
+/* Performance Consideration
+
+This is not an effective query but at current scale it's okay.
+*/
+func (s *store) SumLogEntryDuration(filters ...practicelog.SQLFilter) (sum int32, err error) {
 	eqCondition := make(squirrel.Eq)
 	for _, f := range filters {
 		f(eqCondition)
