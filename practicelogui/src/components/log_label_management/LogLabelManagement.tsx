@@ -1,6 +1,4 @@
 import React from 'react'
-import './LogLabelManagement.scss'
-import { DeleteConfirmationTarget, LogLabelJSON } from '../shared/type_definitions'
 
 import {
   Grid,
@@ -11,11 +9,11 @@ import {
   Button,
   TextField,
 } from '@material-ui/core'
-
 import { MusicNote } from '@material-ui/icons'
-import DeleteConfirmation from './DeleteConfirmation'
 
-const nilUUID = '00000000-0000-0000-0000-000000000000'
+import { DeleteConfirmationTarget, LogLabelJSON, nilUUID } from '../../shared/type_definitions'
+import DeleteConfirmation from './DeleteConfirmation'
+import './LogLabelManagement.scss'
 
 type State = {
   selectedParentLabel: LogLabelJSON | null
@@ -27,7 +25,7 @@ type State = {
 }
 
 type Props = {
-  logLabels: LogLabelJSON[] 
+  logLabels: LogLabelJSON[]
   handleHTTPCreateLogLabel: (label: LogLabelJSON) => void
   handleHTTPUpdateLogLabel: (label: LogLabelJSON) => void
   handleHTTPDeleteLogLabel: (label: LogLabelJSON) => void
@@ -79,81 +77,6 @@ export default class LabelManagement extends React.Component<Props, State> {
         selectedChildLabel: label
       })
     }
-  }
-
-  get panelParentLabels() {
-    const items: JSX.Element[] = this.props.logLabels.filter((label: LogLabelJSON) => {
-      return label.parent_id === nilUUID
-    }).map((label: LogLabelJSON) => {
-      let style = { margin: "0.1rem" }
-      let handler = this.newHandlerSelectParentLabel(label)
-      if (this.state.selectedParentLabel !== null && this.state.selectedParentLabel.id === label.id) {
-        style["background"] = "green"
-        handler = this.newHandlerSelectParentLabel(null)
-      }
-      return (
-        <Grid item>
-          <Chip
-            onClick={handler}
-            style={style}
-            label={label.name}
-            icon={<MusicNote />}
-            color="primary" />
-        </Grid>
-      )
-    })
-    return (
-      <Grid
-        style={{ width: "30%", margin: "0.5rem" }}
-        direction="row"
-        justify="flex-start"
-        alignItems="center"
-        container
-        spacing={0}>
-        {items}
-      </Grid>
-    )
-  }
-
-  get panelChildLabels() {
-    const items: JSX.Element[] = this.props.logLabels.filter((label: LogLabelJSON) => {
-      if (this.state.selectedParentLabel === null) {
-        return false
-      }
-      return label.parent_id === this.state.selectedParentLabel.id
-    }).map((label: LogLabelJSON) => {      
-      let style = { margin: "0.1rem" }
-      let handler = this.newHandlerSelectChildLabel(label)
-      if (this.state.selectedParentLabel !== null && 
-        this.state.selectedChildLabel !== null &&
-        this.state.selectedChildLabel.id === label.id) {
-        style["background"] = "green"
-        handler = this.newHandlerSelectChildLabel(null)
-      }
-
-      return (
-        <Grid item>
-          <Chip
-            onClick={handler}
-            style={style}
-            label={label.name}
-            icon={<MusicNote />}
-            color="primary" />
-        </Grid>
-      )
-    })
-
-    return (
-      <Grid
-        style={{ width: "30%", margin: "0.5rem" }}
-        direction="row"
-        justify="flex-start"
-        alignItems="center"
-        container
-        spacing={0}>
-        {items}
-      </Grid>
-    )
   }
 
   handleCreateParentLabel = () => {
@@ -234,6 +157,81 @@ export default class LabelManagement extends React.Component<Props, State> {
 
   handleCloseDeleteDialog = () => {
     this.setState({ showDeleteDialog: false, deleteTarget: DeleteConfirmationTarget.None })
+  }
+
+  get panelParentLabels() {
+    const items: JSX.Element[] = this.props.logLabels.filter((label: LogLabelJSON) => {
+      return label.parent_id === nilUUID
+    }).map((label: LogLabelJSON) => {
+      let style = { margin: "0.1rem" }
+      let handler = this.newHandlerSelectParentLabel(label)
+      if (this.state.selectedParentLabel !== null && this.state.selectedParentLabel.id === label.id) {
+        style["background"] = "green"
+        handler = this.newHandlerSelectParentLabel(null)
+      }
+      return (
+        <Grid item>
+          <Chip
+            onClick={handler}
+            style={style}
+            label={label.name}
+            icon={<MusicNote />}
+            color="primary" />
+        </Grid>
+      )
+    })
+    return (
+      <Grid
+        style={{ width: "30%", margin: "0.5rem" }}
+        direction="row"
+        justify="flex-start"
+        alignItems="center"
+        container
+        spacing={0}>
+        {items}
+      </Grid>
+    )
+  }
+
+  get panelChildLabels() {
+    const items: JSX.Element[] = this.props.logLabels.filter((label: LogLabelJSON) => {
+      if (this.state.selectedParentLabel === null) {
+        return false
+      }
+      return label.parent_id === this.state.selectedParentLabel.id
+    }).map((label: LogLabelJSON) => {      
+      let style = { margin: "0.1rem" }
+      let handler = this.newHandlerSelectChildLabel(label)
+      if (this.state.selectedParentLabel !== null && 
+        this.state.selectedChildLabel !== null &&
+        this.state.selectedChildLabel.id === label.id) {
+        style["background"] = "green"
+        handler = this.newHandlerSelectChildLabel(null)
+      }
+
+      return (
+        <Grid item>
+          <Chip
+            onClick={handler}
+            style={style}
+            label={label.name}
+            icon={<MusicNote />}
+            color="primary" />
+        </Grid>
+      )
+    })
+
+    return (
+      <Grid
+        style={{ width: "30%", margin: "0.5rem" }}
+        direction="row"
+        justify="flex-start"
+        alignItems="center"
+        container
+        spacing={0}>
+        {items}
+      </Grid>
+    )
   }
 
   get selectedChildLabelButtonGroup() {

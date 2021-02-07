@@ -13,7 +13,7 @@ import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON } from '../shared/type_definitions'
 import LogTable from '../components/LogTable'
 import LogEntryManagement from '../components/log_entry_management/LogEntryManagement'
-import LogLabelManagement from '../components/LogLabelManagement'
+import LogLabelManagement from '../components/log_label_management/LogLabelManagement'
 import AssignmentChecklistPopover from '../components/AssignmentChecklistPopover'
 import DurationViewer from '../components/DurationViewer';
 import { Map } from 'immutable'
@@ -31,14 +31,14 @@ type State = {
   // User interaction
   selectedLogEntry: LogEntryJSON | null
   focusedLogEntry: LogEntryJSON | null
-  
+
   // Paginations
   pageNum: number
   hasNextPage: boolean
-  
+
   // Popover
   popoverAnchor: HTMLButtonElement | null
-  
+
   // Alerts
   alertShown: boolean
   alertMessage: string
@@ -172,7 +172,7 @@ export default class PracticeLog extends React.Component<Props, State> {
         let selectedLogEntry = this.state.selectedLogEntry
         if (selectedLogEntry !== null) {
           entries.find((entry: LogEntryJSON) => entry.id === (selectedLogEntry as LogEntryJSON).id)
-        }        
+        }
         this.setState({
           logEntries: entries,
           hasNextPage: resp.data.more,
@@ -189,7 +189,7 @@ export default class PracticeLog extends React.Component<Props, State> {
   }
   /**
    * This is a callback for child components to call to create a log label.
-   * @param label is the log label to submit to API for create. 
+   * @param label is the log label to submit to API for create.
    */
   handleHTTPCreateLogLabel = (label: LogLabelJSON) => {
     this.http.post(`/api/v1/log/labels`, label)
@@ -210,10 +210,10 @@ export default class PracticeLog extends React.Component<Props, State> {
         alertSeverity: "error"
       })
     })
-  }  
+  }
   /**
    * This is a callback for child components to call to update a log label.
-   * @param label is the log label to submit to API for update. 
+   * @param label is the log label to submit to API for update.
    */
   handleHTTPUpdateLogLabel = (label: LogLabelJSON) => {
     this.http.put(`/api/v1/log/labels/${label.id}`, label)
@@ -376,7 +376,7 @@ export default class PracticeLog extends React.Component<Props, State> {
             break
           }
         }
-        this.setState({ 
+        this.setState({
           logEntries: entries,
           selectedLogEntry: null,
           alertShown: true,
@@ -410,14 +410,14 @@ export default class PracticeLog extends React.Component<Props, State> {
   handleDeselectLogEntry = () => {
     this.setState({ selectedLogEntry: null })
   }
-  
+
   handleFocusLogEntryAndAnchorEl = (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => {
     this.setState({
       focusedLogEntry: log,
-      popoverAnchor: event.currentTarget 
+      popoverAnchor: event.currentTarget
     })
   }
-  
+
   handleCloseAlert = (_ ?: React.SyntheticEvent, reason?: string) => {
     if (reason !== 'clickaway') {
       this.setState({alertShown: false});
@@ -442,7 +442,7 @@ export default class PracticeLog extends React.Component<Props, State> {
         </Grid>
       )
     }
-    
+
     if (this.state.hasNextPage) {
       items.push(
         <Grid item>
@@ -475,22 +475,22 @@ export default class PracticeLog extends React.Component<Props, State> {
     // TODO Pass SelectedLogEntry to LogAssignmentManagement
     return (
       <section className="PracticeLog">
-        <AssignmentChecklistPopover 
-          focusedLogEntry={this.state.focusedLogEntry} 
-          popoverAnchor={this.state.popoverAnchor} 
-          handleClearPopoverAnchorEl={this.handleClearPopoverAnchorEl} 
-          handleHTTPUpdateLogAssignments={this.handleHTTPUpdateLogAssignments} /> 
+        <AssignmentChecklistPopover
+          focusedLogEntry={this.state.focusedLogEntry}
+          popoverAnchor={this.state.popoverAnchor}
+          handleClearPopoverAnchorEl={this.handleClearPopoverAnchorEl}
+          handleHTTPUpdateLogAssignments={this.handleHTTPUpdateLogAssignments} />
         <LogTable
           scrollToBottom={this.scrollToBottom}
-          logEntries={this.state.logEntries} 
+          logEntries={this.state.logEntries}
           handleFocusLogEntryAndAnchorEl={this.handleFocusLogEntryAndAnchorEl}
           handleSelectLogEntry={this.handleSelectLogEntry}
           handleHTTPDeleteLogEntry={this.handleHTTPDeleteLogEntry} />
         {this.PaginationControlPanel}
         <LogEntryManagement
-          logLabels={this.state.logLabels} 
+          logLabels={this.state.logLabels}
           selectedLogEntry={this.state.selectedLogEntry}
-          handleDeselectLogEntry={this.handleDeselectLogEntry} 
+          handleDeselectLogEntry={this.handleDeselectLogEntry}
           handleHTTPUpdateLogEntry={this.handleHTTPUpdateLogEntry}
           handleHTTPCreateLogEntry={this.handleHTTPCreateLogEntry} />
         <LogLabelManagement
@@ -498,8 +498,8 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
           handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
           handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
-        <div ref={pageAnchor => { this.pageAnchor = pageAnchor; }} />  
-        <DurationViewer 
+        <div ref={pageAnchor => { this.pageAnchor = pageAnchor; }} />
+        <DurationViewer
           fetchLogLabelDuration={this.fetchLogLabelDuration}
           logLabels={this.state.logLabels}
           logLabelDurations={this.state.logLabelDurations} />

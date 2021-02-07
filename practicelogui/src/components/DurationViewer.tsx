@@ -4,7 +4,7 @@ import {
   Accordion,
   AccordionSummary,
   Typography,
-  AccordionDetails, 
+  AccordionDetails,
   Checkbox,
   FormControlLabel,
   Divider,
@@ -36,7 +36,7 @@ export default function DurationViewer(props: Props) {
     } else {
       selectLabelID(labelID)
     }
-    
+
     if (!props.logLabelDurations.get(labelID)) {
       props.fetchLogLabelDuration(labelID)
     }
@@ -70,8 +70,6 @@ export default function DurationViewer(props: Props) {
     childCheckBoxes = props.logLabels.filter(isChild).sort(alphabetOrder).map(transformToCheckBox)
   }
 
-
-  
   const handleExpand = (_: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     setExpanded(!expanded)
   }
@@ -82,7 +80,6 @@ export default function DurationViewer(props: Props) {
     content = `You have spent ${Math.floor(mins as number /60)} hours and ${mins as number %60} minutes on it`
   }
 
-  // TODO: Switch to Checkboxes instead of Button Groups
   return (
     <Accordion className="DurationViewer" expanded={expanded} onClick={handleExpand}>
       <AccordionSummary

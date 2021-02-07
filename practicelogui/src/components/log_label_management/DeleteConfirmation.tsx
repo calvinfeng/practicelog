@@ -1,13 +1,13 @@
 import React from 'react'
-import { 
-  Dialog, 
+import {
+  Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
   Button
 } from '@material-ui/core'
-import { DeleteConfirmationTarget, LogLabelJSON } from '../shared/type_definitions'
+import { DeleteConfirmationTarget, LogLabelJSON } from '../../shared/type_definitions'
 
 type Props = {
   open: boolean
@@ -49,7 +49,7 @@ export default function DeleteConfirmation(props: Props) {
         <DialogTitle>Delete {props.selectedParentLabel.name}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete {props.selectedParentLabel.name}? 
+            Are you sure you want to delete {props.selectedParentLabel.name}?
           </DialogContentText>
           <DialogContentText>
             Parent label {props.selectedParentLabel.id} will be deleted. This will affect all nested
