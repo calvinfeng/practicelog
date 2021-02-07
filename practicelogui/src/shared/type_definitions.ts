@@ -56,3 +56,5 @@ export enum Mode {
   EditEntry = "EDIT_ENTRY",
   NewEntry = "NEW_ENTRY"
 }
+
+export const nilUUID = '00000000-0000-0000-0000-000000000000'

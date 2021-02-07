@@ -11,6 +11,7 @@ import {
 import MusicNote from "@material-ui/icons/MusicNote"
 import AddIcon from '@material-ui/icons/Add'
 import { LogLabelJSON } from "../../shared/type_definitions"
+import { alphabetOrder } from "../../shared/callbacks"
 
 type Props = {
   // Root data
@@ -106,7 +107,7 @@ export default function LabelSelector(props: Props) {
               id="label-selector"
               value={selectedLabelID}
               onChange={handleOnChange}>
-                {props.logLabels.map((label: LogLabelJSON) => {
+                {props.logLabels.sort(alphabetOrder).map((label: LogLabelJSON) => {
                   return <MenuItem value={label.id}>
                     {label.name}
                   </MenuItem>

@@ -1,17 +1,19 @@
 import React from 'react'
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import {
   Accordion,
   AccordionSummary,
   Typography,
   AccordionDetails, 
   Checkbox,
-  FormControlLabel} from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+  FormControlLabel,
+  Divider,
+  FormGroup } from '@material-ui/core';
 import { Map } from 'immutable'
 
+import { LogLabelJSON, nilUUID } from '../shared/type_definitions';
+import { alphabetOrder } from '../shared/callbacks';
 import './DurationViewer.scss'
-import { LogLabelJSON } from '../shared/type_definitions';
-import { FormGroup } from '@material-ui/core';
 
 type Props = {
   logLabels: LogLabelJSON[]
@@ -40,26 +42,35 @@ export default function DurationViewer(props: Props) {
     }
   }
 
-  let checkBoxes: JSX.Element[] = []
-  if (props.logLabels) {
-    checkBoxes = props.logLabels.map((label: LogLabelJSON) => {
-      let checked = false
-      if (selectLabelID !== null) {
-        checked = selectedLabelID === label.id
-      }
-      return (
-        <FormControlLabel
-          onClick={(event: React.MouseEvent<HTMLLabelElement, MouseEvent>) => event.stopPropagation()}
-          control={
-            <Checkbox
-              checked={checked}
-              onChange={makeCheckHandler(label.id)}
-              name={label.name}
-              color="primary" />}
-          label={label.name} />
-      )
-    })
+  const isParent = (label: LogLabelJSON) => label.parent_id === nilUUID
+  const isChild = (label: LogLabelJSON) => label.parent_id !== nilUUID
+
+  const transformToCheckBox = (label: LogLabelJSON) => {
+    let checked = false
+    if (selectLabelID !== null) {
+      checked = selectedLabelID === label.id
+    }
+    return (
+      <FormControlLabel
+        onClick={(event: React.MouseEvent<HTMLLabelElement, MouseEvent>) => event.stopPropagation()}
+        control={
+          <Checkbox
+            checked={checked}
+            onChange={makeCheckHandler(label.id)}
+            name={label.name}
+            color="primary" />}
+        label={label.name} />
+    )
   }
+
+  let parentCheckBoxes: JSX.Element[] = []
+  let childCheckBoxes: JSX.Element[] = []
+  if (props.logLabels) {
+    parentCheckBoxes = props.logLabels.filter(isParent).sort(alphabetOrder).map(transformToCheckBox)
+    childCheckBoxes = props.logLabels.filter(isChild).sort(alphabetOrder).map(transformToCheckBox)
+  }
+
+
   
   const handleExpand = (_: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     setExpanded(!expanded)
@@ -76,12 +87,16 @@ export default function DurationViewer(props: Props) {
     <Accordion className="DurationViewer" expanded={expanded} onClick={handleExpand}>
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}>
-        <FormGroup row>
-          {checkBoxes}
+        <FormGroup className="parent-form-group" row>
+          {parentCheckBoxes}
+        </FormGroup>
+        <Divider />
+        <FormGroup className="child-form-group" row>
+          {childCheckBoxes}
         </FormGroup>
       </AccordionSummary>
       <AccordionDetails>
-        <Typography>
+        <Typography variant="body1">
           {content}
         </Typography>
       </AccordionDetails>

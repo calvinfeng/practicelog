@@ -148,7 +148,7 @@ export default function LogTable(props: Props) {
 function formatDate(d: Date): string {
   const dt = DateTime.fromISO(d.toISOString())
   dt.setZone("America/Los_Angeles")
-  return dt.toLocaleString(DateTime.DATETIME_MED).toString()
+  return dt.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY).toString()
   // const parts = [`${dt.year}`]
   
   // if (dt.month < 9) {
