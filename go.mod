@@ -1,6 +1,7 @@
 module github.com/calvinfeng/practicelog
 
-go 1.13
+// +heroku goVersion go1.14
+go 1.14
 
 require (
 	github.com/Masterminds/squirrel v1.5.0
