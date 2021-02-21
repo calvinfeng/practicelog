@@ -32,6 +32,7 @@ func initViper() {
 	try(viper.BindEnv("ebdb.username", "RDS_USERNAME"))
 	try(viper.BindEnv("ebdb.password", "RDS_PASSWORD"))
 	try(viper.BindEnv("ebdb.ssl_mode", "RDS_SSL_MODE"))
+	try(viper.BindEnv("heroku.database_url", "DATABASE_URL"))
 
 	if err := viper.ReadInConfig(); err != nil {
 		logrus.Fatal(err)
@@ -60,6 +61,10 @@ func ebDBAddress() string {
 		viper.GetString("ebdb.dbname"),
 		viper.GetString("ebdb.ssl_mode"),
 	)
+}
+
+func herokuDBAddress() string {
+	return viper.GetString("heroku.database_url")
 }
 
 func Execute() {

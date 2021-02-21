@@ -21,6 +21,8 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 	addr := localDBAddress()
 	if viper.Get("environment") == "production" {
 		addr = ebDBAddress()
+	} else if viper.Get("environment") == "heroku" {
+		addr = herokuDBAddress()
 	}
 
 	logrus.Infof("applying changes to database on %s", addr)

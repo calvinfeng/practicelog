@@ -1,0 +1,15 @@
+environment = "heroku"
+
+[authentication]
+enabled = true
+
+[postgresql]
+hostname = "localhost"
+port = 5432
+dbname = "practicelog"
+username = "cfeng"
+password = "cfeng"
+ssl_mode="disable"
+
+[heroku]
+database_url = "postgres://bfdvduyopuxwop:1341bca5587ce22a6e930f4d4b01e4c81d3b16ef32bd8a8162aae4bf15cef890@ec2-3-222-11-129.compute-1.amazonaws.com:5432/d9p178d3mkqs61"
