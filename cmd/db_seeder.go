@@ -28,6 +28,8 @@ func seedDB() error {
 	addr := localDBAddress()
 	if viper.Get("environment") == "production" {
 		addr = ebDBAddress()
+	} else if viper.Get("environment") == "heroku" {
+		addr = herokuDBAddress()
 	}
 
 	pg, err := sqlx.Open("postgres", addr)
