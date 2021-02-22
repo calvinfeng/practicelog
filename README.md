@@ -27,7 +27,7 @@ Run it
 docker run --rm -p 8080:8080 practicelog
 ```
 
-## Deployment
+## Deployment on Elastic Beanstalk
 
 Create a zip using `git`,
 
@@ -51,4 +51,45 @@ Then enter password
 practicelog --config=production db reset
 practicelog --config=production db migrate
 practicelog --config=production db seed
+```
+
+## Deployment on Heroku
+
+Create a new branch and switch to that branch
+
+```bash
+git branch main
+git checkout main
+```
+
+Build the UI code
+
+```bash
+cd practicelogui
+npm run build
+```
+
+Test the deployment locally
+
+```bash
+go build -o bin/practicelog -v .
+heroku local
+```
+
+Package everything and commit
+
+```bash
+go mod tidy
+go mod vendor
+git add -A
+git commit -m "..."
+git push heroku main
+```
+
+Don't push it to GitHub because it's too big.
+
+### Check DB Connection Credentials
+
+```bash
+heroku config
 ```

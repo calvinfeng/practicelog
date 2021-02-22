@@ -26,12 +26,18 @@ func initViper() {
 			logrus.Fatal(err)
 		}
 	}
+
+	// EB deployment
 	try(viper.BindEnv("ebdb.hostname", "RDS_HOSTNAME"))
 	try(viper.BindEnv("ebdb.port", "RDS_PORT"))
 	try(viper.BindEnv("ebdb.dbname", "RDS_DB_NAME"))
 	try(viper.BindEnv("ebdb.username", "RDS_USERNAME"))
 	try(viper.BindEnv("ebdb.password", "RDS_PASSWORD"))
 	try(viper.BindEnv("ebdb.ssl_mode", "RDS_SSL_MODE"))
+
+	// Heroku Deployment
+	try(viper.BindEnv("http.port", "PORT"))
+	try(viper.BindEnv("postgresql.url", "DATABASE_URL"))
 
 	if err := viper.ReadInConfig(); err != nil {
 		logrus.Fatal(err)
@@ -40,7 +46,7 @@ func initViper() {
 	logrus.Infof("configuration values are successfully loaded from %s", configName)
 }
 
-func localDBAddress() string {
+func localDatabaseURL() string {
 	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=%s",
 		viper.GetString("postgresql.username"),
 		viper.GetString("postgresql.password"),
@@ -51,7 +57,7 @@ func localDBAddress() string {
 	)
 }
 
-func ebDBAddress() string {
+func elasticBeanstalkDatabaseURL() string {
 	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=%s",
 		viper.GetString("ebdb.username"),
 		viper.GetString("ebdb.password"),
@@ -60,6 +66,10 @@ func ebDBAddress() string {
 		viper.GetString("ebdb.dbname"),
 		viper.GetString("ebdb.ssl_mode"),
 	)
+}
+
+func herokuDatabaseURL() string {
+	return viper.GetString("postgresql.url")
 }
 
 func Execute() {

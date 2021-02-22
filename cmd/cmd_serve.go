@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"github.com/calvinfeng/practicelog/auth"
 	"github.com/calvinfeng/practicelog/practicelog/logserver"
 	"github.com/calvinfeng/practicelog/practicelog/logstore"
@@ -17,9 +18,14 @@ import (
 )
 
 func serveRunE(_ *cobra.Command, _ []string) error {
-	addr := localDBAddress()
-	if viper.Get("environment") == "production" {
-		addr = ebDBAddress()
+	var addr string
+	switch viper.GetString("environment") {
+	case "production":
+		addr = elasticBeanstalkDatabaseURL()
+	case "heroku":
+		addr = herokuDatabaseURL()
+	default:
+		addr = localDatabaseURL()
 	}
 
 	e := echo.New()
@@ -47,7 +53,7 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	logrus.Infof("connected to database with credentials %s", addr)
+	logrus.Infof("connected to database on %s", addr)
 	srv := logserver.New(logstore.New(pg), viper.GetBool("authentication.enabled"))
 
 	// Authentication
@@ -70,6 +76,6 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	// Assignments
 	e.PUT("/api/v1/log/entries/:entry_id/assignments", srv.UpdatePracticeLogAssignments)
 
-	logrus.Infof("http server is listening on 8080")
-	return e.Start(":8080")
+	logrus.Infof("http server is listening on %s", viper.GetString("http.port"))
+	return e.Start(fmt.Sprintf(":%s", viper.GetString("http.port")))
 }

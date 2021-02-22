@@ -3,7 +3,11 @@ environment = "production"
 [authentication]
 enabled = true
 
-[postgresql]
+[http]
+port = 8080
+
+# Inject via Elastic Beanstalk environment
+[ebdb]
 hostname = "localhost"
 port = 5432
 dbname = "practicelog"

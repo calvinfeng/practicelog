@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/calvinfeng/practicelog/practicelog/logstore"
 	"github.com/jmoiron/sqlx"
-	"github.com/spf13/viper"
 	"os"
 	"time"
 
@@ -19,16 +18,11 @@ const board2019ID = "B2VXMAm0"
 
 // TODO: Need to find a way to support data reloading/reseeding.
 // For example, if label already exists, don't fail early. Same applies for log entries.
-func seedDB() error {
+func seedDB(addr string) error {
 	api := trelloapi.New(trelloapi.Config{
 		TrelloAPIKey:   os.Getenv("TRELLO_API_KEY"),
 		TrelloAPIToken: os.Getenv("TRELLO_API_TOKEN"),
 	})
-
-	addr := localDBAddress()
-	if viper.Get("environment") == "production" {
-		addr = ebDBAddress()
-	}
 
 	pg, err := sqlx.Open("postgres", addr)
 	if err != nil {

@@ -14,14 +14,9 @@ import (
 	"time"
 )
 
-func loadDB(args []string) error {
+func loadDB(addr string, args []string) error {
 	if len(args) < 2 {
 		return errors.New("not enough arguments provided to load DB")
-	}
-
-	addr := localDBAddress()
-	if viper.Get("environment") == "production" {
-		addr = ebDBAddress()
 	}
 
 	pg, err := sqlx.Open("postgres", addr)
@@ -68,12 +63,7 @@ type JSONDump struct {
 	Entries []*practicelog.Entry `json:"entries"`
 }
 
-func dumpDB() error {
-	addr := localDBAddress()
-	if viper.Get("environment") == "production" {
-		addr = ebDBAddress()
-	}
-
+func dumpDB(addr string) error {
 	pg, err := sqlx.Open("postgres", addr)
 	if err != nil {
 		return err

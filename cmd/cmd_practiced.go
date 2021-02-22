@@ -17,9 +17,14 @@ func practicedRuneE(_ *cobra.Command, args []string) error {
 		return errors.New("please provide label names")
 	}
 
-	addr := localDBAddress()
-	if viper.Get("environment") == "production" {
-		addr = ebDBAddress()
+	var addr string
+	switch viper.GetString("environment") {
+	case "production":
+		addr = elasticBeanstalkDatabaseURL()
+	case "heroku":
+		addr = herokuDatabaseURL()
+	default:
+		addr = localDatabaseURL()
 	}
 
 	pg, err := sqlx.Open("postgres", addr)

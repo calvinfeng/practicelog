@@ -3,6 +3,9 @@ environment = "development"
 [authentication]
 enabled = false
 
+[http]
+port = 8080
+
 [postgresql]
 hostname = "localhost"
 port = 5432

@@ -18,12 +18,18 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 		return errors.New("provide an argument to manage database [reset, migrate, seed]")
 	}
 
-	addr := localDBAddress()
-	if viper.Get("environment") == "production" {
-		addr = ebDBAddress()
+	var addr string
+	switch viper.GetString("environment") {
+	case "production":
+		addr = elasticBeanstalkDatabaseURL()
+	case "heroku":
+		addr = herokuDatabaseURL()
+	default:
+		addr = localDatabaseURL()
 	}
 
-	logrus.Infof("applying changes to database on %s", addr)
+	logrus.Infof("current environment is %s, apply changes to database on %s",
+		viper.GetString("environment"), addr)
 
 	switch args[0] {
 	case "reset":
@@ -55,11 +61,11 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 		}
 		return nil
 	case "seed":
-		return seedDB()
+		return seedDB(addr)
 	case "dump":
-		return dumpDB()
+		return dumpDB(addr)
 	case "load":
-		return loadDB(args)
+		return loadDB(addr, args)
 	default:
 		return fmt.Errorf("%s is not a recognized command", args[0])
 	}
