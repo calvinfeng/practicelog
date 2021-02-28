@@ -27,6 +27,19 @@ type server struct {
 	auth     bool
 }
 
+func (s *server) ListLogLabelDurations(c echo.Context) error {
+	durations, err := s.store.ListLogLabelDurations()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError,
+			errors.Wrap(err, "failed to query database").Error())
+	}
+
+	return c.JSON(http.StatusOK, PracticeLogLabelDurationListJSONResponse{
+		Count:   len(durations),
+		Results: durations,
+	})
+}
+
 func (s *server) GetLogLabelDurationSum(c echo.Context) error {
 	id, err := uuid.Parse(c.Param("label_id"))
 	if err != nil {

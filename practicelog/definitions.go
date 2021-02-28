@@ -35,6 +35,11 @@ type Label struct {
 	Children []uuid.UUID `json:"children,omitempty"`
 }
 
+type LabelDuration struct {
+	ID       uuid.UUID `json:"id"`
+	Duration int32     `json:"duration"`
+}
+
 func (l Label) String() string {
 	return fmt.Sprintf("%s %s", l.ID, l.Name)
 }
@@ -54,6 +59,8 @@ type (
 
 		GetLogLabelDurationSum(echo.Context) error
 		GetLogEntryDurationSum(echo.Context) error
+
+		ListLogLabelDurations(echo.Context) error
 	}
 
 	SQLFilter func(squirrel.Eq)
@@ -71,8 +78,11 @@ type (
 		UpdateLogLabel(*Label) error
 		DeleteLogLabel(*Label) error
 
-		// Helpers
+		// Deprecate this one
 		SumLogEntryDuration(...SQLFilter) (sum int32, err error)
+		// Rename this
 		SumAllLogEntryDuration() (sum int32, err error)
+		// Helpers
+		ListLogLabelDurations() ([]*LabelDuration, error)
 	}
 )

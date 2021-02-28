@@ -101,3 +101,16 @@ type DBReadOnlyLogEntryDuration struct {
 	Message  string    `db:"message"`
 	Username string    `db:"username"`
 }
+
+type DBReadOnlyLogLabelDuration struct {
+	ID       uuid.UUID `db:"label_id"`
+	Duration int32     `db:"duration_sum"`
+}
+
+func (row *DBReadOnlyLogLabelDuration) toModel() *practicelog.LabelDuration {
+	model := &practicelog.LabelDuration{
+		ID:       row.ID,
+		Duration: row.Duration,
+	}
+	return model
+}
