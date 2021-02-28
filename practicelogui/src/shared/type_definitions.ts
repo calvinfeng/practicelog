@@ -3,12 +3,11 @@ export type LogLabelJSON = {
   parent_id: string | null
   children: string[]
   name: string
+  duration: number
 }
 
 export type LogLabelDurationJSON = {
   id: string
-  parent_id: string | null
-  name: string
   duration: number
 }
 

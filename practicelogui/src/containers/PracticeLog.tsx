@@ -9,14 +9,15 @@ import {
 } from '@material-ui/core'
 import MuiAlert, { AlertProps, Color } from '@material-ui/lab/Alert';
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
+import _ from "lodash" // Import the entire lodash library
 
 import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON } from '../shared/type_definitions'
 import LogTable from '../components/LogTable'
 import LogEntryManagement from '../components/log_entry_management/LogEntryManagement'
 import LogLabelManagement from '../components/log_label_management/LogLabelManagement'
 import AssignmentChecklistPopover from '../components/AssignmentChecklistPopover'
-import DurationViewer from '../components/DurationViewer';
 import { Map } from 'immutable'
+import DurationPieChart from '../components/DurationPieChart';
 
 type Props = {
   IDToken: string
@@ -26,7 +27,9 @@ type State = {
   // Store
   logEntries: LogEntryJSON[]
   logLabels: LogLabelJSON[]
-  logLabelDurations: Map<string, number>
+
+  // Internal state variable
+  logLabelDurationFetched: boolean
 
   // User interaction
   selectedLogEntry: LogEntryJSON | null
@@ -53,7 +56,7 @@ export default class PracticeLog extends React.Component<Props, State> {
     this.state = {
       logEntries: [],
       logLabels: [],
-      logLabelDurations: Map<string, number>(),
+      logLabelDurationFetched: false,
       selectedLogEntry: null,
       focusedLogEntry: null,
       pageNum: 1,
@@ -82,6 +85,37 @@ export default class PracticeLog extends React.Component<Props, State> {
   componentDidMount() {
     this.fetchLogEntriesByPage(this.state.pageNum)
     this.fetchLogLabels()
+  }
+
+  /**
+   * This is an internal class helper function to populate log label duration
+   * as state.
+   */
+  fetchLogLabelDurations() {
+    this.http.get('/api/v1/log/labels/duration')
+      .then((resp: AxiosResponse) => {
+        const labels = _.cloneDeep(this.state.logLabels)
+        const durations: LogLabelDurationJSON[] = resp.data.results
+        // This is an immutable map
+        let durationMap = Map<string, number>()
+        for (let i = 0; i < durations.length; i++) {
+          durationMap = durationMap.set(durations[i].id, durations[i].duration)
+        }
+        for (let i = 0; i < labels.length; i++) {
+          labels[i].duration = durationMap.get(labels[i].id) as number
+        }
+        this.setState({
+          logLabels: labels,
+          logLabelDurationFetched: true
+        })
+      })
+      .catch((reason: any) => {
+        this.setState({
+          alertShown: true,
+          alertMessage: `Failed to list log label durations due to ${reason}`,
+          alertSeverity: "error"
+        })
+      })
   }
 
   /**
@@ -114,6 +148,9 @@ export default class PracticeLog extends React.Component<Props, State> {
           logLabels: labels
         })
       })
+      .then(() => {
+        this.fetchLogLabelDurations()
+      })
       .catch((reason: any) => {
         this.setState({
           alertShown: true,
@@ -123,26 +160,6 @@ export default class PracticeLog extends React.Component<Props, State> {
       })
   }
 
-  /**
-   * This fetches log label duration from server.
-   * @param labelID indicates which label to fetch duration from.
-   */
-  fetchLogLabelDuration = (labelID: string) => {
-    this.http.get(`/api/v1/log/labels/${labelID}/duration`)
-      .then((resp: AxiosResponse) => {
-        const payload: LogLabelDurationJSON = resp.data
-        this.setState({
-          logLabelDurations: this.state.logLabelDurations.set(payload.id, payload.duration)
-        })
-      })
-      .catch((reason: any) => {
-        this.setState({
-          alertShown: true,
-          alertMessage: `Failed to list log label duration due to ${reason}`,
-          alertSeverity: "error"
-        })
-      })
-  }
   /**
    * This is an internal class helper function to populate log entries as state.
    * @param page indicates which page to fetch from.
@@ -499,10 +516,9 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
           handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
         <div ref={pageAnchor => { this.pageAnchor = pageAnchor; }} />
-        <DurationViewer
-          fetchLogLabelDuration={this.fetchLogLabelDuration}
-          logLabels={this.state.logLabels}
-          logLabelDurations={this.state.logLabelDurations} />
+        <DurationPieChart 
+          durationFetched={this.state.logLabelDurationFetched}
+          logLabels={this.state.logLabels} />
         <Snackbar
           open={this.state.alertShown}
           autoHideDuration={6000}

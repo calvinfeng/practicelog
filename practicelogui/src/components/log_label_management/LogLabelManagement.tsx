@@ -84,7 +84,8 @@ export default class LabelManagement extends React.Component<Props, State> {
       id: nilUUID,
       parent_id: null,
       children: [],
-      name: this.state.inputParentLabelName
+      name: this.state.inputParentLabelName,
+      duration: 0
     }
     this.props.handleHTTPCreateLogLabel(newLabel)
     // TODO: Use Promise!!!
@@ -97,7 +98,8 @@ export default class LabelManagement extends React.Component<Props, State> {
         id: this.state.selectedParentLabel.id,
         parent_id: nilUUID,
         name: this.state.inputParentLabelName,
-        children: [],
+        duration: 0,
+        children: []
       }
       this.props.handleHTTPUpdateLogLabel(payload)
       // TODO: Use Promise!!!
@@ -118,7 +120,8 @@ export default class LabelManagement extends React.Component<Props, State> {
         id: nilUUID,
         parent_id: this.state.selectedParentLabel.id,
         name: this.state.inputChildLabelName,
-        children: [],
+        duration: 0,
+        children: []
       }
       this.props.handleHTTPCreateLogLabel(newLabel)
       // TODO: Use Promise!!!
@@ -132,7 +135,8 @@ export default class LabelManagement extends React.Component<Props, State> {
         id: this.state.selectedChildLabel.id,
         parent_id: this.state.selectedChildLabel.parent_id,
         name: this.state.inputChildLabelName,
-        children: [],
+        duration: 0,
+        children: []
       }
       this.props.handleHTTPUpdateLogLabel(payload)
       // TODO: Use Promise!!!
