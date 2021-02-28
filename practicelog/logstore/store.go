@@ -16,7 +16,7 @@ type store struct {
 	db *sqlx.DB
 }
 
-func (s *store) SumAllLogEntryDuration() (sum int32, err error) {
+func (s *store) SumLogEntryDuration() (sum int32, err error) {
 	query := squirrel.Select("SUM(duration)").From(LogEntryTable)
 	statement, args, qErr := query.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if qErr != nil {
@@ -35,7 +35,7 @@ func (s *store) SumAllLogEntryDuration() (sum int32, err error) {
 
 This is not an effective query but at current scale it's okay.
 */
-func (s *store) SumLogEntryDuration(filters ...practicelog.SQLFilter) (sum int32, err error) {
+func (s *store) SumLogEntryDurationWithFilters(filters ...practicelog.SQLFilter) (sum int32, err error) {
 	eqCondition := make(squirrel.Eq)
 	for _, f := range filters {
 		f(eqCondition)

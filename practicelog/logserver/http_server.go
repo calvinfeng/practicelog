@@ -40,7 +40,7 @@ func (s *server) ListLogLabelDurations(c echo.Context) error {
 	})
 }
 
-func (s *server) GetLogLabelDurationSum(c echo.Context) error {
+func (s *server) GetLogLabelDuration(c echo.Context) error {
 	id, err := uuid.Parse(c.Param("label_id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,
@@ -60,7 +60,7 @@ func (s *server) GetLogLabelDurationSum(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, fmt.Errorf("label %s not found", id))
 	}
 
-	dur, err := s.store.SumLogEntryDuration(logstore.ByLabelIDList([]string{c.Param("label_id")}))
+	dur, err := s.store.SumLogEntryDurationWithFilters(logstore.ByLabelIDList([]string{c.Param("label_id")}))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrap(err, "failed to query database"))
@@ -73,14 +73,14 @@ func (s *server) GetLogLabelDurationSum(c echo.Context) error {
 }
 
 func (s *server) GetLogEntryDurationSum(c echo.Context) error {
-	mins, err := s.store.SumAllLogEntryDuration()
+	inMinutes, err := s.store.SumLogEntryDuration()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrap(err, "failed to query database"))
 	}
 
 	return c.JSON(http.StatusOK, PracticeLogEntryTotalDurationResponse{
-		InMinutes: mins,
-		InHours:   float64(mins) / 60,
+		InMinutes: inMinutes,
+		InHours:   float64(inMinutes) / 60,
 	})
 }

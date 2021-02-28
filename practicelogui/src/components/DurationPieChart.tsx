@@ -1,6 +1,7 @@
+import { Paper, Typography } from '@material-ui/core';
 import React from 'react'
 
-import { Pie, PieChart, Tooltip } from 'recharts'
+import { Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { LogLabelJSON, nilUUID } from '../shared/type_definitions';
 
 import './DurationPieChart.scss'
@@ -8,6 +9,7 @@ import './DurationPieChart.scss'
 type Props = {
   durationFetched: boolean
   logLabels: LogLabelJSON[]
+  totalPracticeDuration: number
 }
 
 export default function DurationPieChart(props: Props) {
@@ -15,22 +17,41 @@ export default function DurationPieChart(props: Props) {
     return <section className="DurationPieChart"></section>
   }
 
+  // Transform to hours
   const parents: any[] = props.logLabels.filter((val: LogLabelJSON) => {
     return val.parent_id == nilUUID
+  }).map((label: LogLabelJSON) => {
+    return {
+      name: label.name,
+      duration: Math.round(100 * label.duration / 60) / 100
+    }
   })
   const children: any[] = props.logLabels.filter((val: LogLabelJSON) => {
     return val.parent_id !== nilUUID
+  }).map((label: LogLabelJSON) => {
+    return {
+      name: label.name,
+      duration: Math.round(100 * label.duration / 60) / 100
+    }
   })
 
   return (
-    <section className="DurationPieChart">
-      <PieChart width={960} height={540}>
-        <Pie data={parents} dataKey="duration" nameKey="name" 
-          cx="50%" cy="50%" innerRadius={100} outerRadius={200} fill="#8884d8"/>
-        <Pie data={children} dataKey="duration" nameKey="name" 
-          cx="50%" cy="50%" outerRadius={50} fill="#8884d8"/>
-        <Tooltip />
-      </PieChart>
-    </section>
+    <Paper className="DurationPieChart">
+      <Typography variant="h5">
+        Practice Time Breakdown
+      </Typography>
+      <Typography variant="body1">
+        In total, {Math.round(100 * props.totalPracticeDuration / 60) / 100} hours of practice on guitar
+      </Typography>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie data={children} dataKey="duration" nameKey="name"
+            cx="50%" cy="50%" innerRadius={250} outerRadius={300} fill="#5767BE"/>
+          <Pie data={parents} dataKey="duration" nameKey="name" label
+            cx="50%" cy="50%" outerRadius={180} fill="#3f51b5"/>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
+    </Paper>
   )
 }

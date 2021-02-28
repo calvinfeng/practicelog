@@ -57,9 +57,9 @@ type (
 		UpdatePracticeLogAssignments(echo.Context) error
 		DeletePracticeLogEntry(echo.Context) error
 
-		GetLogLabelDurationSum(echo.Context) error
 		GetLogEntryDurationSum(echo.Context) error
 
+		GetLogLabelDuration(echo.Context) error
 		ListLogLabelDurations(echo.Context) error
 	}
 
@@ -78,11 +78,11 @@ type (
 		UpdateLogLabel(*Label) error
 		DeleteLogLabel(*Label) error
 
-		// Deprecate this one
-		SumLogEntryDuration(...SQLFilter) (sum int32, err error)
-		// Rename this
-		SumAllLogEntryDuration() (sum int32, err error)
-		// Helpers
+		// Sum all log entry duration without any filtering.
+		SumLogEntryDuration() (sum int32, err error)
+		// Sum log entry durations that satisfy the filters.
+		SumLogEntryDurationWithFilters(...SQLFilter) (sum int32, err error)
+		// List all label durations.
 		ListLogLabelDurations() ([]*LabelDuration, error)
 	}
 )

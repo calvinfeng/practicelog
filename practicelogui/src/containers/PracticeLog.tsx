@@ -28,6 +28,9 @@ type State = {
   logEntries: LogEntryJSON[]
   logLabels: LogLabelJSON[]
 
+  // Stats
+  totalPracticeDuration: number
+
   // Internal state variable
   logLabelDurationFetched: boolean
 
@@ -56,6 +59,7 @@ export default class PracticeLog extends React.Component<Props, State> {
     this.state = {
       logEntries: [],
       logLabels: [],
+      totalPracticeDuration: 0,
       logLabelDurationFetched: false,
       selectedLogEntry: null,
       focusedLogEntry: null,
@@ -85,6 +89,7 @@ export default class PracticeLog extends React.Component<Props, State> {
   componentDidMount() {
     this.fetchLogEntriesByPage(this.state.pageNum)
     this.fetchLogLabels()
+    this.fetchTotalPracticeDuration()
   }
 
   /**
@@ -113,6 +118,25 @@ export default class PracticeLog extends React.Component<Props, State> {
         this.setState({
           alertShown: true,
           alertMessage: `Failed to list log label durations due to ${reason}`,
+          alertSeverity: "error"
+        })
+      })
+  }
+
+  /**
+   * This is an internal class helper to populate the state variable totalPracticeDuration.
+   */
+  fetchTotalPracticeDuration() {
+    this.http.get('/api/v1/log/entries/duration')
+      .then((resp: AxiosResponse) => {
+        this.setState({
+          totalPracticeDuration: resp.data.in_minutes as number
+        })
+      })
+      .catch((reason: any) => {
+        this.setState({
+          alertShown: true,
+          alertMessage: `Failed to fetch log entries total duration to ${reason}`,
           alertSeverity: "error"
         })
       })
@@ -504,6 +528,7 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleSelectLogEntry={this.handleSelectLogEntry}
           handleHTTPDeleteLogEntry={this.handleHTTPDeleteLogEntry} />
         {this.PaginationControlPanel}
+        <div ref={pageAnchor => { this.pageAnchor = pageAnchor; }} />
         <LogEntryManagement
           logLabels={this.state.logLabels}
           selectedLogEntry={this.state.selectedLogEntry}
@@ -515,8 +540,8 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
           handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
           handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
-        <div ref={pageAnchor => { this.pageAnchor = pageAnchor; }} />
-        <DurationPieChart 
+        <DurationPieChart
+          totalPracticeDuration={this.state.totalPracticeDuration}
           durationFetched={this.state.logLabelDurationFetched}
           logLabels={this.state.logLabels} />
         <Snackbar
