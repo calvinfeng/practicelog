@@ -1,4 +1,4 @@
 .idea/
 *.zip
-*.json
+*backup.json
 *.csv
