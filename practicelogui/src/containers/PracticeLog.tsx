@@ -71,7 +71,7 @@ export default class PracticeLog extends React.Component<Props, State> {
       alertSeverity: "info"
     }
     this.http = axios.create({
-      baseURL: `${process.env.REACT_APP_API_URL}`,
+      baseURL: process.env.REACT_APP_API_URL,
       timeout: 1000,
       headers: {
         "Authorization": props.IDToken

@@ -29,15 +29,26 @@ export type LogAssignmentJSON = {
 }
 
 export type GoogleUserProfile = {
-  token_id: string
+  id_token: string
   access_token: string
   granted_scopes: string
-  google_user_id: string
-  google_email: string
+  user_id: string
+  email: string
   full_name: string
-  given_name: string
+  first_name: string
+  last_name: string
+  avatar_url: string
+}
+
+export type GoogleUserInfoResponse = {
+  id: string
+  email: string
   family_name: string
-  image_url: string
+  given_name: string
+  name: string
+  locale: string
+  picture: string
+  verified_email: boolean
 }
 
 export type GoogleError = {

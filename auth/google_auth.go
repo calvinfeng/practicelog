@@ -25,10 +25,10 @@ func TokenValidationHandler(c echo.Context) error {
 			"token information is not found in HTTP context, perhaps middleware failed to inject it")
 	}
 
-	if _, ok := emailWhiteList[info.Email]; !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized,
-			fmt.Sprintf("%s is not an accepted user email, only Calvin is allowed to access this service", info.Email))
-	}
+	// TODO:
+	// Implement logic to fetch data using access token
+	// http.get('/oauth2/v1/userinfo?alt=json&access_token=' + accessToken)
+	// Then return the whole user profile back to front-end.
 
 	return c.JSON(http.StatusOK, TokenValidationResponse{
 		UserID: info.UserId,
