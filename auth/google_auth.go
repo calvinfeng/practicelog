@@ -1,11 +1,13 @@
 package auth
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/oauth2/v2"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -13,9 +15,24 @@ var emailWhiteList = map[string]struct{}{
 	"calvin.j.feng@gmail.com": {},
 }
 
+type AccessTokenPayload struct {
+	AccessToken string `json:"access_token"`
+}
+
+type GoogleUserInfoResponse struct {
+	ID            string `json:"id"`
+	Email         string `json:"email"`
+	FamilyName    string `json:"family_name"`
+	GivenName     string `json:"given_name"`
+	Name          string `json:"name"`
+	Locale        string `json:"locale"`
+	Picture       string `json:"picture"`
+	VerifiedEmail bool   `json:"verified_email"`
+}
+
 type TokenValidationResponse struct {
-	UserID string `json:"user_id"`
-	Email  string `json:"email"`
+	GrantedScopes string `json:"granted_scopes"`
+	GoogleUserInfoResponse
 }
 
 func TokenValidationHandler(c echo.Context) error {
@@ -25,14 +42,31 @@ func TokenValidationHandler(c echo.Context) error {
 			"token information is not found in HTTP context, perhaps middleware failed to inject it")
 	}
 
-	// TODO:
-	// Implement logic to fetch data using access token
-	// http.get('/oauth2/v1/userinfo?alt=json&access_token=' + accessToken)
-	// Then return the whole user profile back to front-end.
+	payload := new(AccessTokenPayload)
+	if err := c.Bind(payload); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest,
+			errors.Wrap(err, "failed to parse JSON data").Error())
+	}
+
+	resp, err := http.Get(
+		fmt.Sprintf("https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=%s", payload.AccessToken))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest,
+			errors.Wrap(err, "unable to fetch user information from Google API").Error())
+	}
+	defer resp.Body.Close()
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+
+	userInfoResp := GoogleUserInfoResponse{}
+	if err := json.Unmarshal(bodyBytes, &userInfoResp); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest,
+			errors.Wrap(err, "unable to unmarshal user information from Google API response").Error())
+	}
 
 	return c.JSON(http.StatusOK, TokenValidationResponse{
-		UserID: info.UserId,
-		Email:  info.Email,
+		GrantedScopes:          info.Scope,
+		GoogleUserInfoResponse: userInfoResp,
 	})
 }
 
