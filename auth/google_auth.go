@@ -31,7 +31,7 @@ type GoogleUserInfoResponse struct {
 }
 
 type TokenValidationResponse struct {
-	GrantedScopes string `json:"granted_scopes"`
+	ExpirysIn int64 `json:"expires_in"`
 	GoogleUserInfoResponse
 }
 
@@ -65,7 +65,7 @@ func TokenValidationHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, TokenValidationResponse{
-		GrantedScopes:          info.Scope,
+		ExpirysIn:              info.ExpiresIn,
 		GoogleUserInfoResponse: userInfoResp,
 	})
 }

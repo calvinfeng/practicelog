@@ -31,7 +31,6 @@ export type LogAssignmentJSON = {
 export type GoogleUserProfile = {
   id_token: string
   access_token: string
-  granted_scopes: string
   user_id: string
   email: string
   full_name: string
@@ -40,7 +39,8 @@ export type GoogleUserProfile = {
   avatar_url: string
 }
 
-export type GoogleUserInfoResponse = {
+export type AuthValidationResponse = {
+  expires_in: number
   id: string
   email: string
   family_name: string

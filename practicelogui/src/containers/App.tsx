@@ -6,7 +6,7 @@ import {
 } from 'react-google-login';
 
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
-import { GoogleUserProfile, GoogleError, GoogleUserInfoResponse } from '../shared/type_definitions'
+import { GoogleUserProfile, GoogleError, AuthValidationResponse } from '../shared/type_definitions'
 import PracticeLog from './PracticeLog'
 import Unauthorized from './Unauthorized'
 import './App.scss'
@@ -22,24 +22,18 @@ type State = {
 }
 
 export default class App extends React.Component<Props, State> {
-  private googleAPI: AxiosInstance
-
   constructor(props: Props) {
     super(props)
     this.state = {
       userProfile: null
     };
-    this.googleAPI = axios.create({
-      baseURL: 'https://www.googleapis.com',
-      timeout: 2000
-    })
   }
 
   componentDidMount() {
     const IDToken = localStorage.getItem('google_id_token')
-    const accessToken = localStorage.getItem('google_access_token')
-    if (IDToken !== null && accessToken !== null) {
-      const instance = axios.create({
+    const AccessToken = localStorage.getItem('google_access_token')
+    if (IDToken !== null && AccessToken !== null) {
+      const http = axios.create({
         baseURL: process.env.REACT_APP_API_URL,
         timeout: 1000,
         headers: {
@@ -47,38 +41,36 @@ export default class App extends React.Component<Props, State> {
         }
       });
 
-      instance.get('/api/v1/token/validate')
+      http.post('/api/v1/token/validate', { "access_token": AccessToken })
         .then((resp: AxiosResponse) => {
           if (resp.status == 200) {
-            // TODO: Move this logic to backend
-            this.googleAPI.get('/oauth2/v1/userinfo?alt=json&access_token=' + accessToken)
-              .then((resp: AxiosResponse) => {
-                const info = resp.data as GoogleUserInfoResponse
-                this.setState({
-                  userProfile: {
-                    id_token: IDToken,
-                    access_token: accessToken,
-                    granted_scopes: "", // TODO: Backend should populate this
-                    user_id: info.id,
-                    email: info.email,
-                    full_name: info.name,
-                    first_name: info.given_name,
-                    last_name: info.family_name,
-                    avatar_url: info.picture
-                  }
-                })
-              })
-              .catch((reason: any) => {
-                console.log('failed to fetch user information from Google API', reason)
-              })
+            const info = resp.data as AuthValidationResponse
+            this.setState({
+              userProfile: {
+                id_token: IDToken,
+                access_token: AccessToken,
+                user_id: info.id,
+                email: info.email,
+                full_name: info.name,
+                first_name: info.given_name,
+                last_name: info.family_name,
+                avatar_url: info.picture
+              }
+            })
+            console.log('token expires in', info.expires_in)
+            setTimeout(this.clearStorageAndLogout, info.expires_in * 1000)
           }
         })
         .catch((reason: any) => {
           console.log('ID token in local storage is invalid', reason)
-          localStorage.clear()
+          this.clearStorageAndLogout()
         })
-
     }
+  }
+
+  clearStorageAndLogout = () => {
+    this.setState({ userProfile: null })
+    localStorage.clear()
   }
 
   handleLoginSuccess = (resp: GoogleLoginResponse | GoogleLoginResponseOffline) => {
@@ -90,7 +82,6 @@ export default class App extends React.Component<Props, State> {
         userProfile: {
           id_token: resp.tokenId,
           access_token: resp.accessToken,
-          granted_scopes: resp.getGrantedScopes(),
           user_id: resp.getBasicProfile().getId(),
           email: resp.getBasicProfile().getEmail(),
           full_name: resp.getBasicProfile().getName(),
@@ -99,8 +90,11 @@ export default class App extends React.Component<Props, State> {
           avatar_url: resp.getBasicProfile().getImageUrl()
         }
       })
+      console.log('user has scopes', resp.getGrantedScopes())
+      console.log('token expires in', resp.tokenObj.expires_in)
       localStorage.setItem('google_id_token', resp.tokenId)
       localStorage.setItem('google_access_token', resp.accessToken)
+      setTimeout(this.clearStorageAndLogout, resp.tokenObj.expires_in * 1000)
     }
   }
 
@@ -124,7 +118,7 @@ export default class App extends React.Component<Props, State> {
       )
     }
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV === 'production') {
       return (
         <div className="App">
           <PracticeLog IDToken={"development"} />
