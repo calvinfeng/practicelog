@@ -82,7 +82,7 @@ export default function LabelSelector(props: Props) {
 
   const chips = props.inputLabelList.map((label: LogLabelJSON) => {
     return (
-      <Grid item>
+      <Grid item key={label.id}>
         <Chip
           style={{ margin: "0.1rem" }}
           label={label.name}
@@ -108,7 +108,7 @@ export default function LabelSelector(props: Props) {
               value={selectedLabelID}
               onChange={handleOnChange}>
                 {props.logLabels.sort(alphabetOrder).map((label: LogLabelJSON) => {
-                  return <MenuItem value={label.id}>
+                  return <MenuItem value={label.id} key={label.id}>
                     {label.name}
                   </MenuItem>
                 })}

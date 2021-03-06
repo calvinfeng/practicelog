@@ -5,7 +5,7 @@ import {
   GoogleLoginResponseOffline,
 } from 'react-google-login';
 
-import axios, { AxiosInstance, AxiosResponse }  from 'axios'
+import axios, { AxiosResponse }  from 'axios'
 import { GoogleUserProfile, GoogleError, AuthValidationResponse } from '../shared/type_definitions'
 import PracticeLog from './PracticeLog'
 import Unauthorized from './Unauthorized'
@@ -43,7 +43,7 @@ export default class App extends React.Component<Props, State> {
 
       http.post('/api/v1/token/validate', { "access_token": AccessToken })
         .then((resp: AxiosResponse) => {
-          if (resp.status == 200) {
+          if (resp.status === 200) {
             const info = resp.data as AuthValidationResponse
             this.setState({
               userProfile: {
@@ -78,6 +78,8 @@ export default class App extends React.Component<Props, State> {
       resp = resp as GoogleLoginResponseOffline
     } else {
       resp = resp as GoogleLoginResponse
+      console.log('user has scopes', resp.getGrantedScopes())
+
       this.setState({
         userProfile: {
           id_token: resp.tokenId,
@@ -90,7 +92,6 @@ export default class App extends React.Component<Props, State> {
           avatar_url: resp.getBasicProfile().getImageUrl()
         }
       })
-      console.log('user has scopes', resp.getGrantedScopes())
       console.log('token expires in', resp.tokenObj.expires_in)
       localStorage.setItem('google_id_token', resp.tokenId)
       localStorage.setItem('google_access_token', resp.accessToken)
@@ -118,7 +119,7 @@ export default class App extends React.Component<Props, State> {
       )
     }
 
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV !== 'production') {
       return (
         <div className="App">
           <PracticeLog IDToken={"development"} />

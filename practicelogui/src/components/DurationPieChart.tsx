@@ -19,7 +19,7 @@ export default function DurationPieChart(props: Props) {
 
   // Transform to hours
   const parents: any[] = props.logLabels.filter((val: LogLabelJSON) => {
-    return val.parent_id == nilUUID
+    return val.parent_id === nilUUID
   }).map((label: LogLabelJSON) => {
     return {
       name: label.name,

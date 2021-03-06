@@ -104,7 +104,7 @@ export default function LogTable(props: Props) {
     }
 
     tableRows.push(
-      <TableRow>
+      <TableRow key={log.id}>
         <TableCell style={cellStyle}>{formatDate(log.date)}</TableCell>
         <TableCell style={cellStyle}>{log.duration} mins</TableCell>
         <TableCell style={longCellStyle}>{labels}</TableCell>
@@ -149,8 +149,9 @@ function formatDate(d: Date): string {
   const dt = DateTime.fromISO(d.toISOString())
   dt.setZone("America/Los_Angeles")
   return dt.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY).toString()
+}
   // const parts = [`${dt.year}`]
-  
+
   // if (dt.month < 9) {
   //   parts.push(`0${dt.month}`)
   // } else {
@@ -164,4 +165,3 @@ function formatDate(d: Date): string {
   // }
 
   // return parts.join("-")
-}

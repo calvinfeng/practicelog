@@ -1,7 +1,7 @@
 environment = "development"
 
 [authentication]
-enabled = true
+enabled = false
 
 [http]
 port = 8080
