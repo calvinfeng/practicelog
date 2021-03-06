@@ -57,7 +57,7 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	srv := logserver.New(logstore.New(pg), viper.GetBool("authentication.enabled"))
 
 	// Authentication
-	e.GET("/api/v1/token/validate", auth.TokenValidationHandler)
+	e.POST("/api/v1/token/validate", auth.TokenValidationHandler)
 
 	// Labels
 	e.GET("/api/v1/log/labels", srv.ListPracticeLogLabels)

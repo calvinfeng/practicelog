@@ -63,7 +63,7 @@ func (s *server) GetLogLabelDuration(c echo.Context) error {
 	dur, err := s.store.SumLogEntryDurationWithFilters(logstore.ByLabelIDList([]string{c.Param("label_id")}))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
-			errors.Wrap(err, "failed to query database"))
+			errors.Wrap(err, "failed to query database").Error())
 	}
 
 	return c.JSON(http.StatusOK, PracticeLogLabelDurationResponse{
@@ -76,7 +76,7 @@ func (s *server) GetLogEntryDurationSum(c echo.Context) error {
 	inMinutes, err := s.store.SumLogEntryDuration()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
-			errors.Wrap(err, "failed to query database"))
+			errors.Wrap(err, "failed to query database").Error())
 	}
 
 	return c.JSON(http.StatusOK, PracticeLogEntryTotalDurationResponse{

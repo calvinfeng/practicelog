@@ -3,7 +3,7 @@ import {
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
-  IconButton, 
+  IconButton,
   Button,
   Grid,
   TextField} from "@material-ui/core"
@@ -42,7 +42,7 @@ export default function AssignmentEditor(props: Props) {
   if (props.inputAssignmentList) {
     assignmentListItems = props.inputAssignmentList.map((assignment: LogAssignmentJSON) => {
       return (
-        <ListItem>
+        <ListItem key={assignment.position+assignment.name}>
           <FormatListBulletedIcon color="action" />
           <ListItemText primary={assignment.name} style={{"marginLeft": "1rem"}}/>
           <ListItemSecondaryAction>
@@ -98,7 +98,7 @@ export default function AssignmentEditor(props: Props) {
 
   if (selectedAssignment !== null) {
     buttons.push(
-      <Grid item>
+      <Grid item key={"save-assignment"}>
         <Button
           form="assignment-submission-form"
           type="submit"
@@ -116,7 +116,7 @@ export default function AssignmentEditor(props: Props) {
     }
 
     buttons.push(
-      <Grid item>
+      <Grid item key={"add-assignment"}>
         <Button
           form="assignment-submission-form"
           type="submit"
@@ -130,7 +130,7 @@ export default function AssignmentEditor(props: Props) {
   }
 
   buttons.push(
-    <Grid item>
+    <Grid item key={"clear"}>
       <Button
         variant="outlined"
         color="secondary"
@@ -148,7 +148,7 @@ export default function AssignmentEditor(props: Props) {
       <form
         id="assignment-submission-form"
         onSubmit={handleFormSubmitAssignment}>
-        <Grid container 
+        <Grid container
           direction="row"
           justify="flex-end"
           alignItems="flex-end"
