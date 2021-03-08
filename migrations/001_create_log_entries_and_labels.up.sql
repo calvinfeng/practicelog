@@ -1,7 +1,7 @@
 CREATE TABLE log_entries (
     id UUID PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
-    date timestamp NOT NULL,
+    date TIMESTAMP NOT NULL,
     duration INTEGER NOT NULL,
     message TEXT,
     details TEXT,

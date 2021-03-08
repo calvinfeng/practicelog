@@ -43,6 +43,8 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 		return resetDB(addr)
 	case "migrate":
 		return migrateDB(addr)
+	case "force":
+		return forceMigrateDB(addr)
 	case "seed":
 		return seedDB(addr)
 	case "dump":
@@ -66,6 +68,22 @@ func resetDB(addr string) error {
 		return err
 	} else {
 		logrus.Infof("successfully reset database to version %d, dirty=%v", version, dirty)
+	}
+	return nil
+}
+
+func forceMigrateDB(addr string) error {
+	m, err := migrate.New("file://./migrations", addr)
+	if err != nil {
+		return err
+	}
+	if err := m.Force(1); err != nil && err != migrate.ErrNoChange {
+		return fmt.Errorf("failed to apply migrations: %w", err)
+	}
+	if version, dirty, err := m.Version(); err != nil {
+		return err
+	} else {
+		logrus.Infof("successfully migrated database to version %d, dirty=%v", version, dirty)
 	}
 	return nil
 }

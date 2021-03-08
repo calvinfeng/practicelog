@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS video_log_entries;
+ALTER TABLE log_entries ALTER COLUMN date TYPE TIMESTAMP;
