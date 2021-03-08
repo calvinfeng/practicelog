@@ -104,6 +104,11 @@ func Execute() {
 			Short: "calculate the total time in minutes spent on a particular practicelog category",
 			RunE:  practicedRuneE,
 		},
+		&cobra.Command{
+			Use:   "youtube",
+			Short: "use YouTube API service and provide utility",
+			RunE:  youtubeRuneE,
+		},
 	)
 
 	if err := root.Execute(); err != nil {
