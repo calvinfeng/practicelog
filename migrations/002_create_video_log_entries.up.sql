@@ -5,5 +5,6 @@ CREATE TABLE video_log_entries (
     published TIMESTAMP WITH TIME ZONE,
     video_orientation VARCHAR(255) NOT NULL,
     title VARCHAR(255),
-    description TEXT
+    description TEXT,
+    is_monthly_progress BOOLEAN
 );
