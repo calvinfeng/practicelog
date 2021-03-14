@@ -3,6 +3,7 @@ package logstore
 import (
 	"database/sql"
 	"fmt"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/calvinfeng/practicelog/videolog"
 	"github.com/jmoiron/sqlx"
@@ -17,7 +18,7 @@ type store struct {
 	db *sqlx.DB
 }
 
-func (s store) SelectVideoLogEntries(limit, offset uint64, filters ...videolog.SQLFilter) ([]*videolog.Entry, error) {
+func (s *store) SelectVideoLogEntries(limit, offset uint64, filters ...videolog.SQLFilter) ([]*videolog.Entry, error) {
 	eqCondition := make(squirrel.Eq)
 	for _, f := range filters {
 		f(eqCondition)
@@ -48,20 +49,28 @@ func (s store) SelectVideoLogEntries(limit, offset uint64, filters ...videolog.S
 	return entries, nil
 }
 
-func (s store) BatchInsertVideoLogEntries(entries ...*videolog.Entry) (int64, error) {
+func (s *store) BatchUpsertVideoLogEntries(entries ...*videolog.Entry) (int64, error) {
 	entryInsertQ := squirrel.Insert(VideoLogEntryTable).
-		Columns("id", "published", "video_orientation", "title", "description", "is_monthly_progress")
+		Columns("id", "published", "video_orientation", "title", "description", "is_monthly_progress", "thumbnails")
 
 	for _, entry := range entries {
 		row := new(DBVideoLogEntry).fromModel(entry)
 		entryInsertQ = entryInsertQ.Values(
-			row.ID, row.Published, row.VideoOrientation, row.Title, row.Description, row.IsMonthlyProgress)
+			row.ID, row.Published, row.VideoOrientation, row.Title, row.Description, row.IsMonthlyProgress, row.Thumbnails)
 	}
+
+	entryInsertQ = entryInsertQ.Suffix(`ON CONFLICT(id) DO UPDATE SET
+		title = EXCLUDED.title,
+		description = EXCLUDED.description,
+		is_monthly_progress = EXCLUDED.is_monthly_progress,
+		thumbnails = EXCLUDED.thumbnails`)
 
 	statement, args, err := entryInsertQ.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to construct query")
 	}
+
+	fmt.Println(statement)
 
 	tx, err := s.db.Beginx()
 	if err != nil {

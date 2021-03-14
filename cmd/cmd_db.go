@@ -4,19 +4,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/calvinfeng/practicelog/practicelog"
-	"github.com/calvinfeng/practicelog/practicelog/logstore"
-	"github.com/jmoiron/sqlx"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"os"
 	"time"
 
+	"github.com/calvinfeng/practicelog/practicelog"
+	"github.com/calvinfeng/practicelog/practicelog/logstore"
+	"github.com/jmoiron/sqlx"
+	"github.com/spf13/viper"
+
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	// Driver for PostgreSQL
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 // Reset the database, apply migrationsV1 and then seed it.

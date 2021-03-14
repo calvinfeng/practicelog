@@ -1,19 +1,23 @@
 package logstore
 
 import (
-	"github.com/calvinfeng/practicelog/videolog"
+	"encoding/json"
 	"time"
+
+	"github.com/calvinfeng/practicelog/videolog"
+	"github.com/calvinfeng/practicelog/youtubeapi"
 )
 
 const VideoLogEntryTable = "video_log_entries"
 
 type DBVideoLogEntry struct {
-	ID                string    `db:"id"`
-	Published         time.Time `db:"published"`
-	VideoOrientation  string    `db:"video_orientation"`
-	Title             string    `db:"title"`
-	Description       string    `db:"description"`
-	IsMonthlyProgress bool      `db:"is_monthly_progress"`
+	ID                string          `db:"id"`
+	Published         time.Time       `db:"published"`
+	VideoOrientation  string          `db:"video_orientation"`
+	Title             string          `db:"title"`
+	Description       string          `db:"description"`
+	IsMonthlyProgress bool            `db:"is_monthly_progress"`
+	Thumbnails        json.RawMessage `db:"thumbnails"`
 }
 
 func (row *DBVideoLogEntry) fromModel(model *videolog.Entry) *DBVideoLogEntry {
@@ -23,10 +27,14 @@ func (row *DBVideoLogEntry) fromModel(model *videolog.Entry) *DBVideoLogEntry {
 	row.Title = model.Title
 	row.Description = model.Description
 	row.IsMonthlyProgress = model.IsMonthlyProgress
+	row.Thumbnails, _ = json.Marshal(model.Thumbnails)
 	return row
 }
 
 func (row *DBVideoLogEntry) toModel() *videolog.Entry {
+	thumbnails := make(map[string]youtubeapi.Thumbnail)
+	json.Unmarshal(row.Thumbnails, &thumbnails)
+
 	return &videolog.Entry{
 		ID:                row.ID,
 		Published:         row.Published,
@@ -34,5 +42,6 @@ func (row *DBVideoLogEntry) toModel() *videolog.Entry {
 		Title:             row.Title,
 		Description:       row.Description,
 		IsMonthlyProgress: row.IsMonthlyProgress,
+		Thumbnails:        thumbnails,
 	}
 }

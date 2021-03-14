@@ -15,7 +15,7 @@ type resourceID struct {
 	VideoID string `json:"videoId"`
 }
 
-type thumbnail struct {
+type Thumbnail struct {
 	URL    string `json:"url"`
 	Width  int64  `json:"width"`
 	Height int64  `json:"height"`
@@ -28,7 +28,7 @@ type Snippet struct {
 	PlaylistID  string               `json:"playlistId"`
 	Title       string               `json:"title"`
 	Description string               `json:"description"`
-	Thumbnails  map[string]thumbnail `json:"thumbnails"`
+	Thumbnails  map[string]Thumbnail `json:"thumbnails"`
 	ResourceID  resourceID           `json:"resourceId"`
 }
 
