@@ -7,5 +7,6 @@ CREATE TABLE video_log_entries (
     title VARCHAR(255),
     description TEXT,
     is_monthly_progress BOOLEAN,
-    thumbnails JSONB
+    thumbnails JSONB,
+    username VARCHAR(255) NOT NULL
 );

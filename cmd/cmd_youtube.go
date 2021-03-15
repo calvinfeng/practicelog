@@ -74,6 +74,7 @@ func loadPlaylistItems(srv youtubeapi.Service, addr string) error {
 			Description:       item.Snippet.Description,
 			IsMonthlyProgress: false,
 			Thumbnails:        item.Snippet.Thumbnails,
+			Username:          "calvin.j.feng@gmail.com",
 		}
 
 		if strings.Contains(item.Snippet.Title, "AR 9:16") {

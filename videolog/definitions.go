@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/calvinfeng/practicelog/youtubeapi"
+	"github.com/labstack/echo/v4"
 
 	"github.com/Masterminds/squirrel"
 )
@@ -21,6 +22,7 @@ type Entry struct {
 	Description       string                          `json:"description"`
 	IsMonthlyProgress bool                            `json:"is_monthly_progress"`
 	Thumbnails        map[string]youtubeapi.Thumbnail `json:"thumbnails"`
+	Username          string                          `json:"username"`
 }
 
 func (e *Entry) String() (str string) {
@@ -35,10 +37,14 @@ func (e *Entry) String() (str string) {
 }
 
 type (
+	HTTPServer interface {
+		ListVideoLogEntries(echo.Context) error
+	}
+
 	SQLFilter func(squirrel.Eq)
 
 	Store interface {
 		BatchUpsertVideoLogEntries(entries ...*Entry) (int64, error)
-		SelectVideoLogEntries(limit, offset uint64, filters ...SQLFilter) ([]*Entry, error)
+		SelectVideoLogEntries(filters ...SQLFilter) ([]*Entry, error)
 	}
 )

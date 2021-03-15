@@ -18,7 +18,7 @@ type store struct {
 	db *sqlx.DB
 }
 
-func (s *store) SelectVideoLogEntries(limit, offset uint64, filters ...videolog.SQLFilter) ([]*videolog.Entry, error) {
+func (s *store) SelectVideoLogEntries(filters ...videolog.SQLFilter) ([]*videolog.Entry, error) {
 	eqCondition := make(squirrel.Eq)
 	for _, f := range filters {
 		f(eqCondition)
@@ -26,8 +26,6 @@ func (s *store) SelectVideoLogEntries(limit, offset uint64, filters ...videolog.
 
 	query := squirrel.Select("*").
 		From(VideoLogEntryTable).
-		Limit(limit).
-		Offset(offset).
 		Where(eqCondition).
 		OrderBy("published DESC")
 
@@ -51,12 +49,27 @@ func (s *store) SelectVideoLogEntries(limit, offset uint64, filters ...videolog.
 
 func (s *store) BatchUpsertVideoLogEntries(entries ...*videolog.Entry) (int64, error) {
 	entryInsertQ := squirrel.Insert(VideoLogEntryTable).
-		Columns("id", "published", "video_orientation", "title", "description", "is_monthly_progress", "thumbnails")
+		Columns(
+			"id",
+			"published",
+			"video_orientation",
+			"title",
+			"description",
+			"is_monthly_progress",
+			"thumbnails",
+			"username")
 
 	for _, entry := range entries {
 		row := new(DBVideoLogEntry).fromModel(entry)
 		entryInsertQ = entryInsertQ.Values(
-			row.ID, row.Published, row.VideoOrientation, row.Title, row.Description, row.IsMonthlyProgress, row.Thumbnails)
+			row.ID,
+			row.Published,
+			row.VideoOrientation,
+			row.Title,
+			row.Description,
+			row.IsMonthlyProgress,
+			row.Thumbnails,
+			row.Username)
 	}
 
 	entryInsertQ = entryInsertQ.Suffix(`ON CONFLICT(id) DO UPDATE SET
