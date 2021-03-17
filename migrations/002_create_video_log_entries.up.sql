@@ -10,3 +10,12 @@ CREATE TABLE video_log_entries (
     thumbnails JSONB,
     username VARCHAR(255) NOT NULL
 );
+
+CREATE TABLE monthly_summaries (
+    id SERIAL PRIMARY KEY,
+    year INTEGER NOT NULL,
+    month INTEGER NOT NULL,
+    title VARCHAR(255),
+    subtitle VARCHAR(255),
+    body TEXT
+);
