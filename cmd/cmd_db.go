@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/calvinfeng/practicelog/practicelog"
@@ -45,9 +46,7 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 	case "reset":
 		return resetDB(addr)
 	case "migrate":
-		return migrateDB(addr)
-	case "force":
-		return forceMigrateDB(addr)
+		return migrateDB(addr, args)
 	case "dump":
 		return dumpDB(addr)
 	case "load":
@@ -73,35 +72,35 @@ func resetDB(addr string) error {
 	return nil
 }
 
-func forceMigrateDB(addr string) error {
+func migrateDB(addr string, args []string) error {
+	logrus.Infof("migration command received arguments %v", args)
 	m, err := migrate.New("file://./migrations", addr)
 	if err != nil {
 		return err
 	}
-	if err := m.Force(1); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("failed to apply migrations: %w", err)
-	}
-	if version, dirty, err := m.Version(); err != nil {
-		return err
-	} else {
-		logrus.Infof("successfully migrated database to version %d, dirty=%v", version, dirty)
-	}
-	return nil
-}
 
-func migrateDB(addr string) error {
-	m, err := migrate.New("file://./migrations", addr)
-	if err != nil {
-		return err
+	switch {
+	case len(args) >= 2:
+		version, err := strconv.ParseInt(args[1], 10, 64)
+		if err != nil {
+			return fmt.Errorf("version has to be integer: %w", err)
+		}
+		if err := m.Migrate(uint(version)); err != nil && err != migrate.ErrNoChange {
+			return fmt.Errorf("failed to apply migrations: %w", err)
+		}
+	default:
+		logrus.Info("database is migrating to latest version")
+		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+			return fmt.Errorf("failed to apply migrations: %w", err)
+		}
 	}
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("failed to apply migrations: %w", err)
-	}
+
 	if version, dirty, err := m.Version(); err != nil {
 		return err
 	} else {
 		logrus.Infof("successfully migrated database to version %d, dirty=%v", version, dirty)
 	}
+	
 	return nil
 }
 
