@@ -3,9 +3,14 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/calvinfeng/practicelog/auth"
-	"github.com/calvinfeng/practicelog/practicelog/logserver"
-	"github.com/calvinfeng/practicelog/practicelog/logstore"
+	practicelogserver "github.com/calvinfeng/practicelog/practicelog/server"
+	practicelogstore "github.com/calvinfeng/practicelog/practicelog/store"
+	videologserver "github.com/calvinfeng/practicelog/videolog/server"
+	videologstore "github.com/calvinfeng/practicelog/videolog/store"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -14,7 +19,6 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/option"
-	"net/http"
 )
 
 func serveRunE(_ *cobra.Command, _ []string) error {
@@ -54,30 +58,35 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	}
 
 	logrus.Infof("connected to database on %s", addr)
-	srv := logserver.New(logstore.New(pg), viper.GetBool("authentication.enabled"))
+	pls := practicelogserver.New(practicelogstore.New(pg), viper.GetBool("authentication.enabled"))
+	vls := videologserver.New(videologstore.New(pg), viper.GetBool("authentication.enabled"))
 
 	// Authentication
 	e.POST("/api/v1/token/validate", auth.TokenValidationHandler)
 
 	// Labels
-	e.GET("/api/v1/log/labels", srv.ListPracticeLogLabels)
-	e.POST("/api/v1/log/labels", srv.CreatePracticeLogLabel)
-	e.PUT("/api/v1/log/labels/:label_id", srv.UpdatePracticeLogLabel)
-	e.DELETE("/api/v1/log/labels/:label_id", srv.DeletePracticeLogLabel)
+	e.GET("/api/v1/log/labels", pls.ListPracticeLogLabels)
+	e.POST("/api/v1/log/labels", pls.CreatePracticeLogLabel)
+	e.PUT("/api/v1/log/labels/:label_id", pls.UpdatePracticeLogLabel)
+	e.DELETE("/api/v1/log/labels/:label_id", pls.DeletePracticeLogLabel)
 	// Get duration by label specific
-	e.GET("/api/v1/log/labels/duration", srv.ListLogLabelDurations)
-	e.GET("/api/v1/log/labels/:label_id/duration", srv.GetLogLabelDuration)
+	e.GET("/api/v1/log/labels/duration", pls.ListLogLabelDurations)
+	e.GET("/api/v1/log/labels/:label_id/duration", pls.GetLogLabelDuration)
 
 	// Entries
-	e.GET("/api/v1/log/entries", srv.ListPracticeLogEntries)
-	e.POST("/api/v1/log/entries", srv.CreatePracticeLogEntry)
-	e.PUT("/api/v1/log/entries/:entry_id", srv.UpdatePracticeLogEntry)
-	e.DELETE("/api/v1/log/entries/:entry_id", srv.DeletePracticeLogEntry)
+	e.GET("/api/v1/log/entries", pls.ListPracticeLogEntries)
+	e.POST("/api/v1/log/entries", pls.CreatePracticeLogEntry)
+	e.PUT("/api/v1/log/entries/:entry_id", pls.UpdatePracticeLogEntry)
+	e.DELETE("/api/v1/log/entries/:entry_id", pls.DeletePracticeLogEntry)
 	// Get duration sum of all log entries
-	e.GET("/api/v1/log/entries/duration", srv.GetLogEntryDurationSum)
+	e.GET("/api/v1/log/entries/duration", pls.GetLogEntryDurationSum)
 
 	// Assignments
-	e.PUT("/api/v1/log/entries/:entry_id/assignments", srv.UpdatePracticeLogAssignments)
+	e.PUT("/api/v1/log/entries/:entry_id/assignments", pls.UpdatePracticeLogAssignments)
+
+	// Videos
+	e.GET("/api/v1/videolog/entries", vls.ListVideoLogEntries)
+	e.GET("/api/v1/videolog/summaries", vls.ListProgressSummaries)
 
 	logrus.Infof("http server is listening on %s", viper.GetString("http.port"))
 	return e.Start(fmt.Sprintf(":%s", viper.GetString("http.port")))

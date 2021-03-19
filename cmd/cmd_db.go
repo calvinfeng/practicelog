@@ -4,25 +4,29 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/calvinfeng/practicelog/practicelog"
-	"github.com/calvinfeng/practicelog/practicelog/logstore"
-	"github.com/jmoiron/sqlx"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"time"
 
+	"github.com/calvinfeng/practicelog/practicelog"
+	"github.com/calvinfeng/practicelog/practicelog/store"
+	"github.com/jmoiron/sqlx"
+	"github.com/spf13/viper"
+
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	// Driver for PostgreSQL
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 // Reset the database, apply migrationsV1 and then seed it.
 func databaseRunE(_ *cobra.Command, args []string) error {
 	if len(args) < 1 {
-		return errors.New("provide an argument to manage database [reset, migrate, seed]")
+		return errors.New("provide an argument to manage database [reset, migrate, dump, load]")
 	}
 
 	var addr string
@@ -42,9 +46,7 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 	case "reset":
 		return resetDB(addr)
 	case "migrate":
-		return migrateDB(addr)
-	case "seed":
-		return seedDB(addr)
+		return migrateDB(addr, args)
 	case "dump":
 		return dumpDB(addr)
 	case "load":
@@ -70,19 +72,35 @@ func resetDB(addr string) error {
 	return nil
 }
 
-func migrateDB(addr string) error {
+func migrateDB(addr string, args []string) error {
+	logrus.Infof("migration command received arguments %v", args)
 	m, err := migrate.New("file://./migrations", addr)
 	if err != nil {
 		return err
 	}
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("failed to apply migrations: %w", err)
+
+	switch {
+	case len(args) >= 2:
+		version, err := strconv.ParseInt(args[1], 10, 64)
+		if err != nil {
+			return fmt.Errorf("version has to be integer: %w", err)
+		}
+		if err := m.Migrate(uint(version)); err != nil && err != migrate.ErrNoChange {
+			return fmt.Errorf("failed to apply migrations: %w", err)
+		}
+	default:
+		logrus.Info("database is migrating to latest version")
+		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+			return fmt.Errorf("failed to apply migrations: %w", err)
+		}
 	}
+
 	if version, dirty, err := m.Version(); err != nil {
 		return err
 	} else {
 		logrus.Infof("successfully migrated database to version %d, dirty=%v", version, dirty)
 	}
+	
 	return nil
 }
 
@@ -96,7 +114,7 @@ func loadDB(addr string, args []string) error {
 		return err
 	}
 
-	store := logstore.New(pg)
+	store := store.New(pg)
 
 	jsonFile, err := os.Open(args[1])
 	if err != nil {
@@ -141,7 +159,7 @@ func dumpDB(addr string) error {
 		return err
 	}
 
-	store := logstore.New(pg)
+	store := store.New(pg)
 
 	now := time.Now()
 

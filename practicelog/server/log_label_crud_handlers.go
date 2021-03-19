@@ -1,4 +1,4 @@
-package logserver
+package server
 
 import (
 	"fmt"

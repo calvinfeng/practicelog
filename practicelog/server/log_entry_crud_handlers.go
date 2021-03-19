@@ -1,10 +1,10 @@
-package logserver
+package server
 
 import (
 	"fmt"
 	"github.com/calvinfeng/practicelog/auth"
 	"github.com/calvinfeng/practicelog/practicelog"
-	"github.com/calvinfeng/practicelog/practicelog/logstore"
+	"github.com/calvinfeng/practicelog/practicelog/store"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -147,7 +147,7 @@ func (s *server) UpdatePracticeLogAssignments(c echo.Context) error {
 
 	entryID := c.Param("entry_id")
 
-	entries, err := s.store.SelectLogEntries(1, 0, logstore.ByID(entryID))
+	entries, err := s.store.SelectLogEntries(1, 0, store.ByID(entryID))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			fmt.Errorf("server failed to query store %w", err))
