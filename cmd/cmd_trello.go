@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/calvinfeng/practicelog/practicelog/logstore"
+	"github.com/calvinfeng/practicelog/practicelog/store"
 	"github.com/jmoiron/sqlx"
 	"os"
 	"time"
@@ -29,7 +29,7 @@ func seedDB(addr string) error {
 		return err
 	}
 
-	store := logstore.New(pg)
+	store := store.New(pg)
 	if err := seedLogLabels(store); err != nil {
 		return fmt.Errorf("failed to insert practicelog labels %w", err)
 	}

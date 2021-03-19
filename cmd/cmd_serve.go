@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	"github.com/calvinfeng/practicelog/auth"
-	practicelogserver "github.com/calvinfeng/practicelog/practicelog/logserver"
-	practicelogstore "github.com/calvinfeng/practicelog/practicelog/logstore"
-	videologserver "github.com/calvinfeng/practicelog/videolog/logserver"
-	videologstore "github.com/calvinfeng/practicelog/videolog/logstore"
+	practicelogserver "github.com/calvinfeng/practicelog/practicelog/server"
+	practicelogstore "github.com/calvinfeng/practicelog/practicelog/store"
+	videologserver "github.com/calvinfeng/practicelog/videolog/server"
+	videologstore "github.com/calvinfeng/practicelog/videolog/store"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
@@ -86,6 +86,7 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 
 	// Videos
 	e.GET("/api/v1/videolog/entries", vls.ListVideoLogEntries)
+	e.GET("/api/v1/videolog/summaries", vls.ListProgressSummaries)
 
 	logrus.Infof("http server is listening on %s", viper.GetString("http.port"))
 	return e.Start(fmt.Sprintf(":%s", viper.GetString("http.port")))

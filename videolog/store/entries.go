@@ -1,22 +1,12 @@
-package logstore
+package store
 
 import (
 	"database/sql"
 	"fmt"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/calvinfeng/practicelog/videolog"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
-
-func New(db *sqlx.DB) videolog.Store {
-	return &store{db: db}
-}
-
-type store struct {
-	db *sqlx.DB
-}
 
 func (s *store) SelectVideoLogEntries(filters ...videolog.SQLFilter) ([]*videolog.Entry, error) {
 	eqCondition := make(squirrel.Eq)
@@ -82,8 +72,6 @@ func (s *store) BatchUpsertVideoLogEntries(entries ...*videolog.Entry) (int64, e
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to construct query")
 	}
-
-	fmt.Println(statement)
 
 	tx, err := s.db.Beginx()
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/calvinfeng/practicelog/practicelog"
-	"github.com/calvinfeng/practicelog/practicelog/logstore"
+	"github.com/calvinfeng/practicelog/practicelog/store"
 	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
 
@@ -25,7 +25,7 @@ import (
 // Reset the database, apply migrationsV1 and then seed it.
 func databaseRunE(_ *cobra.Command, args []string) error {
 	if len(args) < 1 {
-		return errors.New("provide an argument to manage database [reset, migrate, seed]")
+		return errors.New("provide an argument to manage database [reset, migrate, dump, load]")
 	}
 
 	var addr string
@@ -48,8 +48,6 @@ func databaseRunE(_ *cobra.Command, args []string) error {
 		return migrateDB(addr)
 	case "force":
 		return forceMigrateDB(addr)
-	case "seed":
-		return seedDB(addr)
 	case "dump":
 		return dumpDB(addr)
 	case "load":
@@ -117,7 +115,7 @@ func loadDB(addr string, args []string) error {
 		return err
 	}
 
-	store := logstore.New(pg)
+	store := store.New(pg)
 
 	jsonFile, err := os.Open(args[1])
 	if err != nil {
@@ -162,7 +160,7 @@ func dumpDB(addr string) error {
 		return err
 	}
 
-	store := logstore.New(pg)
+	store := store.New(pg)
 
 	now := time.Now()
 

@@ -1,13 +1,16 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/calvinfeng/practicelog/util"
+	"io/ioutil"
 	"os"
 	"strings"
 
 	"github.com/calvinfeng/practicelog/videolog"
-	"github.com/calvinfeng/practicelog/videolog/logstore"
+	videologstore "github.com/calvinfeng/practicelog/videolog/store"
 	"github.com/calvinfeng/practicelog/youtubeapi"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
@@ -17,6 +20,7 @@ import (
 
 const practiceRecordingPlaylistID = "PLvb0sLP6w4rIq7kS4-D4zDcbFPNZOSUhW"
 const progressRecordingPlaylistID = "PLvb0sLP6w4rL8s3iDlfdOdA3_X2QNmMoB"
+const defaultUsername = "calvin.j.feng@gmail.com"
 
 func youtubeRuneE(_ *cobra.Command, args []string) error {
 	if len(args) < 1 {
@@ -40,19 +44,46 @@ func youtubeRuneE(_ *cobra.Command, args []string) error {
 
 	switch args[0] {
 	case "reload":
-		return loadPlaylistItems(srv, addr)
+		return util.ConcatErrors(reloadDBWithYouTubePlaylistItems(srv, addr), reloadDBWithProgressSummary(addr))
 	default:
 		return fmt.Errorf("%s is not a recognized command", args[0])
 	}
 }
 
-func loadPlaylistItems(srv youtubeapi.Service, addr string) error {
+func reloadDBWithProgressSummary(addr string) error {
 	pg, err := sqlx.Open("postgres", addr)
 	if err != nil {
 		return err
 	}
 
-	store := logstore.New(pg)
+	store := videologstore.New(pg)
+
+	var summaries []*videolog.ProgressSummary
+	byteData, _ := ioutil.ReadFile("./migrations/resources/progress_summaries.json")
+	if err := json.Unmarshal(byteData, &summaries); err != nil {
+		return err
+	}
+
+	for i := range summaries {
+		summaries[i].Username = defaultUsername
+	}
+
+	count, err := store.BatchInsertProgressSummaries(summaries...)
+	if err != nil {
+		return err
+	}
+	logrus.Infof("successfully inserted %d progress summaries", count)
+
+	return nil
+}
+
+func reloadDBWithYouTubePlaylistItems(srv youtubeapi.Service, addr string) error {
+	pg, err := sqlx.Open("postgres", addr)
+	if err != nil {
+		return err
+	}
+
+	store := videologstore.New(pg)
 
 	logrus.Infof("fetching YouTube playlist practice recordings")
 	items, err := srv.PlaylistItems(practiceRecordingPlaylistID)
@@ -74,7 +105,7 @@ func loadPlaylistItems(srv youtubeapi.Service, addr string) error {
 			Description:       item.Snippet.Description,
 			IsMonthlyProgress: false,
 			Thumbnails:        item.Snippet.Thumbnails,
-			Username:          "calvin.j.feng@gmail.com",
+			Username:          defaultUsername,
 		}
 
 		if strings.Contains(item.Snippet.Title, "AR 9:16") {

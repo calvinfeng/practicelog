@@ -1,9 +1,9 @@
-package logserver
+package server
 
 import (
 	"fmt"
 	"github.com/calvinfeng/practicelog/practicelog"
-	"github.com/calvinfeng/practicelog/practicelog/logstore"
+	"github.com/calvinfeng/practicelog/practicelog/store"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -60,7 +60,7 @@ func (s *server) GetLogLabelDuration(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, fmt.Errorf("label %s not found", id))
 	}
 
-	dur, err := s.store.SumLogEntryDurationWithFilters(logstore.ByLabelIDList([]string{c.Param("label_id")}))
+	dur, err := s.store.SumLogEntryDurationWithFilters(store.ByLabelIDList([]string{c.Param("label_id")}))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrap(err, "failed to query database").Error())

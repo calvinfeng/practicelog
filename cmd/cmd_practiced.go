@@ -3,13 +3,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/spf13/viper"
-
 	"github.com/calvinfeng/practicelog/practicelog"
-	"github.com/calvinfeng/practicelog/practicelog/logstore"
+	practicelogstore "github.com/calvinfeng/practicelog/practicelog/store"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func practicedRuneE(_ *cobra.Command, args []string) error {
@@ -32,7 +31,7 @@ func practicedRuneE(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	store := logstore.New(pg)
+	store := practicelogstore.New(pg)
 
 	labels, err := store.SelectLogLabels()
 	if err != nil {
@@ -54,7 +53,7 @@ func practicedRuneE(_ *cobra.Command, args []string) error {
 		labelIDs = append(labelIDs, label.ID.String())
 	}
 
-	dur, err := store.SumLogEntryDurationWithFilters(logstore.ByLabelIDList(labelIDs))
+	dur, err := store.SumLogEntryDurationWithFilters(practicelogstore.ByLabelIDList(labelIDs))
 	if err != nil {
 		return err
 	}

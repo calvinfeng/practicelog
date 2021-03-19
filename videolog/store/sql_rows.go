@@ -1,4 +1,4 @@
-package logstore
+package store
 
 import (
 	"encoding/json"
@@ -12,13 +12,13 @@ const VideoLogEntryTable = "video_log_entries"
 
 type DBVideoLogEntry struct {
 	ID                string          `db:"id"`
+	Username          string          `db:"username"`
 	Published         time.Time       `db:"published"`
 	VideoOrientation  string          `db:"video_orientation"`
 	Title             string          `db:"title"`
 	Description       string          `db:"description"`
 	IsMonthlyProgress bool            `db:"is_monthly_progress"`
 	Thumbnails        json.RawMessage `db:"thumbnails"`
-	Username          string          `db:"username"`
 }
 
 func (row *DBVideoLogEntry) fromModel(model *videolog.Entry) *DBVideoLogEntry {
@@ -35,7 +35,7 @@ func (row *DBVideoLogEntry) fromModel(model *videolog.Entry) *DBVideoLogEntry {
 
 func (row *DBVideoLogEntry) toModel() *videolog.Entry {
 	thumbnails := make(map[string]youtubeapi.Thumbnail)
-	json.Unmarshal(row.Thumbnails, &thumbnails)
+	_ = json.Unmarshal(row.Thumbnails, &thumbnails)
 
 	return &videolog.Entry{
 		ID:                row.ID,
@@ -46,5 +46,40 @@ func (row *DBVideoLogEntry) toModel() *videolog.Entry {
 		IsMonthlyProgress: row.IsMonthlyProgress,
 		Thumbnails:        thumbnails,
 		Username:          row.Username,
+	}
+}
+
+const ProgressSummaryTable = "progress_summaries"
+
+type DBProgressSummary struct {
+	ID       int64  `db:"id"`
+	Username string `db:"username"`
+	Year     int64  `db:"year"`
+	Month    int64  `db:"month"`
+	Title    string `db:"title"`
+	Subtitle string `db:"subtitle"`
+	Body     string `db:"body"`
+}
+
+func (row *DBProgressSummary) fromModel(model *videolog.ProgressSummary) *DBProgressSummary {
+	row.ID = model.ID
+	row.Username = model.Username
+	row.Year = model.Year
+	row.Month = model.Month
+	row.Title = model.Title
+	row.Subtitle = model.Subtitle
+	row.Body = model.Body
+	return row
+}
+
+func (row *DBProgressSummary) toModel() *videolog.ProgressSummary {
+	return &videolog.ProgressSummary{
+		ID:       row.ID,
+		Username: row.Username,
+		Year:     row.Year,
+		Month:    row.Month,
+		Title:    row.Title,
+		Subtitle: row.Subtitle,
+		Body:     row.Body,
 	}
 }

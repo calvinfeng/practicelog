@@ -1,4 +1,4 @@
-package logstore
+package store
 
 import (
 	"github.com/Masterminds/squirrel"
