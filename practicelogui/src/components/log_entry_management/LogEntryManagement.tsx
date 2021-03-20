@@ -114,7 +114,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
   handleSetInputLabelList = (value:  LogLabelJSON[]) => {
     this.setState({ inputLabelList: value })
   }
-  
+
   handleSetInputAssignmentList = (value: LogAssignmentJSON[]) => {
     this.setState({ inputAssignmentList: value})
   }
