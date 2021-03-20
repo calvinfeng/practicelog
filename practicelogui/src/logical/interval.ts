@@ -9,7 +9,7 @@ export enum Interval {
 
 export const IntervalSemitoneMapping: Map<Interval, number>[] = [
   new Map<Interval, number>([[Interval.Unison, 0]]),
-  new Map<Interval, number>([[Interval.Minor, 1], [Interval.Major, 2]]), 
+  new Map<Interval, number>([[Interval.Minor, 1], [Interval.Major, 2]]),
   new Map<Interval, number>([[Interval.Minor, 3], [Interval.Major, 4]]),
   new Map<Interval, number>([[Interval.Perfect, 5]]),
   new Map<Interval, number>([[Interval.Diminished, 6], [Interval.Perfect, 7]]),

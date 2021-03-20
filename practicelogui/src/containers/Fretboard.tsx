@@ -15,6 +15,16 @@ import { YoutubeSearchedForOutlined } from '@material-ui/icons'
 
 const NumFrets = 24
 
+const numberToRomanNumerals = new Map<number, string>([
+  [1, "I"],
+  [2, "II"],
+  [3, "III"],
+  [4, "IV"],
+  [5, "V"],
+  [6, "VI"],
+  [7, "VII"]
+])
+
 const allowedAccidentalsByNote = new Map<NoteName, Accidental[]>([
   [NoteName.C, [Accidental.Natural, Accidental.Sharp]],
   [NoteName.D, [Accidental.Flat, Accidental.Natural, Accidental.Sharp]],
@@ -56,89 +66,6 @@ export default class FretboardV2 extends React.Component<Props, State> {
         [6, Interval.Major],
         [7, Interval.Major]])
     }
-  }
-
-  generateFretboardGrid(scale: Map<string, Note>) {
-    const rows: JSX.Element[] = []
-
-    const fretMarkerRow: JSX.Element[] = []
-    for (let i = 0; i <= NumFrets; i++) {
-      let fretMarkerStyle = {height: 35, width: 70, margin: 1}
-
-      // Don't know any smart way to count those numbers, maybe +3, + 2 + 2 + 2 + 3 + 3 + 2...?
-      if (i === 3 || i === 5 || i === 7 || i === 9 || i === 15 || i === 17 || i === 19 || i === 21) {
-        fretMarkerStyle['background'] = '#ededed'
-      }
-      if (i === 12) {
-        fretMarkerStyle['background'] = '#0096fc'
-        fretMarkerStyle['color'] = '#ffffff'
-      }
-
-      fretMarkerRow.push(
-        <Grid item>
-          <Button variant="outlined" color="default" style={fretMarkerStyle}>
-            {i}
-          </Button>
-        </Grid>
-      )
-    }
-
-    rows.push(
-      <Grid container direction="row" justify="center" alignItems="baseline" spacing={0}>
-        {fretMarkerRow}
-      </Grid>
-    )
-
-    for (let j = 0; j < 6; j++) {
-      let openFretNoteStyle = {height: 35, width: 70, margin: 1, background: '#ffffff'}
-
-      if (scale.has(openFretNotes[j].toString())) {
-        openFretNoteStyle["background"] = "#c4f5d1"
-      }
-
-      const row: JSX.Element[] = [
-        <Grid item>
-          <Button variant="contained" color="default" style={openFretNoteStyle}>
-            {`${openFretNotes[j]}`}
-          </Button>
-        </Grid>
-      ]
-
-      for (let i = 1; i <= NumFrets; i++) {
-        let noteStyle = {height: 35, width: 70, margin: 1, background: '#ffffff'}
-
-        const notes = openFretNotes[j].step(i)
-        if (scale.has(notes[0].toString())) {
-          noteStyle["background"] = "#c4f5d1"
-        }
-
-        row.push(
-          <Grid item>
-            <Button variant="contained" color="default" style={noteStyle}>
-              {notes.map((note) => `${note}`).join(',')}
-            </Button>
-          </Grid>
-        )
-      }
-
-      rows.push(
-        <Grid container direction="row" justify="center" alignItems="baseline" spacing={0}>
-          {row}
-        </Grid>
-      )
-    }
-
-    return (
-      <Grid
-        container
-        className="fretboard-grid"
-        direction="row"
-        justify="flex-start"
-        alignItems="baseline"
-        spacing={0}>
-        {rows}
-      </Grid>
-    )
   }
 
   get selectRootForm() {
@@ -298,13 +225,18 @@ export default class FretboardV2 extends React.Component<Props, State> {
   // Might need to refactor the select degree forms. However, it's not urgent. It doesn't add
   // tons of value.
   render() {
+    const scaleInNote = new Map<string, Note>()
+    const scaleInRomanNum = new Map<string, string>()
+    const scaleInDeg = new Map<string, number>()
+
     const root: Note = new Note(this.state.root, this.state.rootAccidental)
-    const scale = new Map<string, Note>()
-    this.state.degrees.forEach((interval: Interval, key: number) => {
-      const steps = IntervalSemitoneMapping[key-1].get(interval)
+    this.state.degrees.forEach((interval: Interval, degree: number) => {
+      const steps = IntervalSemitoneMapping[degree-1].get(interval)
       if (steps !== undefined) {
         root.step(steps).forEach((note: Note) => {
-          scale.set(note.toString(), note)
+          scaleInNote.set(note.toString(), note)
+          scaleInRomanNum.set(note.toString(), numberToRomanNumerals.get(degree) as string)
+          scaleInDeg.set(note.toString(), degree)
         })
       }
     })
@@ -312,7 +244,7 @@ export default class FretboardV2 extends React.Component<Props, State> {
     return (
       <section className="Fretboard">
       <section className="fretboard">
-        {this.generateFretboardGrid(scale)}
+        {generateFretboardGrid(scaleInNote, scaleInRomanNum, scaleInDeg)}
       </section>
       <section className="scale-selector">
         <Grid
@@ -388,4 +320,93 @@ function newRootState(name: NoteName, acc: Accidental): any {
         root: name,
       }
   }
+}
+
+function generateFretboardGrid(
+  scaleInNote: Map<string, Note>,
+  scaleInRomanNum: Map<string, string>,
+  scaleInDeg: Map<string, number>) {
+
+  const rows: JSX.Element[] = []
+
+  const fretMarkerRow: JSX.Element[] = []
+  for (let i = 0; i <= NumFrets; i++) {
+    let fretMarkerStyle = {height: 35, width: 70, margin: 1}
+
+    // Don't know any smart way to count those numbers, maybe +3, + 2 + 2 + 2 + 3 + 3 + 2...?
+    if (i === 3 || i === 5 || i === 7 || i === 9 || i === 15 || i === 17 || i === 19 || i === 21) {
+      fretMarkerStyle['background'] = '#ededed'
+    }
+    if (i === 12) {
+      fretMarkerStyle['background'] = '#0096fc'
+      fretMarkerStyle['color'] = '#ffffff'
+    }
+
+    fretMarkerRow.push(
+      <Grid item>
+        <Button variant="outlined" color="default" style={fretMarkerStyle}>
+          {i}
+        </Button>
+      </Grid>
+    )
+  }
+
+  rows.push(
+    <Grid container direction="row" justify="center" alignItems="baseline" spacing={0}>
+      {fretMarkerRow}
+    </Grid>
+  )
+
+  for (let j = 0; j < 6; j++) {
+    let openFretNoteStyle = {height: 35, width: 70, margin: 1, background: '#ffffff'}
+
+    if (scaleInNote.has(openFretNotes[j].toString())) {
+      openFretNoteStyle["background"] = "#c4f5d1"
+    }
+
+    const row: JSX.Element[] = [
+      <Grid item>
+        <Button variant="contained" color="default" style={openFretNoteStyle}>
+          {`${openFretNotes[j]}`}
+        </Button>
+      </Grid>
+    ]
+
+    for (let i = 1; i <= NumFrets; i++) {
+      const notes = openFretNotes[j].step(i)
+
+      let noteStyle = {height: 35, width: 70, margin: 1, background: '#ffffff', fontSize: '12px'}
+      let text = notes.map((note) => `${note}`).join(',')
+
+      if (scaleInNote.has(notes[0].toString())) {
+        noteStyle["background"] = "#c4f5d1"
+      }
+
+      row.push(
+        <Grid item>
+          <Button variant="contained" color="default" style={noteStyle}>
+            {text}
+          </Button>
+        </Grid>
+      )
+    }
+
+    rows.push(
+      <Grid container direction="row" justify="center" alignItems="baseline" spacing={0}>
+        {row}
+      </Grid>
+    )
+  }
+
+  return (
+    <Grid
+      container
+      className="fretboard-grid"
+      direction="row"
+      justify="flex-start"
+      alignItems="baseline"
+      spacing={0}>
+      {rows}
+    </Grid>
+  )
 }
