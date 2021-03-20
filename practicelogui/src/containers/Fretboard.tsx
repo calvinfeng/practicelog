@@ -84,7 +84,7 @@ export default class FretboardV2 extends React.Component<Props, State> {
     }
 
     rows.push(
-      <Grid container direction="row" justify="flex-start" alignItems="baseline" spacing={0}>
+      <Grid container direction="row" justify="center" alignItems="baseline" spacing={0}>
         {fretMarkerRow}
       </Grid>
     )
@@ -122,7 +122,7 @@ export default class FretboardV2 extends React.Component<Props, State> {
       }
 
       rows.push(
-        <Grid container direction="row" justify="flex-start" alignItems="baseline" spacing={0}>
+        <Grid container direction="row" justify="center" alignItems="baseline" spacing={0}>
           {row}
         </Grid>
       )
@@ -311,9 +311,6 @@ export default class FretboardV2 extends React.Component<Props, State> {
 
     return (
       <section className="Fretboard">
-      <Typography>
-        This is still under active development
-      </Typography>
       <section className="fretboard">
         {this.generateFretboardGrid(scale)}
       </section>

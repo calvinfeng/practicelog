@@ -7,13 +7,15 @@
 	max-width: 1920px;
 
 	.fretboard-grid {
+    display: inherit;
     margin-top: 1rem;
-    margin-bottom: 1rem;
 	}
+
 	.scale-selector {
     display: inherit;
     flex-direction: row;
     width: 100%;
+    padding: 2rem;
     align-items: center;
     justify-content: flex-start;
 	}
