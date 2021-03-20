@@ -1,6 +1,19 @@
 .Unauthorized {
   display: flex;
   width: 100%;
-  justify-content: center;
+  flex-direction: column;
   margin: 1rem;
+  justify-content: center;
+  .text-group {
+    display: inherit;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .button-group {
+    margin-top: 1rem;
+    display: inherit;
+    flex-direction: row;
+    justify-content: center;
+  }
 }

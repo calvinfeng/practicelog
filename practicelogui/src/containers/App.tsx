@@ -136,6 +136,32 @@ export default class App extends React.Component<Props, State> {
     })
   }
 
+  get appBar() {
+    return (
+      <AppBar position="static" color="default" className="app-bar">
+        <section className="left-container">
+          <Toolbar>
+            <IconButton color="inherit" aria-label="Menu" onClick={this.handleMenuOnClick}>
+              <MenuRounded />
+            </IconButton>
+            <Menu
+              open={this.state.menuOpen}
+              onClose={this.handleMenuOnClose}
+              getContentAnchorEl={null}
+              anchorEl={this.state.anchorEl}
+              anchorOrigin={{"vertical": "bottom", "horizontal": "center"}} >
+              <PracticeLogMenuItem />
+              <FretboardMenuItem />
+            </Menu>
+            <Typography color="inherit" variant="h6" className="title">Guitar Practice Log</Typography>
+          </Toolbar>
+        </section>
+        <section className="right-container">
+        </section>
+      </AppBar>
+    )
+  }
+
   // TODO: Separate this out, make it a pretty landing page
   get googleLogin() {
     return (
@@ -149,31 +175,21 @@ export default class App extends React.Component<Props, State> {
     )
   }
 
+  get googleUnauthorized() {
+    return (
+      <div className="App">
+        <Unauthorized
+          userProfile={this.state.userProfile as GoogleUserProfile}
+          clearStorageAndLogout={this.clearStorageAndLogout} />
+      </div>
+    )
+  }
+
   renderLandingPage() {
     return (
       <div className="App">
         <BrowserRouter>
-          <AppBar position="static" color="default" className="app-bar">
-            <section className="left-container">
-              <Toolbar>
-                <IconButton color="inherit" aria-label="Menu" onClick={this.handleMenuOnClick}>
-                  <MenuRounded />
-                </IconButton>
-                <Menu
-                  open={this.state.menuOpen}
-                  onClose={this.handleMenuOnClose}
-                  getContentAnchorEl={null}
-                  anchorEl={this.state.anchorEl}
-                  anchorOrigin={{"vertical": "bottom", "horizontal": "center"}} >
-                  <RootMenuItem />
-                  <FretboardMenuItem />
-                </Menu>
-                <Typography color="inherit" variant="h6" className="title">Guitar Practice Log</Typography>
-              </Toolbar>
-            </section>
-            <section className="right-container">
-            </section>
-          </AppBar>
+          {this.appBar}
           <Switch>
             <Route
               exact path={Path.Root}
@@ -187,31 +203,29 @@ export default class App extends React.Component<Props, State> {
     )
   }
 
+  renderUnauthorizedPage() {
+    return (
+      <div className="App">
+        <BrowserRouter>
+          {this.appBar}
+          <Switch>
+            <Route
+              exact path={Path.Root}
+              render={() => this.googleUnauthorized} />
+            <Route
+              exact path={Path.Fretboard}
+              render={() => <Fretboard />} />
+          </Switch>
+        </BrowserRouter>
+      </div>
+    )
+  }
+
   renderCoreContent(idToken: string) {
     return (
       <div className="App">
         <BrowserRouter>
-          <AppBar position="static" color="default" className="app-bar">
-            <section className="left-container">
-              <Toolbar>
-                <IconButton color="inherit" aria-label="Menu" onClick={this.handleMenuOnClick}>
-                  <MenuRounded />
-                </IconButton>
-                <Menu
-                  open={this.state.menuOpen}
-                  onClose={this.handleMenuOnClose}
-                  getContentAnchorEl={null}
-                  anchorEl={this.state.anchorEl}
-                  anchorOrigin={{"vertical": "bottom", "horizontal": "center"}} >
-                  <RootMenuItem />
-                  <FretboardMenuItem />
-                </Menu>
-                <Typography color="inherit" variant="h6" className="title">Guitar Practice Log</Typography>
-              </Toolbar>
-            </section>
-            <section className="right-container">
-            </section>
-          </AppBar>
+          {this.appBar}
           <Switch>
             <Route
               exact path={Path.Root}
@@ -234,20 +248,14 @@ export default class App extends React.Component<Props, State> {
       if (this.state.userProfile.email === "calvin.j.feng@gmail.com") {
         return this.renderCoreContent(this.state.userProfile.id_token)
       }
-      // TODO: Users will get stuck once the token is cached into local storage. This should trigger
-      // a logic to clear the cache after message is displayed. Maybe a snackbar?
-      return (
-        <div className="App">
-          <Unauthorized userProfile={this.state.userProfile} />
-        </div>
-      )
+      return this.renderUnauthorizedPage()
     }
 
     return this.renderLandingPage()
   }
 }
 
-function RootMenuItem() {
+function PracticeLogMenuItem() {
   const history = useHistory()
   const location = useLocation()
 
