@@ -11,7 +11,6 @@ import {
 } from '@material-ui/core'
 import { Interval, IntervalSemitoneMapping } from '../logical/interval'
 import { Note, NoteName, Accidental } from '../logical/note'
-import { YoutubeSearchedForOutlined } from '@material-ui/icons'
 
 const NumFrets = 24
 

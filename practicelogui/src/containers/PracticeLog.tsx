@@ -17,7 +17,8 @@ import LogEntryManagement from '../components/log_entry_management/LogEntryManag
 import LogLabelManagement from '../components/log_label_management/LogLabelManagement'
 import AssignmentChecklistPopover from '../components/AssignmentChecklistPopover'
 import { Map } from 'immutable'
-import DurationPieChart from '../components/DurationPieChart';
+import PracticeTimePieChart from '../components/PracticeTimePieChart'
+import PracticeTimeLineChart from '../components/PracticeTimeLineChart'
 
 type Props = {
   IDToken: string
@@ -540,10 +541,11 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
           handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
           handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
-        <DurationPieChart
+        {/* <PracticeTimePieChart
           totalPracticeDuration={this.state.totalPracticeDuration}
           durationFetched={this.state.logLabelDurationFetched}
-          logLabels={this.state.logLabels} />
+          logLabels={this.state.logLabels} /> */}
+        <PracticeTimeLineChart />
         <Snackbar
           open={this.state.alertShown}
           autoHideDuration={6000}
