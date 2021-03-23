@@ -26,6 +26,7 @@ type State = {
 
 type Props = {
   logLabels: LogLabelJSON[]
+  logLabelDurationFetched: boolean
   handleHTTPCreateLogLabel: (label: LogLabelJSON) => void
   handleHTTPUpdateLogLabel: (label: LogLabelJSON) => void
   handleHTTPDeleteLogLabel: (label: LogLabelJSON) => void

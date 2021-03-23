@@ -89,7 +89,7 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	// - Fetch the total sum of all durations, but present them as time series
 	e.GET("/api/v1/log/labels/duration", logapi.ListLogLabelDurations)
 	e.GET("/api/v1/log/entries/duration", logapi.GetLogEntryDurationSum)
-	e.GET("/api/v1/log/entries/duration/time-series", logapi.DurationCumulativeSumTimeSeries)
+	e.GET("/api/v1/log/entries/duration/time-series", logapi.GetLogEntryDurationCumulativeSumTimeSeries)
 
 	logrus.Infof("http server is listening on %s", viper.GetString("http.port"))
 	return e.Start(fmt.Sprintf(":%s", viper.GetString("http.port")))

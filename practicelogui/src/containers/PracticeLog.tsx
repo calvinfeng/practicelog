@@ -1,6 +1,4 @@
 import React from 'react'
-import './PracticeLog.scss'
-
 import {
   Typography,
   Grid,
@@ -9,16 +7,17 @@ import {
 } from '@material-ui/core'
 import MuiAlert, { AlertProps, Color } from '@material-ui/lab/Alert';
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
+import { Map } from 'immutable'
 import _ from "lodash" // Import the entire lodash library
 
-import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON, DurationTimeSeriesDataPoint } from '../shared/type_definitions'
+import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON, PracticeTimeSeriesDataPoint } from '../shared/type_definitions'
 import LogTable from '../components/LogTable'
 import LogEntryManagement from '../components/log_entry_management/LogEntryManagement'
 import LogLabelManagement from '../components/log_label_management/LogLabelManagement'
 import AssignmentChecklistPopover from '../components/AssignmentChecklistPopover'
-import { Map } from 'immutable'
-import PracticeTimePieChart from '../components/PracticeTimePieChart'
 import PracticeTimeLineChart from '../components/PracticeTimeLineChart'
+
+import './PracticeLog.scss'
 
 type Props = {
   IDToken: string
@@ -28,8 +27,8 @@ type DataStore = {
   logEntries: LogEntryJSON[]
   logLabels: LogLabelJSON[]
 
-  durationTimeSeries: DurationTimeSeriesDataPoint[]
-  totalPracticeDuration: number
+  practiceTimeSeries: PracticeTimeSeriesDataPoint[]
+  totalPracticeTime: number
 }
 
 type InternalState = {
@@ -60,7 +59,7 @@ export default class PracticeLog extends React.Component<Props, State> {
     this.state = {
       logEntries: [],
       logLabels: [],
-      totalPracticeDuration: 0,
+      totalPracticeTime: 0,
       logLabelDurationFetched: false,
       selectedLogEntry: null,
       focusedLogEntry: null,
@@ -70,7 +69,7 @@ export default class PracticeLog extends React.Component<Props, State> {
       alertShown: false,
       alertMessage: "",
       alertSeverity: "info",
-      durationTimeSeries: []
+      practiceTimeSeries: []
     }
     this.http = axios.create({
       baseURL: process.env.REACT_APP_API_URL,
@@ -91,8 +90,8 @@ export default class PracticeLog extends React.Component<Props, State> {
   componentDidMount() {
     this.fetchLogEntriesByPage(this.state.pageNum)
     this.fetchLogLabels()
-    this.fetchTotalPracticeDuration()
-    this.fetchAccumDurationTimeSeries()
+    this.fetchTotalPracticeTime()
+    this.fetchPracticeTimeSeries()
   }
 
   /**
@@ -129,11 +128,11 @@ export default class PracticeLog extends React.Component<Props, State> {
   /**
    * This is an internal class helper to populate the state variable totalPracticeDuration.
    */
-  fetchTotalPracticeDuration() {
+  fetchTotalPracticeTime() {
     this.http.get('/api/v1/log/entries/duration')
       .then((resp: AxiosResponse) => {
         this.setState({
-          totalPracticeDuration: resp.data.in_minutes as number
+          totalPracticeTime: resp.data.in_minutes as number
         })
       })
       .catch((reason: any) => {
@@ -148,11 +147,11 @@ export default class PracticeLog extends React.Component<Props, State> {
   /**
    * This is an internal class helper to populate the state variable durationTimeSeries.
    */
-  fetchAccumDurationTimeSeries() {
+  fetchPracticeTimeSeries() {
     this.http.get('/api/v1/log/entries/duration/time-series?group=by_month')
       .then((resp: AxiosResponse) => {
         this.setState({
-          durationTimeSeries: resp.data.time_series as DurationTimeSeriesDataPoint[]
+          practiceTimeSeries: resp.data.time_series as PracticeTimeSeriesDataPoint[]
         })
       })
       .catch((reason: any) => {
@@ -561,6 +560,7 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleHTTPCreateLogEntry={this.handleHTTPCreateLogEntry} />
         <LogLabelManagement
           logLabels={this.state.logLabels}
+          logLabelDurationFetched={this.state.logLabelDurationFetched}
           handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
           handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
           handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
@@ -569,7 +569,7 @@ export default class PracticeLog extends React.Component<Props, State> {
           durationFetched={this.state.logLabelDurationFetched}
           logLabels={this.state.logLabels} /> */}
         <PracticeTimeLineChart
-            durationTimeSeries={this.state.durationTimeSeries} />
+            timeSeries={this.state.practiceTimeSeries} />
         <Snackbar
           open={this.state.alertShown}
           autoHideDuration={6000}

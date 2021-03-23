@@ -8,7 +8,8 @@ CREATE TABLE video_log_entries (
     title VARCHAR(255),
     description TEXT,
     is_monthly_progress BOOLEAN,
-    thumbnails JSONB
+    thumbnails JSONB,
+    minutes_of_guitar_practice INTEGER
 );
 
 CREATE TABLE progress_summaries (

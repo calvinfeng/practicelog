@@ -8,7 +8,33 @@ import (
 	"net/http"
 )
 
-func (s *server) DurationCumulativeSumTimeSeries(c echo.Context) error {
+func (s *server) ListLogLabelDurations(c echo.Context) error {
+	durations, err := s.store.ListLogLabelDurations()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError,
+			errors.Wrap(err, "failed to query database").Error())
+	}
+
+	return c.JSON(http.StatusOK, labelDurationListJSONResponse{
+		Count:   len(durations),
+		Results: durations,
+	})
+}
+
+func (s *server) GetLogEntryDurationSum(c echo.Context) error {
+	inMinutes, err := s.store.SumLogEntryDuration()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError,
+			errors.Wrap(err, "failed to query database").Error())
+	}
+
+	return c.JSON(http.StatusOK, entryTotalDurationJSONResponse{
+		InMinutes: inMinutes,
+		InHours:   float64(inMinutes) / 60,
+	})
+}
+
+func (s *server) GetLogEntryDurationCumulativeSumTimeSeries(c echo.Context) error {
 	var inSameBucket func(timeSeriesDataPoint, *practicelog.Entry) bool
 
 	switch group(c.QueryParam("group")) {
@@ -79,31 +105,5 @@ func (s *server) DurationCumulativeSumTimeSeries(c echo.Context) error {
 	return c.JSON(http.StatusOK, durationTimeSeriesJSONResponse{
 		Count:      count,
 		TimeSeries: timeSeries,
-	})
-}
-
-func (s *server) ListLogLabelDurations(c echo.Context) error {
-	durations, err := s.store.ListLogLabelDurations()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError,
-			errors.Wrap(err, "failed to query database").Error())
-	}
-
-	return c.JSON(http.StatusOK, labelDurationListJSONResponse{
-		Count:   len(durations),
-		Results: durations,
-	})
-}
-
-func (s *server) GetLogEntryDurationSum(c echo.Context) error {
-	inMinutes, err := s.store.SumLogEntryDuration()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError,
-			errors.Wrap(err, "failed to query database").Error())
-	}
-
-	return c.JSON(http.StatusOK, entryTotalDurationJSONResponse{
-		InMinutes: inMinutes,
-		InHours:   float64(inMinutes) / 60,
 	})
 }

@@ -61,10 +61,9 @@ type (
 		GetLogEntryDurationSum(echo.Context) error
 		// GetLogEntryDurationSum returns sums of log entry durations grouped by label ID.
 		ListLogLabelDurations(echo.Context) error
-
-		// DurationCumulativeSumTimeSeries computes a time series of log entry durations.
+		// GetLogEntryDurationCumulativeSumTimeSeries compiles a time series of log entry durations.
 		// It will be cumulative sum over a specific interval of time, e.g. year, month, day
-		DurationCumulativeSumTimeSeries(echo.Context) error
+		GetLogEntryDurationCumulativeSumTimeSeries(echo.Context) error
 	}
 
 	SQLFilter func(squirrel.Eq)
