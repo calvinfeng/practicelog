@@ -47,7 +47,8 @@ func (s *store) BatchUpsertVideoLogEntries(entries ...*videolog.Entry) (int64, e
 			"description",
 			"is_monthly_progress",
 			"thumbnails",
-			"username")
+			"username",
+			"minutes_of_guitar_practice")
 
 	for _, entry := range entries {
 		row := new(DBVideoLogEntry).fromModel(entry)
@@ -59,14 +60,16 @@ func (s *store) BatchUpsertVideoLogEntries(entries ...*videolog.Entry) (int64, e
 			row.Description,
 			row.IsMonthlyProgress,
 			row.Thumbnails,
-			row.Username)
+			row.Username,
+			row.MinGuitarPractice)
 	}
 
 	entryInsertQ = entryInsertQ.Suffix(`ON CONFLICT(id) DO UPDATE SET
 		title = EXCLUDED.title,
 		description = EXCLUDED.description,
 		is_monthly_progress = EXCLUDED.is_monthly_progress,
-		thumbnails = EXCLUDED.thumbnails`)
+		thumbnails = EXCLUDED.thumbnails,
+        minutes_of_guitar_practice= EXCLUDED.minutes_of_guitar_practice`)
 
 	statement, args, err := entryInsertQ.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
