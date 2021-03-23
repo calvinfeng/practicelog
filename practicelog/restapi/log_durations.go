@@ -3,8 +3,6 @@ package restapi
 import (
 	"fmt"
 	"github.com/calvinfeng/practicelog/practicelog"
-	"github.com/calvinfeng/practicelog/practicelog/store"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"net/http"
@@ -94,38 +92,6 @@ func (s *server) ListLogLabelDurations(c echo.Context) error {
 	return c.JSON(http.StatusOK, labelDurationListJSONResponse{
 		Count:   len(durations),
 		Results: durations,
-	})
-}
-
-func (s *server) GetLogLabelDuration(c echo.Context) error {
-	id, err := uuid.Parse(c.Param("label_id"))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest,
-			errors.Wrap(err, "log label id in path parameter is not a valid uuid ").Error())
-	}
-
-	// TODO: Implement a single GET for label from store
-	labels, err := s.store.SelectLogLabels()
-	var target *practicelog.Label
-	for _, label := range labels {
-		if label.ID == id {
-			target = label
-		}
-	}
-
-	if target == nil {
-		return echo.NewHTTPError(http.StatusNotFound, fmt.Errorf("label %s not found", id))
-	}
-
-	dur, err := s.store.SumLogEntryDurationWithFilters(store.ByLabelIDList([]string{c.Param("label_id")}))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError,
-			errors.Wrap(err, "failed to query database").Error())
-	}
-
-	return c.JSON(http.StatusOK, labelDurationJSONResponse{
-		Label:    *target,
-		Duration: dur,
 	})
 }
 

@@ -57,8 +57,9 @@ type (
 		UpdatePracticeLogAssignments(echo.Context) error
 		DeletePracticeLogEntry(echo.Context) error
 
+		// GetLogEntryDurationSum returns total sum of all log entry durations.
 		GetLogEntryDurationSum(echo.Context) error
-		GetLogLabelDuration(echo.Context) error
+		// GetLogEntryDurationSum returns sums of log entry durations grouped by label ID.
 		ListLogLabelDurations(echo.Context) error
 
 		// DurationCumulativeSumTimeSeries computes a time series of log entry durations.
@@ -83,8 +84,6 @@ type (
 
 		// Sum all log entry duration without any filtering.
 		SumLogEntryDuration() (sum int32, err error)
-		// Sum log entry durations that satisfy the filters.
-		SumLogEntryDurationWithFilters(...SQLFilter) (sum int32, err error)
 		// List all label durations.
 		ListLogLabelDurations() ([]*LabelDuration, error)
 	}

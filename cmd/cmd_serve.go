@@ -84,12 +84,10 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	e.GET("/api/v1/videolog/summaries", videoapi.ListProgressSummaries)
 
 	// Duration data
-	// - Fetch individual label's duration (sum of all log entries under that label)
-	// - Fetch all labels' duration, basically same as above but for all log labels
+	// - Fetch all labels' duration, each duration is a sum of log entries that share a common label association.
 	// - Fetch the total sum of all durations, i.e. total hours of practice
 	// - Fetch the total sum of all durations, but present them as time series
 	e.GET("/api/v1/log/labels/duration", logapi.ListLogLabelDurations)
-	e.GET("/api/v1/log/labels/:label_id/duration", logapi.GetLogLabelDuration)
 	e.GET("/api/v1/log/entries/duration", logapi.GetLogEntryDurationSum)
 	e.GET("/api/v1/log/entries/duration/time-series", logapi.DurationCumulativeSumTimeSeries)
 

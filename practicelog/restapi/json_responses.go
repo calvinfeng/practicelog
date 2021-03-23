@@ -52,9 +52,9 @@ const (
 
 // NOTE: Front-end renders date as string for both timeline and charts
 type timeSeriesDataPoint struct {
-	Year       int        `json:"year,omitempty"`
-	Month      time.Month `json:"month,omitempty"`
-	Day        int        `json:"day,omitempty"`
-	Key        string     `json:"key"`
-	Value      float32    `json:"value"`
+	Year  int        `json:"year,omitempty"`
+	Month time.Month `json:"month,omitempty"`
+	Day   int        `json:"day,omitempty"`
+	Key   string     `json:"key"`
+	Value float32    `json:"value"`
 }
