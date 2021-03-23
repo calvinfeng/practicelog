@@ -1,4 +1,4 @@
-package server
+package restapi
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ func (s *server) ListPracticeLogEntries(c echo.Context) error {
 
 	limit, offset := getLimitOffsetFromContext(c)
 
-	resp := new(PracticeLogEntryListJSONResponse)
+	resp := new(entryListJSONResponse)
 	if count > int(limit)+int(offset) {
 		resp.More = true
 	}

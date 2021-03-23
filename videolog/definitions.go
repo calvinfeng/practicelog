@@ -47,7 +47,7 @@ type ProgressSummary struct {
 }
 
 type (
-	HTTPServer interface {
+	RESTAPI interface {
 		ListVideoLogEntries(echo.Context) error
 		ListProgressSummaries(c echo.Context) error
 	}

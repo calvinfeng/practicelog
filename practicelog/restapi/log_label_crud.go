@@ -1,4 +1,4 @@
-package server
+package restapi
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 )
 
 func (s *server) ListPracticeLogLabels(c echo.Context) error {
-	resp := new(PracticeLogLabelListJSONResponse)
+	resp := new(labelListJSONResponse)
 	labels, err := s.store.SelectLogLabels()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,

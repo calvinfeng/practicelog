@@ -45,7 +45,7 @@ func (l Label) String() string {
 }
 
 type (
-	HTTPServer interface {
+	RESTAPI interface {
 		ListPracticeLogLabels(echo.Context) error
 		CreatePracticeLogLabel(echo.Context) error
 		UpdatePracticeLogLabel(echo.Context) error
@@ -58,9 +58,12 @@ type (
 		DeletePracticeLogEntry(echo.Context) error
 
 		GetLogEntryDurationSum(echo.Context) error
-
 		GetLogLabelDuration(echo.Context) error
 		ListLogLabelDurations(echo.Context) error
+
+		// DurationCumulativeSumTimeSeries computes a time series of log entry durations.
+		// It will be cumulative sum over a specific interval of time, e.g. year, month, day
+		DurationCumulativeSumTimeSeries(echo.Context) error
 	}
 
 	SQLFilter func(squirrel.Eq)

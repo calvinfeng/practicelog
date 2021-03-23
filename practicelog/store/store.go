@@ -34,6 +34,7 @@ func (s *store) SumLogEntryDuration() (sum int32, err error) {
 /* Performance Consideration
 
 This is not an effective query but at current scale it's okay.
+Use the examples from ListLogLabelDurations or simply combine the two?
 */
 func (s *store) SumLogEntryDurationWithFilters(filters ...practicelog.SQLFilter) (sum int32, err error) {
 	eqCondition := make(squirrel.Eq)
