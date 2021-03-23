@@ -16,11 +16,13 @@ func (s *server) DurationCumulativeSumTimeSeries(c echo.Context) error {
 	switch group(c.QueryParam("group")) {
 	case byDay:
 		inSameBucket = func(prev timeSeriesDataPoint, entry *practicelog.Entry) bool {
-			return prev.Year == entry.Date.Year() && prev.Month == entry.Date.Month().String() && prev.Day == entry.Date.Day()
+			return prev.Year == entry.Date.Year() &&
+				prev.Month == entry.Date.Month() &&
+				prev.Day == entry.Date.Day()
 		}
 	case byMonth:
 		inSameBucket = func(prev timeSeriesDataPoint, entry *practicelog.Entry) bool {
-			return prev.Year == entry.Date.Year() && prev.Month == entry.Date.Month().String()
+			return prev.Year == entry.Date.Year() && prev.Month == entry.Date.Month()
 		}
 	case byYear:
 		inSameBucket = func(prev timeSeriesDataPoint, entry *practicelog.Entry) bool {
@@ -42,8 +44,8 @@ func (s *server) DurationCumulativeSumTimeSeries(c echo.Context) error {
 			errors.Wrap(err, "failed to query database for log entries").Error())
 	}
 
-	// Entries are in descending order by date. The only thing I need to change is the map key for by day, by month, or
-	// by year.
+	// Entries are in descending order by date. The only thing I need to change is the map key for by day, by month,
+	// or by year.
 	timeSeries := make([]timeSeriesDataPoint, 0)
 	var accum int32 = 0
 	for i := len(entries) - 1; i >= 0; i-- {
@@ -52,23 +54,26 @@ func (s *server) DurationCumulativeSumTimeSeries(c echo.Context) error {
 		if len(timeSeries) > 0 {
 			lastEl := timeSeries[len(timeSeries)-1]
 			if inSameBucket(lastEl, entries[i]) {
-				timeSeries[len(timeSeries)-1].AccumMins = accum
-				timeSeries[len(timeSeries)-1].AccumHours = float32(accum) / 60
+				timeSeries[len(timeSeries)-1].Value = float32(accum) / 60
 				continue
 			}
 		}
 
-		newDataPoint := timeSeriesDataPoint{AccumHours: float32(accum) / 60, AccumMins: accum}
+		year, month, day := entries[i].Date.Date()
+		newDataPoint := timeSeriesDataPoint{Value: float32(accum) / 60}
 		switch group(c.QueryParam("group")) {
 		case byDay:
-			newDataPoint.Day = entries[i].Date.Day()
-			newDataPoint.Month = entries[i].Date.Month().String()
-			newDataPoint.Year = entries[i].Date.Year()
+			newDataPoint.Day = day
+			newDataPoint.Month = month
+			newDataPoint.Year = year
+			newDataPoint.Key = fmt.Sprintf("%d %s %02d", year, month.String(), day)
 		case byMonth:
-			newDataPoint.Month = entries[i].Date.Month().String()
+			newDataPoint.Month = entries[i].Date.Month()
 			newDataPoint.Year = entries[i].Date.Year()
+			newDataPoint.Key = fmt.Sprintf("%d %s", year, month.String())
 		case byYear:
 			newDataPoint.Year = entries[i].Date.Year()
+			newDataPoint.Key = fmt.Sprintf("%d", year)
 		}
 		timeSeries = append(timeSeries, newDataPoint)
 	}

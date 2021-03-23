@@ -3,6 +3,7 @@ package restapi
 import (
 	"github.com/calvinfeng/practicelog/practicelog"
 	"github.com/google/uuid"
+	"time"
 )
 
 type entryListJSONResponse struct {
@@ -51,9 +52,9 @@ const (
 
 // NOTE: Front-end renders date as string for both timeline and charts
 type timeSeriesDataPoint struct {
-	Year       int     `json:"year,omitempty"`
-	Month      string  `json:"month,omitempty"`
-	Day        int     `json:"day,omitempty"`
-	AccumMins  int32   `json:"accum_mins"`
-	AccumHours float32 `json:"accum_hours"`
+	Year       int        `json:"year,omitempty"`
+	Month      time.Month `json:"month,omitempty"`
+	Day        int        `json:"day,omitempty"`
+	Key        string     `json:"key"`
+	Value      float32    `json:"value"`
 }

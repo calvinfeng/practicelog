@@ -68,3 +68,11 @@ export enum Mode {
 }
 
 export const nilUUID = '00000000-0000-0000-0000-000000000000'
+
+export type DurationTimeSeriesDataPoint = {
+  year: number
+  month: number
+  day: number
+  key: string
+  value: number
+}
