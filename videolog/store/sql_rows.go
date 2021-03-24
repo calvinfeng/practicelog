@@ -19,7 +19,7 @@ type DBVideoLogEntry struct {
 	Description       string          `db:"description"`
 	IsMonthlyProgress bool            `db:"is_monthly_progress"`
 	Thumbnails        json.RawMessage `db:"thumbnails"`
-	MinGuitarPractice int             `db:"minutes_of_guitar_practice"`
+	MinGuitarPractice int32           `db:"minutes_of_guitar_practice"`
 }
 
 func (row *DBVideoLogEntry) fromModel(model *videolog.Entry) *DBVideoLogEntry {

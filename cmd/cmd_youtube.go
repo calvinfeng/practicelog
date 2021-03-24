@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	practicelogstore "github.com/calvinfeng/practicelog/practicelog/store"
 	"github.com/calvinfeng/practicelog/util"
 	"io/ioutil"
 	"os"
@@ -37,14 +38,12 @@ func youtubeRuneE(_ *cobra.Command, args []string) error {
 		addr = localDatabaseURL()
 	}
 
-	logrus.Infof("starting YouTube API service with API key %s", os.Getenv("YOUTUBE_API_KEY"))
-	srv := youtubeapi.New(youtubeapi.Config{
-		APIKey: os.Getenv("YOUTUBE_API_KEY"),
-	})
-
 	switch args[0] {
 	case "reload":
-		return util.ConcatErrors(reloadDBWithYouTubePlaylistItems(srv, addr), reloadDBWithProgressSummary(addr))
+		return util.ConcatErrors(
+			reloadDBWithPlaylist(addr, practiceRecordingPlaylistID, false),
+			reloadDBWithPlaylist(addr, progressRecordingPlaylistID, true),
+			reloadDBWithProgressSummary(addr))
 	default:
 		return fmt.Errorf("%s is not a recognized command", args[0])
 	}
@@ -77,48 +76,63 @@ func reloadDBWithProgressSummary(addr string) error {
 	return nil
 }
 
-func reloadDBWithYouTubePlaylistItems(srv youtubeapi.Service, addr string) error {
+func reloadDBWithPlaylist(addr string, playlistID string, isProgressRecording bool) error {
+	logrus.Infof("starting YouTube API service with API key %s", os.Getenv("YOUTUBE_API_KEY"))
+	srv := youtubeapi.New(youtubeapi.Config{
+		APIKey: os.Getenv("YOUTUBE_API_KEY"),
+	})
+
 	pg, err := sqlx.Open("postgres", addr)
 	if err != nil {
 		return err
 	}
 
-	store := videologstore.New(pg)
+	vlogstore := videologstore.New(pg)
+	plogstore := practicelogstore.New(pg)
 
-	logrus.Infof("fetching YouTube playlist practice recordings")
-	items, err := srv.PlaylistItems(practiceRecordingPlaylistID)
+	logrus.Infof("fetching YouTube playlist %s", playlistID)
+	items, err := srv.PlaylistItems(playlistID)
 	if err != nil {
 		return err
 	}
 
 	if len(items) == 0 {
 		return fmt.Errorf("YouTube API has returned 0 items for practice recording playlist %s",
-			practiceRecordingPlaylistID)
+			playlistID)
 	}
 
-	entries := make([]*videolog.Entry, len(items))
+	videos := make([]*videolog.Entry, len(items))
 	for i, item := range items {
-		entries[i] = &videolog.Entry{
+		videos[i] = &videolog.Entry{
 			ID:                item.ContentDetails.VideoID,
 			Published:         item.ContentDetails.Published,
 			Title:             item.Snippet.Title,
 			Description:       item.Snippet.Description,
-			IsMonthlyProgress: false,
+			IsMonthlyProgress: isProgressRecording,
 			Thumbnails:        item.Snippet.Thumbnails,
 			Username:          defaultUsername,
 		}
 
 		if strings.Contains(item.Snippet.Title, "AR 9:16") {
-			entries[i].VideoOrientation = videolog.OrientationPortrait
+			videos[i].VideoOrientation = videolog.OrientationPortrait
 		} else {
-			entries[i].VideoOrientation = videolog.OrientationLandscape
+			videos[i].VideoOrientation = videolog.OrientationLandscape
 		}
 
-		logrus.Infof("Video[%04d] %s", item.Snippet.Position, item.ContentDetails.VideoID)
-		fmt.Println(entries[i])
+		if sum, err := plogstore.SumLogEntryDurationBefore(videos[i].Published); err != nil {
+			return fmt.Errorf("failed to sum log entry duration: %w", err)
+		} else {
+			videos[i].MinGuitarPractice = sum
+		}
+
+		if isProgressRecording {
+			logrus.Infof("Progress Recording[%04d] %s", item.Snippet.Position, item.ContentDetails.VideoID)
+		} else {
+			logrus.Infof("Practice Recording[%04d] %s", item.Snippet.Position, item.ContentDetails.VideoID)
+		}
 	}
 
-	count, err := store.BatchUpsertVideoLogEntries(entries...)
+	count, err := vlogstore.BatchUpsertVideoLogEntries(videos...)
 	if err != nil {
 		return err
 	}

@@ -81,8 +81,10 @@ type (
 		UpdateLogLabel(*Label) error
 		DeleteLogLabel(*Label) error
 
-		// Sum all log entry duration without any filtering.
+		// Sum log entry duration by different criteria
 		SumLogEntryDuration() (sum int32, err error)
+		SumLogEntryDurationBefore(time.Time) (sum int32, err error)
+
 		// List all label durations.
 		ListLogLabelDurations() ([]*LabelDuration, error)
 	}

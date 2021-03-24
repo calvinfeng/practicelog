@@ -23,7 +23,7 @@ type Entry struct {
 	Description       string                          `json:"description"`
 	IsMonthlyProgress bool                            `json:"is_monthly_progress"`
 	Thumbnails        map[string]youtubeapi.Thumbnail `json:"thumbnails"`
-	MinGuitarPractice int                             `json:"minutes_of_guitar_practice,omitempty"`
+	MinGuitarPractice int32                           `json:"minutes_of_guitar_practice,omitempty"`
 }
 
 func (e *Entry) String() (str string) {
