@@ -12,6 +12,9 @@ type Props = {
   totalPracticeDuration: number
 }
 
+/**
+ * @deprecated
+ */
 export default function PracticeTimePieChart(props: Props) {
   if (!props.durationFetched) {
     return <section className="PracticeTimePieChart"></section>

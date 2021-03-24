@@ -204,10 +204,10 @@ export default class LabelManagement extends React.Component<Props, State> {
         return false
       }
       return label.parent_id === this.state.selectedParentLabel.id
-    }).map((label: LogLabelJSON) => {      
+    }).map((label: LogLabelJSON) => {
       let style = { margin: "0.1rem" }
       let handler = this.newHandlerSelectChildLabel(label)
-      if (this.state.selectedParentLabel !== null && 
+      if (this.state.selectedParentLabel !== null &&
         this.state.selectedChildLabel !== null &&
         this.state.selectedChildLabel.id === label.id) {
         style["background"] = "green"
@@ -356,8 +356,37 @@ export default class LabelManagement extends React.Component<Props, State> {
         container
         spacing={1}>
         {gridItems}
+        {this.durationView}
       </Grid>
     )
+  }
+
+  get durationView() {
+    if (!this.props.logLabelDurationFetched) {
+      return <Grid item></Grid>
+    }
+
+    if (this.state.selectedParentLabel !== null && this.state.selectedChildLabel !== null) {
+      return (
+        <Grid item>
+          <Typography>
+            Accumulated {this.state.selectedChildLabel.duration} minutes of practice on {this.state.selectedChildLabel.name}
+          </Typography>
+        </Grid>
+      )
+    }
+
+    if (this.state.selectedParentLabel !== null) {
+      return (
+        <Grid item>
+          <Typography>
+            Accumulated {this.state.selectedParentLabel.duration} minutes of practice on {this.state.selectedParentLabel.name}
+          </Typography>
+        </Grid>
+      )
+    }
+
+    return <Grid item></Grid>
   }
 
   render() {

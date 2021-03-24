@@ -146,6 +146,8 @@ export default class PracticeLog extends React.Component<Props, State> {
 
   /**
    * This is an internal class helper to populate the state variable durationTimeSeries.
+   * By default this will fetch time series by month but maybe I will add a radial button to choose
+   * either by day or by month.
    */
   fetchPracticeTimeSeries() {
     this.http.get('/api/v1/log/entries/duration/time-series?group=by_month')
