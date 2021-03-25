@@ -1,6 +1,4 @@
 import React from 'react'
-import './PracticeLog.scss'
-
 import {
   Typography,
   Grid,
@@ -9,47 +7,49 @@ import {
 } from '@material-ui/core'
 import MuiAlert, { AlertProps, Color } from '@material-ui/lab/Alert';
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
+import { Map } from 'immutable'
 import _ from "lodash" // Import the entire lodash library
 
-import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON } from '../shared/type_definitions'
+import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON, PracticeTimeSeriesDataPoint } from '../shared/type_definitions'
 import LogTable from '../components/LogTable'
 import LogEntryManagement from '../components/log_entry_management/LogEntryManagement'
 import LogLabelManagement from '../components/log_label_management/LogLabelManagement'
 import AssignmentChecklistPopover from '../components/AssignmentChecklistPopover'
-import { Map } from 'immutable'
-import DurationPieChart from '../components/DurationPieChart';
+import PracticeTimeLineChart from '../components/PracticeTimeLineChart'
+
+import './PracticeLog.scss'
 
 type Props = {
   IDToken: string
 }
 
-type State = {
-  // Store
+type DataStore = {
   logEntries: LogEntryJSON[]
   logLabels: LogLabelJSON[]
 
-  // Stats
-  totalPracticeDuration: number
+  practiceTimeSeries: PracticeTimeSeriesDataPoint[]
+  totalPracticeTime: number
+}
 
-  // Internal state variable
+type InternalState = {
   logLabelDurationFetched: boolean
+}
 
-  // User interaction
+type InteractionState = {
   selectedLogEntry: LogEntryJSON | null
   focusedLogEntry: LogEntryJSON | null
 
-  // Paginations
   pageNum: number
   hasNextPage: boolean
 
-  // Popover
   popoverAnchor: HTMLButtonElement | null
 
-  // Alerts
   alertShown: boolean
   alertMessage: string
   alertSeverity: Color
 }
+
+type State = DataStore & InternalState & InteractionState
 
 export default class PracticeLog extends React.Component<Props, State> {
   private http: AxiosInstance
@@ -59,7 +59,7 @@ export default class PracticeLog extends React.Component<Props, State> {
     this.state = {
       logEntries: [],
       logLabels: [],
-      totalPracticeDuration: 0,
+      totalPracticeTime: 0,
       logLabelDurationFetched: false,
       selectedLogEntry: null,
       focusedLogEntry: null,
@@ -68,7 +68,8 @@ export default class PracticeLog extends React.Component<Props, State> {
       popoverAnchor: null,
       alertShown: false,
       alertMessage: "",
-      alertSeverity: "info"
+      alertSeverity: "info",
+      practiceTimeSeries: []
     }
     this.http = axios.create({
       baseURL: process.env.REACT_APP_API_URL,
@@ -89,7 +90,8 @@ export default class PracticeLog extends React.Component<Props, State> {
   componentDidMount() {
     this.fetchLogEntriesByPage(this.state.pageNum)
     this.fetchLogLabels()
-    this.fetchTotalPracticeDuration()
+    this.fetchTotalPracticeTime()
+    this.fetchPracticeTimeSeries()
   }
 
   /**
@@ -126,17 +128,38 @@ export default class PracticeLog extends React.Component<Props, State> {
   /**
    * This is an internal class helper to populate the state variable totalPracticeDuration.
    */
-  fetchTotalPracticeDuration() {
+  fetchTotalPracticeTime() {
     this.http.get('/api/v1/log/entries/duration')
       .then((resp: AxiosResponse) => {
         this.setState({
-          totalPracticeDuration: resp.data.in_minutes as number
+          totalPracticeTime: resp.data.in_minutes as number
         })
       })
       .catch((reason: any) => {
         this.setState({
           alertShown: true,
           alertMessage: `Failed to fetch log entries total duration to ${reason}`,
+          alertSeverity: "error"
+        })
+      })
+  }
+
+  /**
+   * This is an internal class helper to populate the state variable durationTimeSeries.
+   * By default this will fetch time series by month but maybe I will add a radial button to choose
+   * either by day or by month.
+   */
+  fetchPracticeTimeSeries() {
+    this.http.get('/api/v1/log/entries/duration/time-series?group=by_month')
+      .then((resp: AxiosResponse) => {
+        this.setState({
+          practiceTimeSeries: resp.data.time_series as PracticeTimeSeriesDataPoint[]
+        })
+      })
+      .catch((reason: any) => {
+        this.setState({
+          alertShown: true,
+          alertMessage: `Failed to fetch log entry time-series duration due to ${reason}`,
           alertSeverity: "error"
         })
       })
@@ -210,10 +233,16 @@ export default class PracticeLog extends React.Component<Props, State> {
           })
         }
 
+        // If a log entry is selected, when page loads, it should refresh and update the selected
+        // entry. Otherwise, let it stay the same.
         let selectedLogEntry = this.state.selectedLogEntry
         if (selectedLogEntry !== null) {
-          entries.find((entry: LogEntryJSON) => entry.id === (selectedLogEntry as LogEntryJSON).id)
+          let target = entries.find((entry: LogEntryJSON) => entry.id === (selectedLogEntry as LogEntryJSON).id)
+          if  (target) {
+            selectedLogEntry = target
+          }
         }
+
         this.setState({
           logEntries: entries,
           hasNextPage: resp.data.more,
@@ -465,7 +494,6 @@ export default class PracticeLog extends React.Component<Props, State> {
     }
   };
 
-  // TODO: Refactor this out
   get PaginationControlPanel() {
     const handlePrevPage = () => {
       this.setState({ pageNum: this.state.pageNum - 1 })
@@ -511,9 +539,6 @@ export default class PracticeLog extends React.Component<Props, State> {
   }
 
   render() {
-
-    // Due to the lack of a Redux store, function to set states have to be passed around.
-    // TODO Pass SelectedLogEntry to LogAssignmentManagement
     return (
       <section className="PracticeLog">
         <AssignmentChecklistPopover
@@ -537,13 +562,16 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleHTTPCreateLogEntry={this.handleHTTPCreateLogEntry} />
         <LogLabelManagement
           logLabels={this.state.logLabels}
+          logLabelDurationFetched={this.state.logLabelDurationFetched}
           handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
           handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
           handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
-        <DurationPieChart
+        {/* <PracticeTimePieChart
           totalPracticeDuration={this.state.totalPracticeDuration}
           durationFetched={this.state.logLabelDurationFetched}
-          logLabels={this.state.logLabels} />
+          logLabels={this.state.logLabels} /> */}
+        <PracticeTimeLineChart
+            timeSeries={this.state.practiceTimeSeries} />
         <Snackbar
           open={this.state.alertShown}
           autoHideDuration={6000}

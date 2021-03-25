@@ -1,4 +1,4 @@
-package server
+package restapi
 
 import (
 	"net/http"
@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func New(store videolog.Store, auth bool) videolog.HTTPServer {
+func New(store videolog.Store, auth bool) videolog.RESTAPI {
 	return &server{
 		store:    store,
 		validate: validator.New(),

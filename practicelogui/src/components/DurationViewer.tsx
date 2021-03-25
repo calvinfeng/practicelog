@@ -21,10 +21,9 @@ type Props = {
   fetchLogLabelDuration: (labelID: string) => void
 }
 
-// TODO: Separate the check boxes into two lists
-// One for parents
-// One for child
-// If none is selected, display the total duration spent on guitar.
+/**
+ * @deprecated
+ */
 export default function DurationViewer(props: Props) {
   const [expanded, setExpanded] = React.useState<boolean | undefined>(false)
   const [selectedLabelID, selectLabelID] = React.useState<string | null>(null)

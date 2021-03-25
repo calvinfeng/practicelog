@@ -23,6 +23,7 @@ type Entry struct {
 	Description       string                          `json:"description"`
 	IsMonthlyProgress bool                            `json:"is_monthly_progress"`
 	Thumbnails        map[string]youtubeapi.Thumbnail `json:"thumbnails"`
+	MinGuitarPractice int32                           `json:"minutes_of_guitar_practice,omitempty"`
 }
 
 func (e *Entry) String() (str string) {
@@ -47,7 +48,7 @@ type ProgressSummary struct {
 }
 
 type (
-	HTTPServer interface {
+	RESTAPI interface {
 		ListVideoLogEntries(echo.Context) error
 		ListProgressSummaries(c echo.Context) error
 	}

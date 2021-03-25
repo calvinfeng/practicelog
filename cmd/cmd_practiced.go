@@ -38,27 +38,35 @@ func practicedRuneE(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	labelByName := make(map[string]*practicelog.Label)
+	var targetLabel *practicelog.Label
 	for _, label := range labels {
-		labelByName[label.Name] = label
-	}
-
-	labelIDs := make([]string, 0)
-	for _, name := range args {
-		label, ok := labelByName[name]
-		if !ok {
-			return fmt.Errorf("label %s not found", name)
+		if label.Name == args[0] {
+			targetLabel = label
 		}
-		logrus.Infof("found label %s", label.Name)
-		labelIDs = append(labelIDs, label.ID.String())
+	}
+	if targetLabel == nil {
+		return fmt.Errorf("label %s is not found in data", args[0])
 	}
 
-	dur, err := store.SumLogEntryDurationWithFilters(practicelogstore.ByLabelIDList(labelIDs))
+	labelDurations, err := store.ListLogLabelDurations()
 	if err != nil {
 		return err
 	}
 
-	logrus.Infof("total practiced time for %s: %d hours and %d minutes", args[0], dur/60, dur%60)
+	var targetLabelDur int32
+	for _, labelDur := range labelDurations {
+		if labelDur.ID == targetLabel.ID {
+			targetLabelDur = labelDur.Duration
+		}
+	}
+
+	totalDur, err := store.SumLogEntryDuration()
+	if err != nil {
+		return err
+	}
+
+	logrus.Infof("total logged hours: %d", totalDur)
+	logrus.Infof("total practiced time for %s: %d hours and %d minutes", args[0], targetLabelDur/60, targetLabelDur%60)
 
 	return nil
 }

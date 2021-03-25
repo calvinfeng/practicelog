@@ -100,7 +100,7 @@ func migrateDB(addr string, args []string) error {
 	} else {
 		logrus.Infof("successfully migrated database to version %d, dirty=%v", version, dirty)
 	}
-	
+
 	return nil
 }
 

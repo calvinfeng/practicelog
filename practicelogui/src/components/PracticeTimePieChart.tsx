@@ -4,7 +4,7 @@ import React from 'react'
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { LogLabelJSON, nilUUID } from '../shared/type_definitions';
 
-import './DurationPieChart.scss'
+import './PracticeTimePieChart.scss'
 
 type Props = {
   durationFetched: boolean
@@ -12,9 +12,12 @@ type Props = {
   totalPracticeDuration: number
 }
 
-export default function DurationPieChart(props: Props) {
+/**
+ * @deprecated
+ */
+export default function PracticeTimePieChart(props: Props) {
   if (!props.durationFetched) {
-    return <section className="DurationPieChart"></section>
+    return <section className="PracticeTimePieChart"></section>
   }
 
   // Transform to hours
@@ -36,7 +39,7 @@ export default function DurationPieChart(props: Props) {
   })
 
   return (
-    <Paper className="DurationPieChart">
+    <Paper className="PracticeTimePieChart">
       <Typography variant="h5">
         Practice Time Breakdown
       </Typography>

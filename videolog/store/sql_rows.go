@@ -19,6 +19,7 @@ type DBVideoLogEntry struct {
 	Description       string          `db:"description"`
 	IsMonthlyProgress bool            `db:"is_monthly_progress"`
 	Thumbnails        json.RawMessage `db:"thumbnails"`
+	MinGuitarPractice int32           `db:"minutes_of_guitar_practice"`
 }
 
 func (row *DBVideoLogEntry) fromModel(model *videolog.Entry) *DBVideoLogEntry {
@@ -30,6 +31,7 @@ func (row *DBVideoLogEntry) fromModel(model *videolog.Entry) *DBVideoLogEntry {
 	row.IsMonthlyProgress = model.IsMonthlyProgress
 	row.Thumbnails, _ = json.Marshal(model.Thumbnails)
 	row.Username = model.Username
+	row.MinGuitarPractice = model.MinGuitarPractice
 	return row
 }
 
@@ -46,6 +48,7 @@ func (row *DBVideoLogEntry) toModel() *videolog.Entry {
 		IsMonthlyProgress: row.IsMonthlyProgress,
 		Thumbnails:        thumbnails,
 		Username:          row.Username,
+		MinGuitarPractice: row.MinGuitarPractice,
 	}
 }
 
