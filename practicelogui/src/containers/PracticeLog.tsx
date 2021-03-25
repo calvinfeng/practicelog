@@ -224,7 +224,7 @@ export default class PracticeLog extends React.Component<Props, State> {
           entries.push({
             id: resp.data.results[i].id,
             date: new Date(resp.data.results[i].date),
-            user_id: resp.data.results[i].user_id,
+            username: resp.data.results[i].username,
             labels: resp.data.results[i].labels,
             message: resp.data.results[i].message,
             details: resp.data.results[i].details,
@@ -395,7 +395,7 @@ export default class PracticeLog extends React.Component<Props, State> {
             entries[i] = {
               id: resp.data.id,
               date: new Date(resp.data.date),
-              user_id: resp.data.user_id,
+              username: resp.data.username,
               labels: resp.data.labels,
               message: resp.data.message,
               details: resp.data.details,
@@ -436,7 +436,7 @@ export default class PracticeLog extends React.Component<Props, State> {
             entries[i] = {
               id: resp.data.id,
               date: new Date(resp.data.date),
-              user_id: resp.data.user_id,
+              username: resp.data.username,
               labels: resp.data.labels,
               message: resp.data.message,
               details: resp.data.details,

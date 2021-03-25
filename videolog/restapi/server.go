@@ -30,7 +30,7 @@ func (s *server) ListVideoLogEntries(c echo.Context) error {
 	resp := new(VideoLogEntryListJSONResponse)
 	var err error
 
-	resp.MonthlyProgressRecordings, err = s.store.SelectVideoLogEntries(store.IsMonthlyProgress(true))
+	resp.ProgressRecordings, err = s.store.SelectVideoLogEntries(store.IsMonthlyProgress(true))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrap(err, "server failed to query database").Error())

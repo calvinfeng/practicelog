@@ -34,7 +34,7 @@ export default function Submission(props: Props) {
             onClick={ () => {
               const entry: LogEntryJSON = {
                 id: props.inputID as string,
-                user_id: "calvin.j.feng@gmail.com",
+                username: "calvin.j.feng@gmail.com",
                 date: new Date(),
                 duration: props.inputDuration,
                 message: props.inputMessage,
@@ -66,11 +66,11 @@ export default function Submission(props: Props) {
             onClick={() => {
               const entry: LogEntryJSON = {
                 id: "00000000-0000-0000-0000-000000000000",
-                user_id: "calvin.j.feng@gmail.com",  
+                username: "calvin.j.feng@gmail.com",
                 date: new Date(),
                 duration: props.inputDuration,
                 message: props.inputMessage,
-                labels: props.inputLabelList, 
+                labels: props.inputLabelList,
                 assignments: props.inputAssignmentList,
                 details: "",
               }

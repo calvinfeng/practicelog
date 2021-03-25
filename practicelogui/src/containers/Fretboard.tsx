@@ -3,7 +3,6 @@ import './Fretboard.scss'
 import {
   Grid,
   Button,
-  Typography,
   FormControl,
   InputLabel,
   Select,

@@ -14,7 +14,7 @@ export type LogLabelDurationJSON = {
 export type LogEntryJSON = {
   id: string
   date: Date
-  user_id: string
+  username: string
   message: string
   details: string
   duration: number
@@ -75,4 +75,22 @@ export type PracticeTimeSeriesDataPoint = {
   day: number
   key: string
   value: number
+}
+
+export type ThumbnailJSON = {
+  url: string
+  width: number
+  height: number
+}
+
+export type VideoLogEntryJSON = {
+  id: string
+  username: string
+  published: Date
+  video_orientation: string
+  title: string
+  description: string
+  is_monthly_progress: boolean
+  thumbnails: Map<string, ThumbnailJSON>
+  minutes_of_guitar_practice: number
 }
