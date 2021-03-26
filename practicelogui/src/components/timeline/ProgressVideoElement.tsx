@@ -11,16 +11,34 @@ type Props = {
   video: VideoLogEntryJSON
 }
 
+const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+];
+
 export function ProgressVideoElement(props: Props) {
+  const date = new Date(props.video.published)
+  const dateString = `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
+  const hours = Math.round(props.video.minutes_of_guitar_practice * 100 / 60) / 100
   return (
     <VerticalTimelineElement
-      date={props.video.published.toString()}
+      date={dateString}
       contentArrowStyle={contentArrowStyle}
       contentStyle={contentStyle}
       iconStyle={iconStyle}
       icon={<MusicNoteIcon />}>
       <div className="ProgressVideoElement">
-        <Typography className="title" variant="h6">{props.video.minutes_of_guitar_practice} minutes</Typography>
+        <Typography className="title" variant="h6">{hours} hours of guitar playing</Typography>
         <ReactPlayer
           url={`https://www.youtube.com/watch?v=${props.video.id}`}
           width={"100%"}

@@ -566,10 +566,6 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
           handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
           handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
-        {/* <PracticeTimePieChart
-          totalPracticeDuration={this.state.totalPracticeDuration}
-          durationFetched={this.state.logLabelDurationFetched}
-          logLabels={this.state.logLabels} /> */}
         <PracticeTimeLineChart
             timeSeries={this.state.practiceTimeSeries} />
         <Snackbar

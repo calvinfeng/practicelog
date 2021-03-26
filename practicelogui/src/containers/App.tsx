@@ -154,6 +154,7 @@ export default class App extends React.Component<Props, State> {
               anchorOrigin={{"vertical": "bottom", "horizontal": "center"}} >
               <PracticeLogMenuItem />
               <FretboardMenuItem />
+              <TimelineMenuItem />
             </Menu>
             <Typography color="inherit" variant="h6" className="title">Guitar Practice Log</Typography>
           </Toolbar>
@@ -200,6 +201,9 @@ export default class App extends React.Component<Props, State> {
             <Route
               exact path={Path.Fretboard}
               render={() => <Fretboard />} />
+            <Route
+              exact path={Path.Timeline}
+              render={() => this.googleLogin} />
           </Switch>
         </BrowserRouter>
       </div>
@@ -218,6 +222,9 @@ export default class App extends React.Component<Props, State> {
             <Route
               exact path={Path.Fretboard}
               render={() => <Fretboard />} />
+            <Route
+              exact path={Path.Timeline}
+              render={() => this.googleUnauthorized} />
           </Switch>
         </BrowserRouter>
       </div>
@@ -290,3 +297,19 @@ function FretboardMenuItem() {
     </MenuItem>
   );
 }
+
+function TimelineMenuItem() {
+  const history = useHistory()
+  const location = useLocation()
+
+  function handleClick() {
+    history.push(Path.Timeline);
+  }
+
+  return (
+    <MenuItem onClick={handleClick} disabled={location.pathname === Path.Timeline}>
+      Guitar Progress Timeline
+    </MenuItem>
+  );
+}
+
