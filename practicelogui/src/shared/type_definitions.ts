@@ -83,6 +83,13 @@ export type ThumbnailJSON = {
   height: number
 }
 
+export type VideoGroupJSON = {
+  year: number
+  month: number
+  practice_recordings: VideoLogEntryJSON[]
+  progress_recordings: VideoLogEntryJSON[]
+}
+
 export type VideoLogEntryJSON = {
   id: string
   username: string
@@ -94,3 +101,33 @@ export type VideoLogEntryJSON = {
   thumbnails: Map<string, ThumbnailJSON>
   minutes_of_guitar_practice: number
 }
+
+export enum VideoOrientation {
+  Portrait = 'portrait',
+  Landscape = 'landscape'
+}
+
+export type SummaryJSON = {
+  id: number
+  username: string
+  year: number
+  month: number
+  title: string
+  subtitle: string
+  body: string
+}
+
+export const MonthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+]

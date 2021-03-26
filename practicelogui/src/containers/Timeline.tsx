@@ -14,17 +14,18 @@ import {
 
 import 'react-vertical-timeline-component/style.min.css'
 
-import { VideoLogEntryJSON } from '../shared/type_definitions'
+import { SummaryJSON, VideoGroupJSON, VideoLogEntryJSON } from '../shared/type_definitions'
 import './Timeline.scss'
 import { ProgressVideoElement } from '../components/timeline/ProgressVideoElement'
+import { PracticeVideoElement } from '../components/timeline/PracticeVideoElement'
 
 type Props = {
   IDToken: string
 }
 
 type State = {
-  practiceRecordings: VideoLogEntryJSON[]
-  progressRecordings: VideoLogEntryJSON[]
+  videoGroups: VideoGroupJSON[],
+  summaries: SummaryJSON[]
 }
 
 export default class Timeline extends React.Component<Props, State> {
@@ -41,25 +42,39 @@ export default class Timeline extends React.Component<Props, State> {
       }
     })
     this.state = {
-      practiceRecordings: [],
-      progressRecordings: []
+      videoGroups: [],
+      summaries: []
     }
   }
 
   componentDidMount() {
     this.fetchVideoLogEntries()
+    this.fetchSummaries()
   }
 
-    /**
-   * This is an internal class helper function to populate log label duration
-   * as state.
+  /**
+   * Action to request videos
    */
   fetchVideoLogEntries() {
     this.http.get('/api/v1/videolog/entries')
       .then((resp: AxiosResponse) => {
         this.setState({
-          practiceRecordings: resp.data.practice_recordings as VideoLogEntryJSON[],
-          progressRecordings: resp.data.progress_recordings as VideoLogEntryJSON[]
+          videoGroups: resp.data as VideoGroupJSON[]
+        })
+      })
+      .catch((reason: any) => {
+        console.log(reason)
+      })
+  }
+
+  /**
+   * Action to request summaries
+   */
+  fetchSummaries() {
+    this.http.get('/api/v1/videolog/summaries')
+      .then((resp: AxiosResponse) => {
+        this.setState({
+          summaries: resp.data as SummaryJSON[]
         })
       })
       .catch((reason: any) => {
@@ -68,17 +83,45 @@ export default class Timeline extends React.Component<Props, State> {
   }
 
   get timelineContent() {
-    if (this.state.practiceRecordings.length === 0 || this.state.progressRecordings.length === 0) {
+    if (this.state.videoGroups.length === 0) {
       return <div></div>
     }
 
+    const elements: JSX.Element[] = []
+    this.state.videoGroups.forEach((group: VideoGroupJSON) => {
+      group.progress_recordings.filter((video: VideoLogEntryJSON) => {
+        const date = new Date(video.published)
+        return date.getDay() > 15
+      }).forEach((video: VideoLogEntryJSON) => {
+        elements.push(<ProgressVideoElement video={video} />)
+      })
+
+      // If this is a performance issue, use map
+      let summary: SummaryJSON | undefined
+      for (let i = 0; i < this.state.summaries.length; i++) {
+        if (group.year === this.state.summaries[i].year && group.month === this.state.summaries[i].month) {
+          summary = this.state.summaries[i]
+        }
+      }
+
+      if (summary !== undefined) {
+        elements.push(<PracticeVideoElement
+          year={group.year} month={group.month}
+          summary={summary}
+          videos={group.practice_recordings} />)
+      }
+
+      group.progress_recordings.filter((video: VideoLogEntryJSON) => {
+        const date = new Date(video.published)
+        return date.getDay() <= 15
+      }).forEach((video: VideoLogEntryJSON) => {
+        elements.push(<ProgressVideoElement video={video} />)
+      })
+    })
+
     return (
       <VerticalTimeline animate={true}>
-      {
-        this.state.progressRecordings.map((video: VideoLogEntryJSON) => {
-          return <ProgressVideoElement video={video} />
-        })
-      }
+        {elements}
       </VerticalTimeline>
     )
   }
