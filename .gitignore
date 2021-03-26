@@ -2,3 +2,4 @@
 *.zip
 *backup.json
 *.csv
+backups/

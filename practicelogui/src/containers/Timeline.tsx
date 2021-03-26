@@ -16,6 +16,7 @@ import 'react-vertical-timeline-component/style.min.css'
 
 import { VideoLogEntryJSON } from '../shared/type_definitions'
 import './Timeline.scss'
+import { ProgressVideoElement } from '../components/timeline/ProgressVideoElement'
 
 type Props = {
   IDToken: string
@@ -38,7 +39,11 @@ export default class Timeline extends React.Component<Props, State> {
       headers: {
         "Authorization": props.IDToken
       }
-    });
+    })
+    this.state = {
+      practiceRecordings: [],
+      progressRecordings: []
+    }
   }
 
   componentDidMount() {
@@ -62,28 +67,42 @@ export default class Timeline extends React.Component<Props, State> {
       })
   }
 
+  get timelineContent() {
+    if (this.state.practiceRecordings.length === 0 || this.state.progressRecordings.length === 0) {
+      return <div></div>
+    }
+
+    return (
+      <VerticalTimeline animate={true}>
+      {
+        this.state.progressRecordings.map((video: VideoLogEntryJSON) => {
+          return <ProgressVideoElement video={video} />
+        })
+      }
+      </VerticalTimeline>
+    )
+  }
+
   render() {
     console.log(this.state)
     return (
       <div className="Timeline">
         <Card className="text-card">
-          <CardMedia image={process.env.PUBLIC_URL + '/img/acoustic_guitar.jpg'}
+          <CardMedia image={process.env.PUBLIC_URL + '/img/acoustic-guitar.jpg'}
             title="Random Guitar"
             className="media" />
           <CardContent className="content">
-            <Typography variant="h4">Guitar Journey</Typography>
+            <Typography variant="h4">Guitar Progress Timeline</Typography>
             <Typography variant="subtitle1" color="textSecondary" paragraph={true}>
               A documentary of my learning progress from a beginner to an intermediate player
             </Typography>
             <Typography variant="body2" paragraph={true}>
-              I was first exposed to guitar when I was around 16. As a teenager, I was lacking the
-              discipline to stay focused and practice rigoriously. I took guitar lessons for a year.
-              I didn't really pay much attention to music theory or maintain a practice routine. Perhaps
-              this is one of those things I wish I could have done better. It was in the middle of 2019,
-              I discovered Justin Sandercoe's online guitar course. The lessons were so well
-              structured, it motivated me to pick up guitar seriously once again. And I figured, if I
-              were to have a wedding any time soon, it is the best time now to pick up my guitar and
-              form a band with my friends so we can perform on weddng day!
+              To be fair, I wasn't a complete music beginner. I learned piano and violin in my
+              childhood. It was in the middle of 2019, I discovered Justin Sandercoe's online guitar
+              course. The lessons were so well structured, it motivated me to pick up guitar
+              seriously once again. And I figured, if I were to have a wedding any time soon, it is
+              the best time now to learn guitar and form a band with my friends so we can perform on
+              weddng day!
             </Typography>
             <Typography variant="body2" paragraph={true}>
               Ever since August, 2019 I've been practicing with a rigorious schedule. I practiced
@@ -95,8 +114,7 @@ export default class Timeline extends React.Component<Props, State> {
             </Typography>
           </CardContent>
         </Card>
-        <VerticalTimeline animate={true}>
-        </VerticalTimeline>
+        {this.timelineContent}
       </div>
     )
   }
