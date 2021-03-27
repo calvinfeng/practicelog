@@ -20,7 +20,6 @@ import { ProgressVideoElement } from '../components/timeline/ProgressVideoElemen
 import { PracticeVideoElement } from '../components/timeline/PracticeVideoElement'
 
 type Props = {
-  IDToken: string
 }
 
 type State = {
@@ -32,13 +31,12 @@ export default class Timeline extends React.Component<Props, State> {
   private http: AxiosInstance
 
   constructor(props: Props) {
-    // TODO: This shouldn't need authentication?
     super(props)
     this.http = axios.create({
       baseURL: process.env.REACT_APP_API_URL,
       timeout: 1000,
       headers: {
-        "Authorization": props.IDToken
+        "Authorization": "Anything, this is placeholder"
       }
     })
     this.state = {
@@ -56,7 +54,7 @@ export default class Timeline extends React.Component<Props, State> {
    * Action to request videos
    */
   fetchVideoLogEntries() {
-    this.http.get('/api/v1/videolog/entries')
+    this.http.get('/public/api/v1/videolog/entries')
       .then((resp: AxiosResponse) => {
         this.setState({
           videoGroups: resp.data as VideoGroupJSON[]
@@ -71,7 +69,7 @@ export default class Timeline extends React.Component<Props, State> {
    * Action to request summaries
    */
   fetchSummaries() {
-    this.http.get('/api/v1/videolog/summaries')
+    this.http.get('/public/api/v1/videolog/summaries')
       .then((resp: AxiosResponse) => {
         this.setState({
           summaries: resp.data as SummaryJSON[]
@@ -127,7 +125,6 @@ export default class Timeline extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(this.state)
     return (
       <div className="Timeline">
         <Card className="text-card">

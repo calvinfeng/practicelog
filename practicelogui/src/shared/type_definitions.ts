@@ -98,7 +98,7 @@ export type VideoLogEntryJSON = {
   title: string
   description: string
   is_monthly_progress: boolean
-  thumbnails: Map<string, ThumbnailJSON>
+  thumbnails: any // This is a JSON, map of string to Thumbnail JSON
   minutes_of_guitar_practice: number
 }
 

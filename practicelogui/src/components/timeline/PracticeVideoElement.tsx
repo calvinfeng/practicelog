@@ -11,7 +11,7 @@ import MusicNoteIcon from '@material-ui/icons/MusicNote'
 import ReactPlayer from 'react-player'
 
 import { contentStyle, contentArrowStyle, iconStyle } from './styles'
-import { MonthNames, SummaryJSON, VideoLogEntryJSON, VideoOrientation } from '../../shared/type_definitions'
+import { MonthNames, SummaryJSON, ThumbnailJSON, VideoLogEntryJSON, VideoOrientation } from '../../shared/type_definitions'
 
 import './PracticeVideoElement.scss'
 
@@ -89,13 +89,20 @@ function VideoPopover(props: VideoPopoverProps) {
   //   </Button >
   // )
 
+  let thumbnailURL = `https://img.youtube.com/vi/${props.video.id}/1.jpg`
+
+  const thumbnailJSON = props.video.thumbnails["default"] as ThumbnailJSON | undefined
+  if (thumbnailJSON) {
+    thumbnailURL = thumbnailJSON.url
+  }
+
   return (
     <div className="VideoPopover" id={`video-popover-${props.video.id}`}>
       <Tooltip title={props.video.title}>
         <ButtonBase onClick={handleClick} id={`video-popover-button-${props.video.id}`}>
         <img
           alt="youtube-video-thumbnail"
-          src={`https://img.youtube.com/vi/${props.video.id}/1.jpg`} />
+          src={thumbnailURL} />
         </ButtonBase>
       </Tooltip>
       <Popover

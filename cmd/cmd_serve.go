@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"google.golang.org/api/oauth2/v2"
+	"google.golang.org/api/option"
 	"net/http"
 
 	"github.com/calvinfeng/practicelog/auth"
@@ -17,8 +19,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"google.golang.org/api/oauth2/v2"
-	"google.golang.org/api/option"
 )
 
 func serveRunE(_ *cobra.Command, _ []string) error {
@@ -44,14 +44,6 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 		Browse: true,
 	}))
 
-	if viper.GetBool("authentication.enabled") {
-		oauthSrv, err := oauth2.NewService(context.Background(), option.WithHTTPClient(http.DefaultClient))
-		if err != nil {
-			return err
-		}
-		e.Use(auth.NewGoogleIDTokenValidateMiddleware(oauthSrv))
-	}
-
 	pg, err := sqlx.Open("postgres", addr)
 	if err != nil {
 		return err
@@ -61,35 +53,46 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	logapi := practicelogapi.New(practicelogstore.New(pg), viper.GetBool("authentication.enabled"))
 	videoapi := videologapi.New(videologstore.New(pg), viper.GetBool("authentication.enabled"))
 
+	apiV1 := e.Group("/api/v1")
+	if viper.GetBool("authentication.enabled") {
+		oauthSrv, err := oauth2.NewService(context.Background(), option.WithHTTPClient(http.DefaultClient))
+		if err != nil {
+			return err
+		}
+		apiV1.Use(auth.NewGoogleIDTokenValidateMiddleware(oauthSrv))
+	}
+
 	// Authentication
-	e.POST("/api/v1/token/validate", auth.TokenValidationHandler)
+	apiV1.POST("/token/validate", auth.TokenValidationHandler)
 
 	// Labels
-	e.GET("/api/v1/log/labels", logapi.ListPracticeLogLabels)
-	e.POST("/api/v1/log/labels", logapi.CreatePracticeLogLabel)
-	e.PUT("/api/v1/log/labels/:label_id", logapi.UpdatePracticeLogLabel)
-	e.DELETE("/api/v1/log/labels/:label_id", logapi.DeletePracticeLogLabel)
+	apiV1.GET("/log/labels", logapi.ListPracticeLogLabels)
+	apiV1.POST("/log/labels", logapi.CreatePracticeLogLabel)
+	apiV1.PUT("/log/labels/:label_id", logapi.UpdatePracticeLogLabel)
+	apiV1.DELETE("/log/labels/:label_id", logapi.DeletePracticeLogLabel)
 
 	// Entries
-	e.GET("/api/v1/log/entries", logapi.ListPracticeLogEntries)
-	e.POST("/api/v1/log/entries", logapi.CreatePracticeLogEntry)
-	e.PUT("/api/v1/log/entries/:entry_id", logapi.UpdatePracticeLogEntry)
-	e.DELETE("/api/v1/log/entries/:entry_id", logapi.DeletePracticeLogEntry)
+	apiV1.GET("/log/entries", logapi.ListPracticeLogEntries)
+	apiV1.POST("/log/entries", logapi.CreatePracticeLogEntry)
+	apiV1.PUT("/log/entries/:entry_id", logapi.UpdatePracticeLogEntry)
+	apiV1.DELETE("/log/entries/:entry_id", logapi.DeletePracticeLogEntry)
 
 	// Assignments
-	e.PUT("/api/v1/log/entries/:entry_id/assignments", logapi.UpdatePracticeLogAssignments)
-
-	// Videos
-	e.GET("/api/v1/videolog/entries", videoapi.ListVideoLogEntries)
-	e.GET("/api/v1/videolog/summaries", videoapi.ListProgressSummaries)
+	apiV1.PUT("/log/entries/:entry_id/assignments", logapi.UpdatePracticeLogAssignments)
 
 	// Duration data
 	// - Fetch all labels' duration, each duration is a sum of log entries that share a common label association.
 	// - Fetch the total sum of all durations, i.e. total hours of practice
 	// - Fetch the total sum of all durations, but present them as time series
-	e.GET("/api/v1/log/labels/duration", logapi.ListLogLabelDurations)
-	e.GET("/api/v1/log/entries/duration", logapi.GetLogEntryDurationSum)
-	e.GET("/api/v1/log/entries/duration/time-series", logapi.GetLogEntryDurationCumulativeSumTimeSeries)
+	apiV1.GET("/log/labels/duration", logapi.ListLogLabelDurations)
+	apiV1.GET("/log/entries/duration", logapi.GetLogEntryDurationSum)
+	apiV1.GET("/log/entries/duration/time-series", logapi.GetLogEntryDurationCumulativeSumTimeSeries)
+
+	publicAPI := e.Group("/public/api/v1")
+
+	// Videos
+	publicAPI.GET("/videolog/entries", videoapi.ListVideoLogEntries)
+	publicAPI.GET("/videolog/summaries", videoapi.ListProgressSummaries)
 
 	logrus.Infof("http server is listening on %s", viper.GetString("http.port"))
 	return e.Start(fmt.Sprintf(":%s", viper.GetString("http.port")))

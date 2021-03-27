@@ -168,7 +168,7 @@ export default class App extends React.Component<Props, State> {
   // TODO: Separate this out, make it a pretty landing page
   get googleLogin() {
     return (
-      <section style={{"margin": "1rem"}}>
+      <section style={{"margin": "1rem", "height": "100vh"}}>
         <GoogleLogin
           clientId={process.env.REACT_APP_OAUTH_CLIENT_ID as string}
           buttonText={"Login with Google"}
@@ -203,7 +203,7 @@ export default class App extends React.Component<Props, State> {
               render={() => <Fretboard />} />
             <Route
               exact path={Path.Timeline}
-              render={() => this.googleLogin} />
+              render={() => <Timeline />} />
           </Switch>
         </BrowserRouter>
       </div>
@@ -224,7 +224,7 @@ export default class App extends React.Component<Props, State> {
               render={() => <Fretboard />} />
             <Route
               exact path={Path.Timeline}
-              render={() => this.googleUnauthorized} />
+              render={() => <Timeline />} />
           </Switch>
         </BrowserRouter>
       </div>
@@ -245,7 +245,7 @@ export default class App extends React.Component<Props, State> {
               render={() => <Fretboard />} />
             <Route
               exact path={Path.Timeline}
-              render={() => <Timeline IDToken={idToken} />} />
+              render={() => <Timeline />} />
           </Switch>
         </BrowserRouter>
       </div>

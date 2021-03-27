@@ -3,7 +3,9 @@
   width: 100%;
   flex-direction: column;
   margin: 1rem;
-  justify-content: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+
   .text-group {
     display: inherit;
     flex-direction: row;

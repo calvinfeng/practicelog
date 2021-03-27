@@ -6,8 +6,8 @@ import (
 )
 
 type VideoGroup struct {
-	Year  int        `json:"year"`
-	Month time.Month `json:"month"`
+	Year               int               `json:"year"`
+	Month              time.Month        `json:"month"`
 	PracticeRecordings []*videolog.Entry `json:"practice_recordings"`
 	ProgressRecordings []*videolog.Entry `json:"progress_recordings"`
 }
