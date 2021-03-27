@@ -1,0 +1,12 @@
+.ProgressVideoElement {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0;
+  margin-top: 0.5rem;
+
+  .title {
+    margin-bottom: 0.5rem;
+  }
+}

@@ -64,6 +64,8 @@ const chromaticNoteOrder: NoteConfig[][] = [
   ]
 ]
 
+class NotFoundError extends Error {}
+
 function chromaticIndexOf(note: Note): number {
   for (let i = 0; i < chromaticNoteOrder.length; i++) {
       for (let j = 0; j < chromaticNoteOrder[i].length; j++) {
@@ -72,7 +74,7 @@ function chromaticIndexOf(note: Note): number {
         }
       }
     }
-  throw "note not found, not part of chromatic scale"
+  throw new NotFoundError("note not found, not part of chromatic scale")
 }
 
 export class Note {

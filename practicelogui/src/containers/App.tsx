@@ -19,6 +19,7 @@ import { GoogleUserProfile, GoogleError, AuthValidationResponse } from '../share
 import PracticeLog from './PracticeLog'
 import Unauthorized from './Unauthorized'
 import Fretboard from './Fretboard'
+import Timeline from './Timeline'
 import './App.scss'
 
 /**
@@ -36,6 +37,7 @@ type State = {
 enum Path {
   Root = "/",
   Fretboard = "/fretboard",
+  Timeline = "/timeline"
 }
 
 export default class App extends React.Component<Props, State> {
@@ -152,6 +154,7 @@ export default class App extends React.Component<Props, State> {
               anchorOrigin={{"vertical": "bottom", "horizontal": "center"}} >
               <PracticeLogMenuItem />
               <FretboardMenuItem />
+              <TimelineMenuItem />
             </Menu>
             <Typography color="inherit" variant="h6" className="title">Guitar Practice Log</Typography>
           </Toolbar>
@@ -165,7 +168,7 @@ export default class App extends React.Component<Props, State> {
   // TODO: Separate this out, make it a pretty landing page
   get googleLogin() {
     return (
-      <section style={{"margin": "1rem"}}>
+      <section style={{"margin": "1rem", "height": "100vh"}}>
         <GoogleLogin
           clientId={process.env.REACT_APP_OAUTH_CLIENT_ID as string}
           buttonText={"Login with Google"}
@@ -175,6 +178,7 @@ export default class App extends React.Component<Props, State> {
     )
   }
 
+  // TODO: Separate this out, make it a pretty unauthorized page
   get googleUnauthorized() {
     return (
       <div className="App">
@@ -197,6 +201,9 @@ export default class App extends React.Component<Props, State> {
             <Route
               exact path={Path.Fretboard}
               render={() => <Fretboard />} />
+            <Route
+              exact path={Path.Timeline}
+              render={() => <Timeline />} />
           </Switch>
         </BrowserRouter>
       </div>
@@ -215,6 +222,9 @@ export default class App extends React.Component<Props, State> {
             <Route
               exact path={Path.Fretboard}
               render={() => <Fretboard />} />
+            <Route
+              exact path={Path.Timeline}
+              render={() => <Timeline />} />
           </Switch>
         </BrowserRouter>
       </div>
@@ -233,6 +243,9 @@ export default class App extends React.Component<Props, State> {
             <Route
               exact path={Path.Fretboard}
               render={() => <Fretboard />} />
+            <Route
+              exact path={Path.Timeline}
+              render={() => <Timeline />} />
           </Switch>
         </BrowserRouter>
       </div>
@@ -284,3 +297,19 @@ function FretboardMenuItem() {
     </MenuItem>
   );
 }
+
+function TimelineMenuItem() {
+  const history = useHistory()
+  const location = useLocation()
+
+  function handleClick() {
+    history.push(Path.Timeline);
+  }
+
+  return (
+    <MenuItem onClick={handleClick} disabled={location.pathname === Path.Timeline}>
+      Guitar Progress Timeline
+    </MenuItem>
+  );
+}
+

@@ -1,12 +1,13 @@
 package restapi
 
-import "github.com/calvinfeng/practicelog/videolog"
+import (
+	"github.com/calvinfeng/practicelog/videolog"
+	"time"
+)
 
-type VideoLogEntryListJSONResponse struct {
-	PracticeRecordings        []*videolog.Entry `json:"practice_recordings"`
-	MonthlyProgressRecordings []*videolog.Entry `json:"monthly_progress_recordings"`
-}
-
-type ProgressSummaryJSONResponse struct {
-	ProgressSummaries []*videolog.ProgressSummary `json:"progress_summaries"`
+type VideoGroup struct {
+	Year               int               `json:"year"`
+	Month              time.Month        `json:"month"`
+	PracticeRecordings []*videolog.Entry `json:"practice_recordings"`
+	ProgressRecordings []*videolog.Entry `json:"progress_recordings"`
 }
