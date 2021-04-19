@@ -24,13 +24,9 @@ func (s *server) ListPracticeLogLabels(c echo.Context) error {
 }
 
 func (s *server) CreatePracticeLogLabel(c echo.Context) error {
-	email := defaultUsername
-	if s.auth {
-		var err error
-		email, err = auth.GetEmailFromContext(c)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
-		}
+	email, err := auth.GetEmailFromContext(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
 	}
 
 	label := new(practicelog.Label)
@@ -60,13 +56,9 @@ func (s *server) CreatePracticeLogLabel(c echo.Context) error {
 }
 
 func (s *server) UpdatePracticeLogLabel(c echo.Context) error {
-	email := defaultUsername
-	if s.auth {
-		var err error
-		email, err = auth.GetEmailFromContext(c)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
-		}
+	email, err := auth.GetEmailFromContext(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
 	}
 
 	label := new(practicelog.Label)

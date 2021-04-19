@@ -101,9 +101,13 @@ func reloadDBWithPlaylist(addr string, playlistID string, isProgressRecording bo
 			playlistID)
 	}
 
-	videos := make([]*videolog.Entry, len(items))
-	for i, item := range items {
-		videos[i] = &videolog.Entry{
+	videos := make([]*videolog.Entry, 0, len(items))
+	for _, item := range items {
+		if item.ContentDetails.Published.IsZero() {
+			continue
+		}
+
+		video := &videolog.Entry{
 			ID:                item.ContentDetails.VideoID,
 			Published:         item.ContentDetails.Published,
 			Title:             item.Snippet.Title,
@@ -114,15 +118,15 @@ func reloadDBWithPlaylist(addr string, playlistID string, isProgressRecording bo
 		}
 
 		if strings.Contains(item.Snippet.Title, "AR 9:16") {
-			videos[i].VideoOrientation = videolog.OrientationPortrait
+			video.VideoOrientation = videolog.OrientationPortrait
 		} else {
-			videos[i].VideoOrientation = videolog.OrientationLandscape
+			video.VideoOrientation = videolog.OrientationLandscape
 		}
 
-		if sum, err := plogstore.SumLogEntryDurationBefore(videos[i].Published); err != nil {
+		if sum, err := plogstore.SumLogEntryDurationBefore(video.Published); err != nil {
 			return fmt.Errorf("failed to sum log entry duration: %w", err)
 		} else {
-			videos[i].MinGuitarPractice = sum
+			video.MinGuitarPractice = sum
 		}
 
 		if isProgressRecording {
@@ -130,6 +134,7 @@ func reloadDBWithPlaylist(addr string, playlistID string, isProgressRecording bo
 		} else {
 			logrus.Infof("Practice Recording[%04d] %s", item.Snippet.Position, item.ContentDetails.VideoID)
 		}
+		videos = append(videos, video)
 	}
 
 	count, err := vlogstore.BatchUpsertVideoLogEntries(videos...)

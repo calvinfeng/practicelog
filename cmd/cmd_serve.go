@@ -3,9 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/calvinfeng/practicelog/youtubeapi"
 	"google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/option"
 	"net/http"
+	"os"
 
 	"github.com/calvinfeng/practicelog/auth"
 	practicelogapi "github.com/calvinfeng/practicelog/practicelog/restapi"
@@ -52,17 +54,23 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	}
 
 	logrus.Infof("connected to database on %s", addr)
-	logapi := practicelogapi.New(practicelogstore.New(pg), viper.GetBool("authentication.enabled"))
-	videoapi := videologapi.New(videologstore.New(pg), viper.GetBool("authentication.enabled"))
+	logapi := practicelogapi.New(practicelogstore.New(pg))
+	videoapi := videologapi.New(
+		videologstore.New(pg),
+		practicelogstore.New(pg),
+		youtubeapi.New(youtubeapi.Config{
+			APIKey: os.Getenv("YOUTUBE_API_KEY"),
+		}),
+		viper.GetBool("authentication.enabled"),
+	)
 
 	apiV1 := e.Group("/api/v1")
-	if viper.GetBool("authentication.enabled") {
-		oauthSrv, err := oauth2.NewService(context.Background(), option.WithHTTPClient(http.DefaultClient))
-		if err != nil {
-			return err
-		}
-		apiV1.Use(auth.NewGoogleIDTokenValidateMiddleware(oauthSrv))
+
+	oauthSrv, err := oauth2.NewService(context.Background(), option.WithHTTPClient(http.DefaultClient))
+	if err != nil {
+		return err
 	}
+	apiV1.Use(auth.NewGoogleIDTokenValidateMiddleware(oauthSrv, viper.GetBool("authentication.enabled")))
 
 	// Authentication
 	apiV1.POST("/token/validate", auth.TokenValidationHandler)
@@ -90,8 +98,9 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	apiV1.GET("/log/entries/duration", logapi.GetLogEntryDurationSum)
 	apiV1.GET("/log/entries/duration/time-series", logapi.GetLogEntryDurationCumulativeSumTimeSeries)
 
-	publicAPI := e.Group("/public/api/v1")
+	apiV1.POST("/videolog/entries/reload", videoapi.LoadFromYouTubePlaylist)
 
+	publicAPI := e.Group("/public/api/v1")
 	// Videos
 	publicAPI.GET("/videolog/entries", videoapi.ListVideoLogEntries)
 	publicAPI.GET("/videolog/summaries", videoapi.ListProgressSummaries)

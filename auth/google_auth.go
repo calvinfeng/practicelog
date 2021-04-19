@@ -15,6 +15,8 @@ var emailWhiteList = map[string]struct{}{
 	"calvin.j.feng@gmail.com": {},
 }
 
+const defaultUserEmail = "calvin.j.feng@gmail.com"
+
 type AccessTokenPayload struct {
 	AccessToken string `json:"access_token"`
 }
@@ -86,9 +88,16 @@ func formatLongToken(token string, maxLen int) string {
 	return token
 }
 
-func NewGoogleIDTokenValidateMiddleware(srv *oauth2.Service) echo.MiddlewareFunc {
+func NewGoogleIDTokenValidateMiddleware(srv *oauth2.Service, enabled bool) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			if !enabled {
+				c.Set("token_info", &oauth2.Tokeninfo{
+					Email: defaultUserEmail,
+				})
+				return next(c)
+			}
+
 			token := c.Request().Header.Get("Authorization")
 			if token == "" {
 				return echo.NewHTTPError(http.StatusUnauthorized, "ID token is not provided")
