@@ -50,7 +50,8 @@ type ProgressSummary struct {
 type (
 	RESTAPI interface {
 		ListVideoLogEntries(echo.Context) error
-		ListProgressSummaries(c echo.Context) error
+		ListProgressSummaries(echo.Context) error
+		LoadFromYouTubePlaylist(echo.Context) error
 	}
 
 	SQLFilter func(squirrel.Eq)

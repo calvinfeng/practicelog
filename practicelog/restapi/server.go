@@ -5,15 +5,12 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func New(store practicelog.Store, auth bool) practicelog.RESTAPI {
+func New(store practicelog.Store) practicelog.RESTAPI {
 	return &server{
 		store:    store,
 		validate: validator.New(),
-		auth:     auth,
 	}
 }
-
-const defaultUsername = "calvin.j.feng@gmail.com"
 
 type server struct {
 	store    practicelog.Store
