@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactPlayer from 'react-player'
-import { VideoLogEntryJSON, MonthNames } from '../../shared/type_definitions'
+import { VideoLogEntryJSON, MonthNames } from './types'
 import { VerticalTimelineElement }  from 'react-vertical-timeline-component'
 import MusicNoteIcon from '@material-ui/icons/MusicNote'
 import './ProgressVideoElement.scss'

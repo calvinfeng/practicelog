@@ -11,7 +11,7 @@ import {
   Checkbox
 } from '@material-ui/core'
 
-import { LogEntryJSON, LogAssignmentJSON } from '../shared/type_definitions'
+import { LogEntryJSON, LogAssignmentJSON } from './types'
 import './AssignmentChecklistPopover.scss'
 
 type Props = {

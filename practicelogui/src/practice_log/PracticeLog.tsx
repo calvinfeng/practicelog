@@ -10,12 +10,12 @@ import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 import { Map } from 'immutable'
 import _ from "lodash" // Import the entire lodash library
 
-import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON, PracticeTimeSeriesDataPoint } from '../shared/type_definitions'
-import LogTable from '../components/LogTable'
-import LogEntryManagement from '../components/log_entry_management/LogEntryManagement'
-import LogLabelManagement from '../components/log_label_management/LogLabelManagement'
-import AssignmentChecklistPopover from '../components/AssignmentChecklistPopover'
-import PracticeTimeLineChart from '../components/PracticeTimeLineChart'
+import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON, PracticeTimeSeriesDataPoint } from './types'
+import LogTable from './LogTable'
+import AssignmentChecklistPopover from './AssignmentChecklistPopover'
+import LogEntryManagement from './log_entry_management/LogEntryManagement'
+import LogLabelManagement from './log_label_management/LogLabelManagement'
+import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
 
 import './PracticeLog.scss'
 

@@ -6,7 +6,7 @@ import {
   LogLabelJSON,
   LogAssignmentJSON,
   LogEntryJSON,
-  Mode } from '../../shared/type_definitions'
+  Mode } from '../types'
 import SaveIcon from '@material-ui/icons/Save'
 import AddIcon from '@material-ui/icons/Add'
 

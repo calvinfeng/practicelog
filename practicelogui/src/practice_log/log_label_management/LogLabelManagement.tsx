@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core'
 import { MusicNote } from '@material-ui/icons'
 
-import { DeleteConfirmationTarget, LogLabelJSON, nilUUID } from '../../shared/type_definitions'
+import { DeleteConfirmationTarget, LogLabelJSON, nilUUID } from '../types'
 import DeleteConfirmation from './DeleteConfirmation'
 import './LogLabelManagement.scss'
 

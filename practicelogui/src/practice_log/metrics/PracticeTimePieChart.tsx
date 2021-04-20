@@ -2,7 +2,7 @@ import { Paper, Typography } from '@material-ui/core';
 import React from 'react'
 
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
-import { LogLabelJSON, nilUUID } from '../shared/type_definitions';
+import { LogLabelJSON, nilUUID } from '../types';
 
 import './PracticeTimePieChart.scss'
 

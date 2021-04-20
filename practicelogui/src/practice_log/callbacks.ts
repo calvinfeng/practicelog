@@ -1,4 +1,4 @@
-import { LogLabelJSON } from "./type_definitions"
+import { LogLabelJSON } from './types'
 
 export const alphabetOrder = (a: LogLabelJSON, b: LogLabelJSON): number => {
   if (a.name < b.name) {

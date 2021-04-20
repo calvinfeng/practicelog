@@ -2,7 +2,7 @@ import React from 'react'
 import { Paper, Typography } from '@material-ui/core';
 import { AreaChart, XAxis, YAxis, CartesianGrid, Area, Tooltip } from 'recharts';
 
-import { PracticeTimeSeriesDataPoint } from '../shared/type_definitions';
+import { PracticeTimeSeriesDataPoint } from '../types';
 import './PracticeTimeLineChart.scss'
 
 type Props = {
@@ -13,7 +13,7 @@ export default function PracticeTimeLineChart(props: Props) {
   return (
     <Paper className="PracticeTimeLineChart">
       <Typography variant="h5">
-        Practice Time History
+        Practice Time Metrics
       </Typography>
       <AreaChart width={1280} height={500}
         data={props.timeSeries}

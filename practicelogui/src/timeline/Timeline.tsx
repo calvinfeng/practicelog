@@ -14,10 +14,10 @@ import {
 
 import 'react-vertical-timeline-component/style.min.css'
 
-import { SummaryJSON, VideoGroupJSON, VideoLogEntryJSON } from '../shared/type_definitions'
+import { SummaryJSON, VideoGroupJSON, VideoLogEntryJSON } from './types'
 import './Timeline.scss'
-import { ProgressVideoElement } from '../components/timeline/ProgressVideoElement'
-import { PracticeVideoElement } from '../components/timeline/PracticeVideoElement'
+import { ProgressVideoElement } from './ProgressVideoElement'
+import { PracticeVideoElement } from './PracticeVideoElement'
 
 type Props = {
 }

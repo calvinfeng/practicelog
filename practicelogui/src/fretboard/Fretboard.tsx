@@ -8,8 +8,8 @@ import {
   Select,
   MenuItem
 } from '@material-ui/core'
-import { Interval, IntervalSemitoneMapping } from '../logical/interval'
-import { Note, NoteName, Accidental } from '../logical/note'
+import { Interval, IntervalSemitoneMapping } from './interval'
+import { Note, NoteName, Accidental } from './note'
 
 const NumFrets = 24
 

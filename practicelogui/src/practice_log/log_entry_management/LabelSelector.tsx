@@ -10,8 +10,8 @@ import {
   MenuItem } from "@material-ui/core"
 import MusicNote from "@material-ui/icons/MusicNote"
 import AddIcon from '@material-ui/icons/Add'
-import { LogLabelJSON } from "../../shared/type_definitions"
-import { alphabetOrder } from "../../shared/callbacks"
+import { LogLabelJSON } from "../types"
+import { alphabetOrder } from "../callbacks"
 
 type Props = {
   // Root data

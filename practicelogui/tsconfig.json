@@ -19,9 +19,9 @@
     "isolatedModules": true,
     "noEmit": true,
     "noImplicitAny": false,
-    "jsx": "react-jsx"
+    "jsx": "react"
   },
   "include": [
-    "src"
+    "src", "src/practice_log/.d.ts"
   ]
 }

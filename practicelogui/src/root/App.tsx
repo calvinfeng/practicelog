@@ -15,11 +15,11 @@ import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem } from '@materi
 import { MenuRounded } from '@material-ui/icons';
 
 import axios, { AxiosResponse }  from 'axios'
-import { GoogleUserProfile, GoogleError, AuthValidationResponse } from '../shared/type_definitions'
-import PracticeLog from './PracticeLog'
+import { GoogleUserProfile, GoogleError, AuthValidationResponse } from './types'
+import PracticeLog from '../practice_log/PracticeLog'
 import Unauthorized from './Unauthorized'
-import Fretboard from './Fretboard'
-import Timeline from './Timeline'
+import Fretboard from '../fretboard/Fretboard'
+import Timeline from '../timeline/Timeline'
 import './App.scss'
 
 /**
@@ -308,8 +308,7 @@ function TimelineMenuItem() {
 
   return (
     <MenuItem onClick={handleClick} disabled={location.pathname === Path.Timeline}>
-      Guitar Progress Timeline
+        Progress Timeline
     </MenuItem>
   );
 }
-

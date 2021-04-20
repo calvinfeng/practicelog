@@ -11,7 +11,7 @@ import MusicNoteIcon from '@material-ui/icons/MusicNote'
 import ReactPlayer from 'react-player'
 
 import { contentStyle, contentArrowStyle, iconStyle } from './styles'
-import { MonthNames, SummaryJSON, ThumbnailJSON, VideoLogEntryJSON, VideoOrientation } from '../../shared/type_definitions'
+import { MonthNames, SummaryJSON, ThumbnailJSON, VideoLogEntryJSON, VideoOrientation } from './types'
 
 import './PracticeVideoElement.scss'
 

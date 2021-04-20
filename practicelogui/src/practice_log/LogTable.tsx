@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { LogLabelJSON, LogEntryJSON, LogAssignmentJSON } from '../shared/type_definitions'
+import { LogLabelJSON, LogEntryJSON, LogAssignmentJSON } from './types'
 import './LogTable.scss'
 import { DateTime }from 'luxon'
 
