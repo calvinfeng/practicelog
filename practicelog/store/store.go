@@ -2,10 +2,11 @@ package store
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/calvinfeng/practicelog/practicelog"
 	"github.com/jmoiron/sqlx"
-	"time"
 )
 
 func New(db *sqlx.DB) practicelog.Store {
@@ -27,8 +28,13 @@ func (s *store) SumLogEntryDurationBefore(now time.Time) (sum int32, err error) 
 		return
 	}
 
-	if err = s.db.Get(&sum, statement, args...); err != nil {
+	var intPointer *int32
+	if err = s.db.Get(&intPointer, statement, args...); err != nil {
 		return
+	}
+
+	if intPointer != nil {
+		sum = *intPointer
 	}
 	return
 }

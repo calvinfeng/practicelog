@@ -14,7 +14,7 @@
     align-items: center;
   }
 
-  .text-container {
+  .text-view-container {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -23,6 +23,16 @@
     margin-top: 1rem;
     p {
       font-size: 0.875rem;
+    }
+  }
+
+  .text-edit-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    form {
+      display: inherit;
+      flex-direction: inherit;
     }
   }
 }

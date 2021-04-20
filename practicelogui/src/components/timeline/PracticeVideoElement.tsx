@@ -4,7 +4,9 @@ import {
   Paper,
   ButtonBase,
   Tooltip,
-  Typography
+  Typography,
+  TextField,
+  Button
 } from '@material-ui/core'
 import { VerticalTimelineElement }  from 'react-vertical-timeline-component'
 import MusicNoteIcon from '@material-ui/icons/MusicNote'
@@ -25,13 +27,32 @@ type Props = {
 export function PracticeVideoElement(props: Props) {
   const dateString = `${MonthNames[props.month-1]}, ${props.year}`
 
-  const textContainer = (
-    <div className="text-container">
+  // TODO: Refactor this shit.
+  const [isEditMode, setEditMode] = React.useState<boolean>(false)
+  
+  let textContainer = (
+    <div className="text-view-container" onClick={() => setEditMode(true)}>
       <Typography variant="h6">{props.summary.title}</Typography>
       <Typography variant="subtitle1">{props.summary.subtitle}</Typography>
       <Typography variant="body2">{props.summary.body}</Typography>
     </div>
   )
+
+  if (isEditMode) {
+    textContainer = (
+      <div className="text-edit-container">
+        <form autoComplete="on" onSubmit={() => setEditMode(false)}>
+          <TextField label="Title" value={props.summary.title} />
+          <br />
+          <TextField label="Subtitle" value={props.summary.subtitle} />
+          <br />
+          <TextField label="Body" value={props.summary.body} multiline />
+          <br />
+          <Button type="submit" color="primary" variant="contained">Submit</Button>
+        </form>
+      </div>
+    )
+  }
 
   return (
     <VerticalTimelineElement
