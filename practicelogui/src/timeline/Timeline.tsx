@@ -1,4 +1,5 @@
 import React from 'react'
+import { withRouter, RouteComponentProps } from "react-router";
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 
 import {
@@ -19,15 +20,14 @@ import './Timeline.scss'
 import { ProgressVideoElement } from './ProgressVideoElement'
 import { PracticeVideoElement } from './PracticeVideoElement'
 
-type Props = {
-}
+type Props = {} & RouteComponentProps
 
 type State = {
   videoGroups: VideoGroupJSON[],
   summaries: SummaryJSON[]
 }
 
-export default class Timeline extends React.Component<Props, State> {
+class Timeline extends React.Component<Props, State> {
   private http: AxiosInstance
 
   constructor(props: Props) {
@@ -46,6 +46,7 @@ export default class Timeline extends React.Component<Props, State> {
   }
 
   componentDidMount() {
+    console.log('profile ID', this.props.match.params["profileID"])
     this.fetchVideoLogEntries()
     this.fetchSummaries()
   }
@@ -159,3 +160,5 @@ export default class Timeline extends React.Component<Props, State> {
     )
   }
 }
+
+export default withRouter(Timeline);

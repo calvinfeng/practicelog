@@ -202,7 +202,7 @@ export default class App extends React.Component<Props, State> {
               exact path={Path.Fretboard}
               render={() => <Fretboard />} />
             <Route
-              exact path={Path.Timeline}
+              path={Path.Timeline}
               render={() => <Timeline />} />
           </Switch>
         </BrowserRouter>
@@ -244,7 +244,7 @@ export default class App extends React.Component<Props, State> {
               exact path={Path.Fretboard}
               render={() => <Fretboard />} />
             <Route
-              exact path={Path.Timeline}
+              path={Path.Timeline + "/:profileID"}
               render={() => <Timeline />} />
           </Switch>
         </BrowserRouter>
@@ -303,7 +303,7 @@ function TimelineMenuItem() {
   const location = useLocation()
 
   function handleClick() {
-    history.push(Path.Timeline);
+    history.push(Path.Timeline + "/me");
   }
 
   return (
