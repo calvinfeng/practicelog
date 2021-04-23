@@ -16,7 +16,7 @@ import { MenuRounded } from '@material-ui/icons';
 
 import axios, { AxiosResponse }  from 'axios'
 import { GoogleUserProfile, GoogleError, AuthValidationResponse } from './types'
-import PracticeLog from '../practice_log/PracticeLog'
+import PracticeLog from '../practice-log/PracticeLog'
 import Unauthorized from './Unauthorized'
 import Fretboard from '../fretboard/Fretboard'
 import Timeline from '../timeline/Timeline'

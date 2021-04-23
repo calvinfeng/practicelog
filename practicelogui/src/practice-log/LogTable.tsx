@@ -1,9 +1,5 @@
 import React from 'react'
 
-import { LogLabelJSON, LogEntryJSON, LogAssignmentJSON } from './types'
-import './LogTable.scss'
-import { DateTime }from 'luxon'
-
 import {
   Chip,
   TableRow,
@@ -22,6 +18,10 @@ import AssignmentIcon from '@material-ui/icons/Assignment';
 import AssignmentTurnedInSharpIcon from '@material-ui/icons/AssignmentTurnedInSharp';
 import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
+import { DateTime } from 'luxon'
+
+import { LogLabelJSON, LogEntryJSON, LogAssignmentJSON } from './types'
+import './LogTable.scss'
 
 type Props = {
   logEntries: LogEntryJSON[]
@@ -150,6 +150,7 @@ function formatDate(d: Date): string {
   dt.setZone("America/Los_Angeles")
   return dt.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY).toString()
 }
+
   // const parts = [`${dt.year}`]
 
   // if (dt.month < 9) {

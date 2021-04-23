@@ -13,10 +13,9 @@ import _ from "lodash" // Import the entire lodash library
 import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON, PracticeTimeSeriesDataPoint } from './types'
 import LogTable from './LogTable'
 import AssignmentChecklistPopover from './AssignmentChecklistPopover'
-import LogEntryManagement from './log_entry_management/LogEntryManagement'
-import LogLabelManagement from './log_label_management/LogLabelManagement'
+import LogEntryManagement from './log-entry-management/LogEntryManagement'
+import LogLabelManagement from './log-label-management/LogLabelManagement'
 import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
-
 import './PracticeLog.scss'
 
 type Props = {
