@@ -13,12 +13,12 @@ CREATE TABLE video_log_entries (
 );
 
 CREATE TABLE progress_summaries (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     year INTEGER NOT NULL,
     month INTEGER NOT NULL,
     title VARCHAR(255),
     subtitle VARCHAR(255),
     body TEXT,
-    CONSTRAINT unique_year_month UNIQUE (year, month)
+    CONSTRAINT unique_username_year_month UNIQUE (username, year, month)
 );

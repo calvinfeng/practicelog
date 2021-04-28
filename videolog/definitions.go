@@ -2,6 +2,7 @@ package videolog
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"time"
 
 	"github.com/calvinfeng/practicelog/youtubeapi"
@@ -38,13 +39,13 @@ func (e *Entry) String() (str string) {
 }
 
 type ProgressSummary struct {
-	ID       int64  `json:"id"`
-	Username string `json:"username"`
-	Year     int64  `json:"year"`
-	Month    int64  `json:"month"`
-	Title    string `json:"title"`
-	Subtitle string `json:"subtitle"`
-	Body     string `json:"body"`
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	Year     int64     `json:"year"`
+	Month    int64     `json:"month"`
+	Title    string    `json:"title"`
+	Subtitle string    `json:"subtitle"`
+	Body     string    `json:"body"`
 }
 
 type (
