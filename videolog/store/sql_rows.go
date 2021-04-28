@@ -2,6 +2,7 @@ package store
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"time"
 
 	"github.com/calvinfeng/practicelog/videolog"
@@ -55,13 +56,13 @@ func (row *DBVideoLogEntry) toModel() *videolog.Entry {
 const ProgressSummaryTable = "progress_summaries"
 
 type DBProgressSummary struct {
-	ID       int64  `db:"id"`
-	Username string `db:"username"`
-	Year     int64  `db:"year"`
-	Month    int64  `db:"month"`
-	Title    string `db:"title"`
-	Subtitle string `db:"subtitle"`
-	Body     string `db:"body"`
+	ID       uuid.UUID `db:"id"`
+	Username string    `db:"username"`
+	Year     int64     `db:"year"`
+	Month    int64     `db:"month"`
+	Title    string    `db:"title"`
+	Subtitle string    `db:"subtitle"`
+	Body     string    `db:"body"`
 }
 
 func (row *DBProgressSummary) fromModel(model *videolog.ProgressSummary) *DBProgressSummary {

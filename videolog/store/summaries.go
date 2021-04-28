@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/calvinfeng/practicelog/videolog"
+	"github.com/google/uuid"
 )
 
 func (s *store) SelectProgressSummaries(filters ...videolog.SQLFilter) ([]*videolog.ProgressSummary, error) {
@@ -36,11 +37,15 @@ func (s *store) SelectProgressSummaries(filters ...videolog.SQLFilter) ([]*video
 
 func (s *store) BatchInsertProgressSummaries(summaries ...*videolog.ProgressSummary) (int64, error) {
 	insertQ := squirrel.Insert(ProgressSummaryTable).
-		Columns("username", "year", "month", "title", "subtitle", "body")
+		Columns("id", "username", "year", "month", "title", "subtitle", "body")
 
 	for _, summary := range summaries {
+		if summary.ID == uuid.Nil {
+			summary.ID = uuid.New()
+		}
 		row := new(DBProgressSummary).fromModel(summary)
 		insertQ = insertQ.Values(
+			row.ID,
 			row.Username,
 			row.Year,
 			row.Month,
@@ -51,7 +56,7 @@ func (s *store) BatchInsertProgressSummaries(summaries ...*videolog.ProgressSumm
 	}
 
 	insertQ = insertQ.Suffix(`
-	ON CONFLICT ON CONSTRAINT unique_year_month
+	ON CONFLICT ON CONSTRAINT unique_username_year_month
 	DO UPDATE SET
 		title = EXCLUDED.title,
 		subtitle = EXCLUDED.subtitle,
