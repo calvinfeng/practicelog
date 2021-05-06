@@ -2,11 +2,58 @@ package store
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/calvinfeng/practicelog/videolog"
+	"github.com/calvinfeng/practicelog/youtubeapi"
 	"github.com/pkg/errors"
+	"time"
 )
+
+const VideoLogEntryTable = "video_log_entries"
+
+type DBVideoLogEntry struct {
+	ID                string          `db:"id"`
+	Username          string          `db:"username"`
+	Published         time.Time       `db:"published"`
+	VideoOrientation  string          `db:"video_orientation"`
+	Title             string          `db:"title"`
+	Description       string          `db:"description"`
+	IsMonthlyProgress bool            `db:"is_monthly_progress"`
+	Thumbnails        json.RawMessage `db:"thumbnails"`
+	MinGuitarPractice int32           `db:"minutes_of_guitar_practice"`
+}
+
+func (row *DBVideoLogEntry) fromModel(model *videolog.Entry) *DBVideoLogEntry {
+	row.ID = model.ID
+	row.Published = model.Published
+	row.VideoOrientation = model.VideoOrientation
+	row.Title = model.Title
+	row.Description = model.Description
+	row.IsMonthlyProgress = model.IsMonthlyProgress
+	row.Thumbnails, _ = json.Marshal(model.Thumbnails)
+	row.Username = model.Username
+	row.MinGuitarPractice = model.MinGuitarPractice
+	return row
+}
+
+func (row *DBVideoLogEntry) toModel() *videolog.Entry {
+	thumbnails := make(map[string]youtubeapi.Thumbnail)
+	_ = json.Unmarshal(row.Thumbnails, &thumbnails)
+
+	return &videolog.Entry{
+		ID:                row.ID,
+		Published:         row.Published,
+		VideoOrientation:  row.VideoOrientation,
+		Title:             row.Title,
+		Description:       row.Description,
+		IsMonthlyProgress: row.IsMonthlyProgress,
+		Thumbnails:        thumbnails,
+		Username:          row.Username,
+		MinGuitarPractice: row.MinGuitarPractice,
+	}
+}
 
 func (s *store) SelectVideoLogEntries(filters ...videolog.SQLFilter) ([]*videolog.Entry, error) {
 	eqCondition := make(squirrel.Eq)
@@ -38,7 +85,7 @@ func (s *store) SelectVideoLogEntries(filters ...videolog.SQLFilter) ([]*videolo
 }
 
 func (s *store) BatchUpsertVideoLogEntries(entries ...*videolog.Entry) (int64, error) {
-	entryInsertQ := squirrel.Insert(VideoLogEntryTable).
+	insertQ := squirrel.Insert(VideoLogEntryTable).
 		Columns(
 			"id",
 			"published",
@@ -52,7 +99,7 @@ func (s *store) BatchUpsertVideoLogEntries(entries ...*videolog.Entry) (int64, e
 
 	for _, entry := range entries {
 		row := new(DBVideoLogEntry).fromModel(entry)
-		entryInsertQ = entryInsertQ.Values(
+		insertQ = insertQ.Values(
 			row.ID,
 			row.Published,
 			row.VideoOrientation,
@@ -64,14 +111,14 @@ func (s *store) BatchUpsertVideoLogEntries(entries ...*videolog.Entry) (int64, e
 			row.MinGuitarPractice)
 	}
 
-	entryInsertQ = entryInsertQ.Suffix(`ON CONFLICT(id) DO UPDATE SET
+	insertQ = insertQ.Suffix(`ON CONFLICT(id) DO UPDATE SET
 		title = EXCLUDED.title,
 		description = EXCLUDED.description,
 		is_monthly_progress = EXCLUDED.is_monthly_progress,
 		thumbnails = EXCLUDED.thumbnails,
         minutes_of_guitar_practice= EXCLUDED.minutes_of_guitar_practice`)
 
-	statement, args, err := entryInsertQ.PlaceholderFormat(squirrel.Dollar).ToSql()
+	statement, args, err := insertQ.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to construct query")
 	}

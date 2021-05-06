@@ -1,6 +1,7 @@
 package store
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/calvinfeng/practicelog/videolog"
 	"github.com/jmoiron/sqlx"
 )
@@ -11,4 +12,10 @@ func New(db *sqlx.DB) videolog.Store {
 
 type store struct {
 	db *sqlx.DB
+}
+
+func IsMonthlyProgress(val bool) videolog.SQLFilter {
+	return func(eq squirrel.Eq) {
+		eq["is_monthly_progress"] = val
+	}
 }

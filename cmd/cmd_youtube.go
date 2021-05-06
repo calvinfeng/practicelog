@@ -67,7 +67,7 @@ func reloadDBWithProgressSummary(addr string) error {
 		summaries[i].Username = defaultUsername
 	}
 
-	count, err := store.BatchInsertProgressSummaries(summaries...)
+	count, err := store.BatchUpsertProgressSummaries(summaries...)
 	if err != nil {
 		return err
 	}

@@ -48,6 +48,16 @@ type ProgressSummary struct {
 	Body     string    `json:"body"`
 }
 
+const PrivacyPublic = "PUBLIC"
+const PrivacyUnlisted = "UNLISTED"
+const PrivacyPrivate = "PRIVATE"
+
+type TimelineProfile struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Privacy  string `json:"privacy"`
+}
+
 type (
 	RESTAPI interface {
 		ListVideoLogEntries(echo.Context) error
@@ -61,7 +71,10 @@ type (
 		BatchUpsertVideoLogEntries(entries ...*Entry) (int64, error)
 		SelectVideoLogEntries(filters ...SQLFilter) ([]*Entry, error)
 
-		BatchInsertProgressSummaries(summaries ...*ProgressSummary) (int64, error)
+		BatchUpsertProgressSummaries(summaries ...*ProgressSummary) (int64, error)
 		SelectProgressSummaries(filters ...SQLFilter) ([]*ProgressSummary, error)
+
+		GetTimelineProfileByID(id string) (*TimelineProfile, error)
+		UpsertTimelineProfile(*TimelineProfile) error
 	}
 )

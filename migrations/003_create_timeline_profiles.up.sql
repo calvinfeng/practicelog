@@ -4,4 +4,4 @@ CREATE TABLE timeline_profiles(
     privacy VARCHAR(255) NOT NULL
 );
 
-CREATE INDEX timeline_profile_username_index ON timeline_profiles(username);
+CREATE UNIQUE INDEX timeline_profile_username_unique_index ON timeline_profiles(username);

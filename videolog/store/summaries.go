@@ -7,6 +7,41 @@ import (
 	"github.com/google/uuid"
 )
 
+const ProgressSummaryTable = "progress_summaries"
+
+type DBProgressSummary struct {
+	ID       uuid.UUID `db:"id"`
+	Username string    `db:"username"`
+	Year     int64     `db:"year"`
+	Month    int64     `db:"month"`
+	Title    string    `db:"title"`
+	Subtitle string    `db:"subtitle"`
+	Body     string    `db:"body"`
+}
+
+func (row *DBProgressSummary) fromModel(model *videolog.ProgressSummary) *DBProgressSummary {
+	row.ID = model.ID
+	row.Username = model.Username
+	row.Year = model.Year
+	row.Month = model.Month
+	row.Title = model.Title
+	row.Subtitle = model.Subtitle
+	row.Body = model.Body
+	return row
+}
+
+func (row *DBProgressSummary) toModel() *videolog.ProgressSummary {
+	return &videolog.ProgressSummary{
+		ID:       row.ID,
+		Username: row.Username,
+		Year:     row.Year,
+		Month:    row.Month,
+		Title:    row.Title,
+		Subtitle: row.Subtitle,
+		Body:     row.Body,
+	}
+}
+
 func (s *store) SelectProgressSummaries(filters ...videolog.SQLFilter) ([]*videolog.ProgressSummary, error) {
 	query := squirrel.Select("*").
 		From(ProgressSummaryTable).
@@ -35,7 +70,7 @@ func (s *store) SelectProgressSummaries(filters ...videolog.SQLFilter) ([]*video
 	return summaries, nil
 }
 
-func (s *store) BatchInsertProgressSummaries(summaries ...*videolog.ProgressSummary) (int64, error) {
+func (s *store) BatchUpsertProgressSummaries(summaries ...*videolog.ProgressSummary) (int64, error) {
 	insertQ := squirrel.Insert(ProgressSummaryTable).
 		Columns("id", "username", "year", "month", "title", "subtitle", "body")
 
