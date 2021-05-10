@@ -4,15 +4,17 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/calvinfeng/practicelog/videolog"
 	"github.com/calvinfeng/practicelog/youtubeapi"
 	"github.com/pkg/errors"
-	"time"
 )
 
-const VideoLogEntryTable = "video_log_entries"
+const videoLogEntryTable = "video_log_entries"
 
+// DBVideoLogEntry is DB row for video log entry.
 type DBVideoLogEntry struct {
 	ID                string          `db:"id"`
 	Username          string          `db:"username"`
@@ -62,7 +64,7 @@ func (s *store) SelectVideoLogEntries(filters ...videolog.SQLFilter) ([]*videolo
 	}
 
 	query := squirrel.Select("*").
-		From(VideoLogEntryTable).
+		From(videoLogEntryTable).
 		Where(eqCondition).
 		OrderBy("published DESC")
 
@@ -85,7 +87,7 @@ func (s *store) SelectVideoLogEntries(filters ...videolog.SQLFilter) ([]*videolo
 }
 
 func (s *store) BatchUpsertVideoLogEntries(entries ...*videolog.Entry) (int64, error) {
-	insertQ := squirrel.Insert(VideoLogEntryTable).
+	insertQ := squirrel.Insert(videoLogEntryTable).
 		Columns(
 			"id",
 			"published",
@@ -143,4 +145,13 @@ func (s *store) BatchUpsertVideoLogEntries(entries ...*videolog.Entry) (int64, e
 	}
 
 	return res.RowsAffected()
+}
+
+func (s *store) SelectVideoLogEntriesByProfileID(profileID string) ([]*videolog.Entry, error) {
+	profile, err := s.GetVideoProfileByID(profileID)
+	if err != nil {
+		return nil, fmt.Errorf("profile not found %w", err)
+	}
+
+	return s.SelectVideoLogEntries(ByUsername(profile.Username))
 }

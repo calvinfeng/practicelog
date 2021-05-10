@@ -2,8 +2,9 @@ package videolog
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/calvinfeng/practicelog/youtubeapi"
 	"github.com/labstack/echo/v4"
@@ -52,7 +53,7 @@ const PrivacyPublic = "PUBLIC"
 const PrivacyUnlisted = "UNLISTED"
 const PrivacyPrivate = "PRIVATE"
 
-type TimelineProfile struct {
+type Profile struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
 	Privacy  string `json:"privacy"`
@@ -74,7 +75,7 @@ type (
 		BatchUpsertProgressSummaries(summaries ...*ProgressSummary) (int64, error)
 		SelectProgressSummaries(filters ...SQLFilter) ([]*ProgressSummary, error)
 
-		GetTimelineProfileByID(id string) (*TimelineProfile, error)
-		UpsertTimelineProfile(*TimelineProfile) error
+		GetVideoProfileByID(id string) (*Profile, error)
+		UpsertVideoLogProfile(*Profile) error
 	}
 )

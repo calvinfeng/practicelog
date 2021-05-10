@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -72,6 +73,7 @@ func herokuDatabaseURL() string {
 	return viper.GetString("postgresql.url")
 }
 
+// Execute runs Cobra commands
 func Execute() {
 	cobra.OnInitialize(initViper)
 

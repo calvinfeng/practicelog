@@ -2,28 +2,30 @@ package store
 
 import (
 	"encoding/base64"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/calvinfeng/practicelog/videolog"
 	"github.com/google/uuid"
 )
 
-const TimelineProfileTable = "timeline_profiles"
+const videoLogProfileTable = "video_log_profiles"
 
-type DBTimelineProfile struct {
+// DBProfile is DB row for video log profile.
+type DBProfile struct {
 	ID       string `db:"id"`
 	Username string `db:"username"`
 	Privacy  string `db:"privacy"`
 }
 
-func (row *DBTimelineProfile) toModel() *videolog.TimelineProfile {
-	return &videolog.TimelineProfile{
+func (row *DBProfile) toModel() *videolog.Profile {
+	return &videolog.Profile{
 		ID:       row.ID,
 		Username: row.Username,
 		Privacy:  row.Privacy,
 	}
 }
 
-func (row *DBTimelineProfile) fromModel(profile *videolog.TimelineProfile) *DBTimelineProfile {
+func (row *DBProfile) fromModel(profile *videolog.Profile) *DBProfile {
 	row.ID = profile.ID
 	row.Username = profile.Username
 	row.Privacy = profile.Privacy
@@ -37,8 +39,8 @@ func generateProfileID() string {
 	return base64.RawURLEncoding.EncodeToString(myBytes[:8])
 }
 
-func (s *store) GetTimelineProfileByID(id string) (*videolog.TimelineProfile, error) {
-	query := squirrel.Select("*").From(TimelineProfileTable).
+func (s *store) GetVideoProfileByID(id string) (*videolog.Profile, error) {
+	query := squirrel.Select("*").From(videoLogProfileTable).
 		Where(squirrel.Eq{"id": id})
 
 	statement, args, err := query.PlaceholderFormat(squirrel.Dollar).ToSql()
@@ -46,7 +48,7 @@ func (s *store) GetTimelineProfileByID(id string) (*videolog.TimelineProfile, er
 		return nil, err
 	}
 
-	var row DBTimelineProfile
+	var row DBProfile
 	if err = s.db.Get(&row, statement, args...); err != nil {
 		return nil, err
 	}
@@ -54,13 +56,13 @@ func (s *store) GetTimelineProfileByID(id string) (*videolog.TimelineProfile, er
 	return row.toModel(), nil
 }
 
-func (s *store) UpsertTimelineProfile(profile *videolog.TimelineProfile) error {
-	insertQ := squirrel.Insert(TimelineProfileTable).
+func (s *store) UpsertVideoLogProfile(profile *videolog.Profile) error {
+	insertQ := squirrel.Insert(videoLogProfileTable).
 		Columns("id", "username", "privacy").
 		Suffix("ON CONFLICT(id) DO NOTHING")
 
 	profile.ID = generateProfileID()
-	row := new(DBTimelineProfile).fromModel(profile)
+	row := new(DBProfile).fromModel(profile)
 	insertQ = insertQ.Values(row.ID, row.Username, row.Privacy)
 
 	statement, args, err := insertQ.PlaceholderFormat(squirrel.Dollar).ToSql()

@@ -64,11 +64,12 @@ func resetDB(addr string) error {
 	if err := m.Drop(); err != nil && err != migrate.ErrNoChange {
 		return fmt.Errorf("failed to drop migrations: %w", err)
 	}
-	if version, dirty, err := m.Version(); err != nil && err != migrate.ErrNilVersion {
+	version, dirty, err := m.Version()
+	if err != nil && err != migrate.ErrNilVersion {
 		return err
-	} else {
-		logrus.Infof("successfully reset database to version %d, dirty=%v", version, dirty)
 	}
+
+	logrus.Infof("successfully reset database to version %d, dirty=%v", version, dirty)
 	return nil
 }
 
@@ -95,12 +96,12 @@ func migrateDB(addr string, args []string) error {
 		}
 	}
 
-	if version, dirty, err := m.Version(); err != nil {
+	version, dirty, err := m.Version()
+	if err != nil {
 		return err
-	} else {
-		logrus.Infof("successfully migrated database to version %d, dirty=%v", version, dirty)
 	}
 
+	logrus.Infof("successfully migrated database to version %d, dirty=%v", version, dirty)
 	return nil
 }
 
@@ -134,20 +135,22 @@ func loadDB(addr string, args []string) error {
 	logrus.Infof("loaded %d log labels and %d log entries from JSON file %s",
 		len(dump.Labels), len(dump.Entries), args[1])
 
-	if count, err := store.BatchInsertLogLabels(dump.Labels...); err != nil {
+	count, err := store.BatchInsertLogLabels(dump.Labels...)
+	if err != nil {
 		return err
-	} else {
-		logrus.Infof("%d log labels have been inserted to DB", count)
+	}
+	logrus.Infof("%d log labels have been inserted to DB", count)
+
+	count, err = store.BatchInsertLogEntries(dump.Entries...)
+	if err != nil {
+		return err
 	}
 
-	if count, err := store.BatchInsertLogEntries(dump.Entries...); err != nil {
-		return err
-	} else {
-		logrus.Infof("%d log labels have been inserted to DB", count)
-	}
+	logrus.Infof("%d log labels have been inserted to DB", count)
 	return nil
 }
 
+// JSONDump is the format for the dump file.
 type JSONDump struct {
 	Labels  []*practicelog.Label `json:"labels"`
 	Entries []*practicelog.Entry `json:"entries"`

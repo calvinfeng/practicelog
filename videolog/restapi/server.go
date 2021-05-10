@@ -2,6 +2,9 @@ package restapi
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/calvinfeng/practicelog/auth"
 	"github.com/calvinfeng/practicelog/practicelog"
 	"github.com/calvinfeng/practicelog/videolog"
@@ -9,8 +12,6 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	"net/http"
-	"strings"
 )
 
 func New(vStore videolog.Store, pStore practicelog.Store, youtubeAPI youtubeapi.Service, auth bool) videolog.RESTAPI {
@@ -109,54 +110,15 @@ func (s *server) loadPlaylist(playlistID string, username string, isMonthlyProgr
 			video.VideoOrientation = videolog.OrientationLandscape
 		}
 
-		if sum, err := s.practiceLogStore.SumLogEntryDurationBefore(video.Published); err != nil {
+		sum, err := s.practiceLogStore.SumLogEntryDurationBefore(video.Published)
+		if err != nil {
 			return nil, fmt.Errorf("failed to sum log entry duration for video %s %s: %w", video.ID, video.Title, err)
-		} else {
-			video.MinGuitarPractice = sum
 		}
+		video.MinGuitarPractice = sum
 		videos = append(videos, video)
 	}
 
 	return videos, nil
-}
-
-func (s *server) ListVideoLogEntries(c echo.Context) error {
-	var err error
-	var videos []*videolog.Entry
-	videos, err = s.videoLogStore.SelectVideoLogEntries()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError,
-			errors.Wrap(err, "server failed to query database").Error())
-	}
-
-	groups := make([]VideoGroup, 0)
-	for _, video := range videos {
-		lastIndex := len(groups) - 1
-		if lastIndex < 0 ||
-			(groups[lastIndex].Year != video.Published.Year() || groups[lastIndex].Month != video.Published.Month()) {
-			newGroup := VideoGroup{
-				Year:               video.Published.Year(),
-				Month:              video.Published.Month(),
-				PracticeRecordings: make([]*videolog.Entry, 0),
-				ProgressRecordings: make([]*videolog.Entry, 0),
-			}
-			if video.IsMonthlyProgress {
-				newGroup.ProgressRecordings = append(newGroup.ProgressRecordings, video)
-			} else {
-				newGroup.PracticeRecordings = append(newGroup.PracticeRecordings, video)
-			}
-			groups = append(groups, newGroup)
-			continue
-		}
-
-		if video.IsMonthlyProgress {
-			groups[lastIndex].ProgressRecordings = append(groups[lastIndex].ProgressRecordings, video)
-		} else {
-			groups[lastIndex].PracticeRecordings = append(groups[lastIndex].PracticeRecordings, video)
-		}
-	}
-
-	return c.JSON(http.StatusOK, groups)
 }
 
 func (s *server) ListProgressSummaries(c echo.Context) error {

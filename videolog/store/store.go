@@ -19,3 +19,9 @@ func IsMonthlyProgress(val bool) videolog.SQLFilter {
 		eq["is_monthly_progress"] = val
 	}
 }
+
+func ByUsername(val string) videolog.SQLFilter {
+	return func(eq squirrel.Eq) {
+		eq["username"] = val
+	}
+}

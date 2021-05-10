@@ -1,8 +1,9 @@
 package restapi
 
 import (
-	"github.com/calvinfeng/practicelog/videolog"
 	"time"
+
+	"github.com/calvinfeng/practicelog/videolog"
 )
 
 type VideoGroup struct {
@@ -20,4 +21,5 @@ type LoadPlaylistBody struct {
 type LoadPlaylistResponse struct {
 	MonthlyProgressVideoCount   int64 `json:"monthly_progress_video_count"`
 	PracticeRecordingVideoCount int64 `json:"practice_recording_video_count"`
+	IsRequesterOwner            bool  `json:"is_requester_owner;omitempty"`
 }
