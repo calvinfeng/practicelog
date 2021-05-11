@@ -12,8 +12,11 @@ import (
 	"github.com/Masterminds/squirrel"
 )
 
-const OrientationLandscape = "landscape"
-const OrientationPortrait = "portrait"
+// This is going to be deprecated. I will assume all videos to be landscape format.
+const (
+	OrientationLandscape = "landscape"
+	OrientationPortrait  = "portrait"
+)
 
 // Entry contains metadata of a YouTube video that I uploaded.
 type Entry struct {
@@ -34,11 +37,12 @@ func (e *Entry) String() (str string) {
 	str += fmt.Sprintf("Published: %s\n", e.Published)
 	str += fmt.Sprintf("Title: %s\n", e.Title)
 	str += fmt.Sprintf("Description: %s\n", e.Description)
-	str += fmt.Sprintf("Thumbnails: %s\n", e.Thumbnails)
+	str += fmt.Sprintf("Thumbnails: %v\n", e.Thumbnails)
 	str += "==================================================\n"
 	return
 }
 
+// ProgressSummary allows user to summarize a monthly progress.
 type ProgressSummary struct {
 	ID       uuid.UUID `json:"id"`
 	Username string    `json:"username"`
@@ -49,10 +53,14 @@ type ProgressSummary struct {
 	Body     string    `json:"body"`
 }
 
-const PrivacyPublic = "PUBLIC"
-const PrivacyUnlisted = "UNLISTED"
-const PrivacyPrivate = "PRIVATE"
+// This is the set of privacy settings.
+const (
+	PrivacyPublic   = "PUBLIC"
+	PrivacyUnlisted = "UNLISTED"
+	PrivacyPrivate  = "PRIVATE"
+)
 
+// Profile is a video log profile for configuring privacy.
 type Profile struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
@@ -60,22 +68,33 @@ type Profile struct {
 }
 
 type (
+	// RESTAPI provides Echo server compatible handlers.
 	RESTAPI interface {
+		// Deprecate these as I move forward with profile based video log.
 		ListVideoLogEntries(echo.Context) error
 		ListProgressSummaries(echo.Context) error
+
+		// New API(s)
+		GetMyVideoLogProfile(echo.Context) error
+		UpdateMyVideoLogProfile(echo.Context) error
 		LoadFromYouTubePlaylist(echo.Context) error
+		ListVideoLogEntriesByProfileID(echo.Context) error
+		ListProgressSummariesByProfileID(echo.Context) error
 	}
 
+	// SQLFilter applies filter to store functions.
 	SQLFilter func(squirrel.Eq)
 
+	// Store is a DB-backed store.
 	Store interface {
-		BatchUpsertVideoLogEntries(entries ...*Entry) (int64, error)
 		SelectVideoLogEntries(filters ...SQLFilter) ([]*Entry, error)
+		BatchUpsertVideoLogEntries(entries ...*Entry) (int64, error)
 
-		BatchUpsertProgressSummaries(summaries ...*ProgressSummary) (int64, error)
 		SelectProgressSummaries(filters ...SQLFilter) ([]*ProgressSummary, error)
+		BatchUpsertProgressSummaries(summaries ...*ProgressSummary) (int64, error)
 
-		GetVideoProfileByID(id string) (*Profile, error)
+		GetVideoLogProfileByID(id string) (*Profile, error)
+		GetVideoLogProfileByUsername(username string) (*Profile, error)
 		UpsertVideoLogProfile(*Profile) error
 	}
 )

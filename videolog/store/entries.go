@@ -146,12 +146,3 @@ func (s *store) BatchUpsertVideoLogEntries(entries ...*videolog.Entry) (int64, e
 
 	return res.RowsAffected()
 }
-
-func (s *store) SelectVideoLogEntriesByProfileID(profileID string) ([]*videolog.Entry, error) {
-	profile, err := s.GetVideoProfileByID(profileID)
-	if err != nil {
-		return nil, fmt.Errorf("profile not found %w", err)
-	}
-
-	return s.SelectVideoLogEntries(ByUsername(profile.Username))
-}

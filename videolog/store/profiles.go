@@ -39,9 +39,24 @@ func generateProfileID() string {
 	return base64.RawURLEncoding.EncodeToString(myBytes[:8])
 }
 
-func (s *store) GetVideoProfileByID(id string) (*videolog.Profile, error) {
-	query := squirrel.Select("*").From(videoLogProfileTable).
-		Where(squirrel.Eq{"id": id})
+func (s *store) GetVideoLogProfileByID(id string) (*videolog.Profile, error) {
+	query := squirrel.Select("*").From(videoLogProfileTable).Where(squirrel.Eq{"id": id})
+
+	statement, args, err := query.PlaceholderFormat(squirrel.Dollar).ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	var row DBProfile
+	if err = s.db.Get(&row, statement, args...); err != nil {
+		return nil, err
+	}
+
+	return row.toModel(), nil
+}
+
+func (s *store) GetVideoLogProfileByUsername(username string) (*videolog.Profile, error) {
+	query := squirrel.Select("*").From(videoLogProfileTable).Where(squirrel.Eq{"username": username})
 
 	statement, args, err := query.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
@@ -59,9 +74,12 @@ func (s *store) GetVideoProfileByID(id string) (*videolog.Profile, error) {
 func (s *store) UpsertVideoLogProfile(profile *videolog.Profile) error {
 	insertQ := squirrel.Insert(videoLogProfileTable).
 		Columns("id", "username", "privacy").
-		Suffix("ON CONFLICT(id) DO NOTHING")
+		Suffix("ON CONFLICT(username) DO UPDATE SET privacy = EXCLUDED.privacy")
 
-	profile.ID = generateProfileID()
+	if profile.ID == "" {
+		profile.ID = generateProfileID()
+	}
+
 	row := new(DBProfile).fromModel(profile)
 	insertQ = insertQ.Values(row.ID, row.Username, row.Privacy)
 

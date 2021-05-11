@@ -3,12 +3,20 @@ package restapi
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/calvinfeng/practicelog/auth"
 	"github.com/calvinfeng/practicelog/videolog"
 	vstore "github.com/calvinfeng/practicelog/videolog/store"
 	"github.com/labstack/echo/v4"
 )
+
+type videoGroup struct {
+	Year               int               `json:"year"`
+	Month              time.Month        `json:"month"`
+	PracticeRecordings []*videolog.Entry `json:"practice_recordings"`
+	ProgressRecordings []*videolog.Entry `json:"progress_recordings"`
+}
 
 func (s *server) ListVideoLogEntries(c echo.Context) error {
 	var err error
@@ -19,12 +27,12 @@ func (s *server) ListVideoLogEntries(c echo.Context) error {
 			fmt.Errorf("server failed to query database %w", err).Error())
 	}
 
-	groups := make([]VideoGroup, 0)
+	groups := make([]videoGroup, 0)
 	for _, video := range videos {
 		lastIndex := len(groups) - 1
 		if lastIndex < 0 ||
 			(groups[lastIndex].Year != video.Published.Year() || groups[lastIndex].Month != video.Published.Month()) {
-			newGroup := VideoGroup{
+			newGroup := videoGroup{
 				Year:               video.Published.Year(),
 				Month:              video.Published.Month(),
 				PracticeRecordings: make([]*videolog.Entry, 0),
@@ -49,10 +57,21 @@ func (s *server) ListVideoLogEntries(c echo.Context) error {
 	return c.JSON(http.StatusOK, groups)
 }
 
+type videoLogEntryResponse struct {
+	VideoGroups      []videoGroup `json:"video_groups"`
+	IsRequesterOwner bool         `json:"is_requester_owner"`
+}
+
 func (s *server) ListVideoLogEntriesByProfileID(c echo.Context) error {
 	email, _ := auth.GetEmailFromContext(c)
 
-	profile, err := s.videoLogStore.GetVideoProfileByID(c.Param("profile_id"))
+	profileID := c.QueryParam("profile")
+	if profileID == "" {
+		return echo.NewHTTPError(http.StatusBadRequest,
+			"query param ?profile= is required")
+	}
+
+	profile, err := s.videoLogStore.GetVideoLogProfileByID(profileID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,
 			fmt.Errorf("video log profile not found %w", err).Error())
@@ -69,12 +88,12 @@ func (s *server) ListVideoLogEntriesByProfileID(c echo.Context) error {
 			fmt.Errorf("server failed to query database %w", err).Error())
 	}
 
-	groups := make([]VideoGroup, 0)
+	groups := make([]videoGroup, 0)
 	for _, video := range videos {
 		lastIndex := len(groups) - 1
 		if lastIndex < 0 ||
 			(groups[lastIndex].Year != video.Published.Year() || groups[lastIndex].Month != video.Published.Month()) {
-			newGroup := VideoGroup{
+			newGroup := videoGroup{
 				Year:               video.Published.Year(),
 				Month:              video.Published.Month(),
 				PracticeRecordings: make([]*videolog.Entry, 0),
@@ -96,5 +115,8 @@ func (s *server) ListVideoLogEntriesByProfileID(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(http.StatusOK, groups)
+	return c.JSON(http.StatusOK, videoLogEntryResponse{
+		VideoGroups:      groups,
+		IsRequesterOwner: profile.Username == email,
+	})
 }

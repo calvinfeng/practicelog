@@ -2,13 +2,15 @@ package store
 
 import (
 	"fmt"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/calvinfeng/practicelog/videolog"
 	"github.com/google/uuid"
 )
 
-const ProgressSummaryTable = "progress_summaries"
+const progressSummaryTable = "progress_summaries"
 
+// DBProgressSummary is a DB row for progress summary.
 type DBProgressSummary struct {
 	ID       uuid.UUID `db:"id"`
 	Username string    `db:"username"`
@@ -44,7 +46,7 @@ func (row *DBProgressSummary) toModel() *videolog.ProgressSummary {
 
 func (s *store) SelectProgressSummaries(filters ...videolog.SQLFilter) ([]*videolog.ProgressSummary, error) {
 	query := squirrel.Select("*").
-		From(ProgressSummaryTable).
+		From(progressSummaryTable).
 		OrderBy("year DESC, month DESC")
 
 	eqCondition := squirrel.Eq{}
@@ -71,7 +73,7 @@ func (s *store) SelectProgressSummaries(filters ...videolog.SQLFilter) ([]*video
 }
 
 func (s *store) BatchUpsertProgressSummaries(summaries ...*videolog.ProgressSummary) (int64, error) {
-	insertQ := squirrel.Insert(ProgressSummaryTable).
+	insertQ := squirrel.Insert(progressSummaryTable).
 		Columns("id", "username", "year", "month", "title", "subtitle", "body")
 
 	for _, summary := range summaries {
