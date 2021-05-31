@@ -2,14 +2,51 @@ package store
 
 import (
 	"fmt"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/calvinfeng/practicelog/videolog"
 	"github.com/google/uuid"
 )
 
+const progressSummaryTable = "progress_summaries"
+
+// DBProgressSummary is a DB row for progress summary.
+type DBProgressSummary struct {
+	ID       uuid.UUID `db:"id"`
+	Username string    `db:"username"`
+	Year     int64     `db:"year"`
+	Month    int64     `db:"month"`
+	Title    string    `db:"title"`
+	Subtitle string    `db:"subtitle"`
+	Body     string    `db:"body"`
+}
+
+func (row *DBProgressSummary) fromModel(model *videolog.ProgressSummary) *DBProgressSummary {
+	row.ID = model.ID
+	row.Username = model.Username
+	row.Year = model.Year
+	row.Month = model.Month
+	row.Title = model.Title
+	row.Subtitle = model.Subtitle
+	row.Body = model.Body
+	return row
+}
+
+func (row *DBProgressSummary) toModel() *videolog.ProgressSummary {
+	return &videolog.ProgressSummary{
+		ID:       row.ID,
+		Username: row.Username,
+		Year:     row.Year,
+		Month:    row.Month,
+		Title:    row.Title,
+		Subtitle: row.Subtitle,
+		Body:     row.Body,
+	}
+}
+
 func (s *store) SelectProgressSummaries(filters ...videolog.SQLFilter) ([]*videolog.ProgressSummary, error) {
 	query := squirrel.Select("*").
-		From(ProgressSummaryTable).
+		From(progressSummaryTable).
 		OrderBy("year DESC, month DESC")
 
 	eqCondition := squirrel.Eq{}
@@ -35,8 +72,8 @@ func (s *store) SelectProgressSummaries(filters ...videolog.SQLFilter) ([]*video
 	return summaries, nil
 }
 
-func (s *store) BatchInsertProgressSummaries(summaries ...*videolog.ProgressSummary) (int64, error) {
-	insertQ := squirrel.Insert(ProgressSummaryTable).
+func (s *store) BatchUpsertProgressSummaries(summaries ...*videolog.ProgressSummary) (int64, error) {
+	insertQ := squirrel.Insert(progressSummaryTable).
 		Columns("id", "username", "year", "month", "title", "subtitle", "body")
 
 	for _, summary := range summaries {

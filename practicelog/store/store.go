@@ -2,10 +2,11 @@ package store
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/calvinfeng/practicelog/practicelog"
 	"github.com/jmoiron/sqlx"
-	"time"
 )
 
 func New(db *sqlx.DB) practicelog.Store {
@@ -16,21 +17,25 @@ type store struct {
 	db *sqlx.DB
 }
 
-func (s *store) SumLogEntryDurationBefore(now time.Time) (sum int32, err error) {
+func (s *store) SumLogEntryDurationBefore(now time.Time) (int32, error) {
 	query := squirrel.
 		Select("SUM(duration)").From(LogEntryTable).
 		Where(squirrel.Lt{"date": now})
 
-	statement, args, qErr := query.PlaceholderFormat(squirrel.Dollar).ToSql()
-	if qErr != nil {
-		err = qErr
-		return
+	statement, args, err := query.PlaceholderFormat(squirrel.Dollar).ToSql()
+	if err != nil {
+		return 0, err
 	}
 
+	var sum *int32
 	if err = s.db.Get(&sum, statement, args...); err != nil {
-		return
+		return 0, err
 	}
-	return
+
+	if sum != nil {
+		return *sum, nil
+	}
+	return 0, nil
 }
 
 func (s *store) SumLogEntryDuration() (sum int32, err error) {

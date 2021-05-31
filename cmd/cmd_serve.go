@@ -3,11 +3,12 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/calvinfeng/practicelog/youtubeapi"
 	"google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/option"
-	"net/http"
-	"os"
 
 	"github.com/calvinfeng/practicelog/auth"
 	practicelogapi "github.com/calvinfeng/practicelog/practicelog/restapi"
@@ -63,13 +64,15 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 		}),
 		viper.GetBool("authentication.enabled"),
 	)
-
-	apiV1 := e.Group("/api/v1")
-
 	oauthSrv, err := oauth2.NewService(context.Background(), option.WithHTTPClient(http.DefaultClient))
 	if err != nil {
 		return err
 	}
+
+	/* V1
+	============================================================================
+	*/
+	apiV1 := e.Group("/api/v1")
 	apiV1.Use(auth.NewGoogleIDTokenValidateMiddleware(oauthSrv, viper.GetBool("authentication.enabled")))
 
 	// Authentication
@@ -98,12 +101,30 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	apiV1.GET("/log/entries/duration", logapi.GetLogEntryDurationSum)
 	apiV1.GET("/log/entries/duration/time-series", logapi.GetLogEntryDurationCumulativeSumTimeSeries)
 
-	apiV1.POST("/videolog/entries/reload", videoapi.LoadFromYouTubePlaylist)
-
+	/* Public
+	============================================================================
+	Deprecate the following API near future.
+	*/
 	publicAPI := e.Group("/public/api/v1")
-	// Videos
 	publicAPI.GET("/videolog/entries", videoapi.ListVideoLogEntries)
 	publicAPI.GET("/videolog/summaries", videoapi.ListProgressSummaries)
+
+	/* V2
+	============================================================================
+	For video log entry API, middleware should allow requests to pass even if
+	token is not present. This allows people to share their profiles with each
+	other.
+
+	For now, everything requires a token in production mode.
+	*/
+	apiV2 := e.Group("/api/v2")
+	apiV2.Use(auth.NewGoogleIDTokenValidateMiddleware(oauthSrv, viper.GetBool("authentication.enabled")))
+
+	apiV2.GET("/videolog/profiles/mine", videoapi.GetMyVideoLogProfile)
+	apiV2.PATCH("/videolog/profiles/mine", videoapi.UpdateMyVideoLogProfile)
+	apiV2.GET("/videolog/entries", videoapi.ListVideoLogEntriesByProfileID)
+	apiV2.POST("/videolog/entries/reload", videoapi.LoadFromYouTubePlaylist)
+	apiV2.GET("/videolog/summaries", videoapi.ListProgressSummariesByProfileID)
 
 	logrus.Infof("http server is listening on %s", viper.GetString("http.port"))
 	return e.Start(fmt.Sprintf(":%s", viper.GetString("http.port")))

@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	practicelogstore "github.com/calvinfeng/practicelog/practicelog/store"
-	"github.com/calvinfeng/practicelog/util"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	practicelogstore "github.com/calvinfeng/practicelog/practicelog/store"
+	"github.com/calvinfeng/practicelog/util"
 
 	"github.com/calvinfeng/practicelog/videolog"
 	videologstore "github.com/calvinfeng/practicelog/videolog/store"
@@ -67,7 +68,7 @@ func reloadDBWithProgressSummary(addr string) error {
 		summaries[i].Username = defaultUsername
 	}
 
-	count, err := store.BatchInsertProgressSummaries(summaries...)
+	count, err := store.BatchUpsertProgressSummaries(summaries...)
 	if err != nil {
 		return err
 	}
@@ -123,11 +124,11 @@ func reloadDBWithPlaylist(addr string, playlistID string, isProgressRecording bo
 			video.VideoOrientation = videolog.OrientationLandscape
 		}
 
-		if sum, err := plogstore.SumLogEntryDurationBefore(video.Published); err != nil {
+		sum, err := plogstore.SumLogEntryDurationBefore(video.Published)
+		if err != nil {
 			return fmt.Errorf("failed to sum log entry duration: %w", err)
-		} else {
-			video.MinGuitarPractice = sum
 		}
+		video.MinGuitarPractice = sum
 
 		if isProgressRecording {
 			logrus.Infof("Progress Recording[%04d] %s", item.Snippet.Position, item.ContentDetails.VideoID)
