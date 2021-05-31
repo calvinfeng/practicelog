@@ -45,7 +45,7 @@ psql -h ebdb.cjtqga7l9c3u.us-west-2.rds.amazonaws.com -p 5432 -U postgres
 
 Then enter password
 
-### Migrate 
+### Migrate
 
 ```bash
 practicelog --config=production db reset
@@ -92,4 +92,10 @@ Don't push it to GitHub because it's too big.
 
 ```bash
 heroku config
+```
+
+Then use the connection URL and `psql` into it directly.
+
+```bash
+psql <connection URL>
 ```
