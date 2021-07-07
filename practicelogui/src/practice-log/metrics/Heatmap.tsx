@@ -16,8 +16,6 @@ export default function Heatmap(props: Props) {
     return <Paper className='Heatmap' />
   }
 
-  const maxValue = maxMinutes(props.timeSeries)
-
   const tooltipDisplayText = (dataPoint) => {
     if (dataPoint.date == null || dataPoint.minutes === null) {
       return {
@@ -34,13 +32,11 @@ export default function Heatmap(props: Props) {
       return 'color-empty'
     }
 
-    let value = dataPoint.value / maxValue
-
-    if (value > 0.80) {
+    if (dataPoint.value >= 180) {
       return 'color-github-4'
-    } else if (value > 0.60) {
+    } else if (dataPoint.value >= 90) {
       return 'color-github-3'
-    } else if (value > 0.40) {
+    } else if (dataPoint.value >= 60) {
       return 'color-github-2'
     }
     return 'color-github-1'
