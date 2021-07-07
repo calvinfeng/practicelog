@@ -121,10 +121,14 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	apiV2.Use(auth.NewGoogleIDTokenValidateMiddleware(oauthSrv, viper.GetBool("authentication.enabled")))
 
 	apiV2.GET("/videolog/profiles/mine", videoapi.GetMyVideoLogProfile)
-	apiV2.PATCH("/videolog/profiles/mine", videoapi.UpdateMyVideoLogProfile)
+	apiV2.POST("/videolog/profiles/mine", videoapi.UpsertMyVideoLogProfile)
+
+	// Query params are ?profile=string in order to view a specific profile.
 	apiV2.GET("/videolog/entries", videoapi.ListVideoLogEntriesByProfileID)
 	apiV2.POST("/videolog/entries/reload", videoapi.LoadFromYouTubePlaylist)
+
 	apiV2.GET("/videolog/summaries", videoapi.ListProgressSummariesByProfileID)
+	apiV2.POST("/videolog/summaries", videoapi.UpsertProgressSummary)
 
 	logrus.Infof("http server is listening on %s", viper.GetString("http.port"))
 	return e.Start(fmt.Sprintf(":%s", viper.GetString("http.port")))

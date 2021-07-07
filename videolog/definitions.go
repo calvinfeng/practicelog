@@ -75,11 +75,16 @@ type (
 		ListProgressSummaries(echo.Context) error
 
 		// New API(s)
+		// GetMyVideoLogProfile fetches profile with privacy settings.
 		GetMyVideoLogProfile(echo.Context) error
-		UpdateMyVideoLogProfile(echo.Context) error
-		LoadFromYouTubePlaylist(echo.Context) error
-		ListVideoLogEntriesByProfileID(echo.Context) error
+		// UpsertMyVideoLogProfile allows user to set privacy level.
+		UpsertMyVideoLogProfile(echo.Context) error
+
 		ListProgressSummariesByProfileID(echo.Context) error
+		UpsertProgressSummary(echo.Context) error
+
+		ListVideoLogEntriesByProfileID(echo.Context) error
+		LoadFromYouTubePlaylist(echo.Context) error
 	}
 
 	// SQLFilter applies filter to store functions.
@@ -92,6 +97,7 @@ type (
 
 		SelectProgressSummaries(filters ...SQLFilter) ([]*ProgressSummary, error)
 		BatchUpsertProgressSummaries(summaries ...*ProgressSummary) (int64, error)
+		UpsertProgressSummaries(summary *ProgressSummary) error
 
 		GetVideoLogProfileByID(id string) (*Profile, error)
 		GetVideoLogProfileByUsername(username string) (*Profile, error)

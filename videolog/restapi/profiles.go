@@ -2,6 +2,7 @@ package restapi
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/calvinfeng/practicelog/auth"
@@ -25,16 +26,17 @@ func (s *server) GetMyVideoLogProfile(c echo.Context) error {
 	return c.JSON(http.StatusOK, profile)
 }
 
-func (s *server) UpdateMyVideoLogProfile(c echo.Context) error {
+func (s *server) UpsertMyVideoLogProfile(c echo.Context) error {
 	email, err := auth.GetEmailFromContext(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
 	}
 
-	profile, err := s.videoLogStore.GetVideoLogProfileByUsername(email)
+	var profile *videolog.Profile
+	profile, err = s.videoLogStore.GetVideoLogProfileByUsername(email)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest,
-			fmt.Sprintf("profile not found for user %s", email))
+		logrus.Warnf("profile not found for user %s, proceed to create one", email)
+		profile = new(videolog.Profile)
 	}
 
 	if err := c.Bind(profile); err != nil {
