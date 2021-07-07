@@ -110,3 +110,37 @@ func (s *store) BatchUpsertProgressSummaries(summaries ...*videolog.ProgressSumm
 	}
 	return res.RowsAffected()
 }
+
+func (s *store) UpsertProgressSummaries(summary *videolog.ProgressSummary) error {
+	insertQ := squirrel.Insert(progressSummaryTable).
+		Columns("id", "username", "year", "month", "title", "subtitle", "body")
+
+	row := new(DBProgressSummary).fromModel(summary)
+	insertQ = insertQ.Values(
+		row.ID,
+		row.Username,
+		row.Year,
+		row.Month,
+		row.Title,
+		row.Subtitle,
+		row.Body,
+	)
+
+	insertQ = insertQ.Suffix(`
+	ON CONFLICT ON CONSTRAINT unique_username_year_month
+	DO UPDATE SET
+		title = EXCLUDED.title,
+		subtitle = EXCLUDED.subtitle,
+		body = EXCLUDED.body`)
+
+	statement, args, err := insertQ.PlaceholderFormat(squirrel.Dollar).ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to construct query: %w", err)
+	}
+
+	_, err = s.db.Exec(statement, args...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
