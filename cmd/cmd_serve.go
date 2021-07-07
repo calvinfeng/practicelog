@@ -99,7 +99,8 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	// - Fetch the total sum of all durations, but present them as time series
 	apiV1.GET("/log/labels/duration", logapi.ListLogLabelDurations)
 	apiV1.GET("/log/entries/duration", logapi.GetLogEntryDurationSum)
-	apiV1.GET("/log/entries/duration/time-series", logapi.GetLogEntryDurationCumulativeSumTimeSeries)
+	apiV1.GET("/log/entries/duration/accum-time-series", logapi.GetLogEntryDurationCumulativeSumTimeSeries)
+	apiV1.GET("/log/entries/duration/time-series", logapi.GetLogEntryDurationTimeSeries)
 
 	/* Public
 	============================================================================

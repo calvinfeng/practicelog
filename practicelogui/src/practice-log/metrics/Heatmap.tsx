@@ -1,5 +1,4 @@
 import { Paper } from '@material-ui/core'
-import { ForumTwoTone } from '@material-ui/icons';
 import React from 'react'
 import CalendarHeatmap from 'react-calendar-heatmap';
 
@@ -39,16 +38,11 @@ export default function Heatmap(props: Props) {
 
     if (value > 0.80) {
       return 'color-github-4'
-    }
-
-    if (value > 0.60) {
+    } else if (value > 0.60) {
       return 'color-github-3'
-    }
-
-    if (value > 0.40) {
+    } else if (value > 0.40) {
       return 'color-github-2'
     }
-
     return 'color-github-1'
   }
 

@@ -153,7 +153,7 @@ export default class PracticeLog extends React.Component<Props, State> {
    * either by day or by month.
    */
   fetchPracticeTimeSeries() {
-    this.http.get('/api/v1/log/entries/duration/time-series?group=by_month')
+    this.http.get('/api/v1/log/entries/duration/accum-time-series?group=by_month')
       .then((resp: AxiosResponse) => {
         this.setState({
           practiceTimeSeriesByMonth: resp.data.time_series as PracticeTimeSeriesDataPoint[]
