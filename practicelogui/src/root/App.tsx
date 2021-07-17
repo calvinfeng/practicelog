@@ -14,7 +14,7 @@ import {
 import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem } from '@material-ui/core';
 import { MenuRounded } from '@material-ui/icons';
 
-import axios, { AxiosResponse }  from 'axios'
+import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 import { GoogleUserProfile, GoogleError, AuthValidationResponse } from './types'
 import PracticeLog from '../practice-log/PracticeLog'
 import Unauthorized from './Unauthorized'
@@ -41,51 +41,66 @@ enum Path {
 }
 
 export default class App extends React.Component<Props, State> {
+  private http: AxiosInstance
+
   constructor(props: Props) {
     super(props)
+    this.http = axios.create({ baseURL: process.env.REACT_APP_API_URL })
     this.state = {
       userProfile: null,
       anchorEl: null,
       menuOpen: false
-    };
+    }
+  }
+
+  validateToken = (IDToken: string, AccessToken: string): Promise<any> => {
+    this.http = axios.create({
+      baseURL: process.env.REACT_APP_API_URL,
+      timeout: 1000,
+      headers: {
+        "Authorization": IDToken
+      }
+    });
+    return this.http.post('/api/v1/token/validate', { "access_token": AccessToken })
+      .then((resp: AxiosResponse) => {
+        if (resp.status === 200) {
+          const info = resp.data as AuthValidationResponse
+          this.setState({
+            userProfile: {
+              id_token: IDToken,
+              access_token: AccessToken,
+              user_id: info.id,
+              email: info.email,
+              full_name: info.name,
+              first_name: info.given_name,
+              last_name: info.family_name,
+              avatar_url: info.picture
+            }
+          })
+          console.log('token expires in', info.expires_in)
+          setTimeout(this.clearStorageAndLogout, info.expires_in * 1000)
+        }
+      })
+      .catch((reason: any) => {
+        console.log('ID token in local storage is invalid', reason)
+        this.clearStorageAndLogout()
+      })
+  }
+
+  // TODO: Make use of this function
+  // TODO: What to do if video log fails to fetch? Create one for user!
+  fetchVideoLogProfile = (): Promise<any> => {
+    return this.http.get('/api/v2/videolog/profiles/mine').
+      then((resp: AxiosResponse) => {
+        console.log(resp)
+      })
   }
 
   componentDidMount() {
     const IDToken = localStorage.getItem('google_id_token')
     const AccessToken = localStorage.getItem('google_access_token')
     if (IDToken !== null && AccessToken !== null) {
-      const http = axios.create({
-        baseURL: process.env.REACT_APP_API_URL,
-        timeout: 1000,
-        headers: {
-          "Authorization": IDToken
-        }
-      });
-
-      http.post('/api/v1/token/validate', { "access_token": AccessToken })
-        .then((resp: AxiosResponse) => {
-          if (resp.status === 200) {
-            const info = resp.data as AuthValidationResponse
-            this.setState({
-              userProfile: {
-                id_token: IDToken,
-                access_token: AccessToken,
-                user_id: info.id,
-                email: info.email,
-                full_name: info.name,
-                first_name: info.given_name,
-                last_name: info.family_name,
-                avatar_url: info.picture
-              }
-            })
-            console.log('token expires in', info.expires_in)
-            setTimeout(this.clearStorageAndLogout, info.expires_in * 1000)
-          }
-        })
-        .catch((reason: any) => {
-          console.log('ID token in local storage is invalid', reason)
-          this.clearStorageAndLogout()
-        })
+      this.validateToken(IDToken, AccessToken)
     }
   }
 
@@ -253,9 +268,9 @@ export default class App extends React.Component<Props, State> {
   }
 
   render() {
-    if (process.env.NODE_ENV !== 'production') {
-      return this.renderCoreContent('development-dummy-token')
-    }
+    // if (process.env.NODE_ENV !== 'production') {
+    //   return this.renderCoreContent('development-dummy-token')
+    // }
 
     if (this.state.userProfile !== null) {
       if (this.state.userProfile.email === "calvin.j.feng@gmail.com") {

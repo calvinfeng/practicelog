@@ -90,6 +90,10 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	apiV1.PUT("/log/entries/:entry_id", logapi.UpdatePracticeLogEntry)
 	apiV1.DELETE("/log/entries/:entry_id", logapi.DeletePracticeLogEntry)
 
+	// Summaries
+	apiV1.POST("/videolog/summaries", nil)
+	apiV1.PUT("videolog/summaries/:summary_id", nil)
+
 	// Assignments
 	apiV1.PUT("/log/entries/:entry_id/assignments", logapi.UpdatePracticeLogAssignments)
 
