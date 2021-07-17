@@ -96,6 +96,8 @@ class Timeline extends React.Component<Props, State> {
       })
 
       // If this is a performance issue, use map
+      // This is a linear search for summary. Given that there are at most 12 summary per year, this
+      // number is pretty small.
       let summary: SummaryJSON | undefined
       for (let i = 0; i < this.state.summaries.length; i++) {
         if (group.year === this.state.summaries[i].year && group.month === this.state.summaries[i].month) {

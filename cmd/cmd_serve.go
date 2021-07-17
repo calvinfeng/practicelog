@@ -95,11 +95,12 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 
 	// Duration data
 	// - Fetch all labels' duration, each duration is a sum of log entries that share a common label association.
-	// - Fetch the total sum of all durations, i.e. total hours of practice
-	// - Fetch the total sum of all durations, but present them as time series
 	apiV1.GET("/log/labels/duration", logapi.ListLogLabelDurations)
+	// - Fetch the total sum of all durations, i.e. total hours of practice
 	apiV1.GET("/log/entries/duration", logapi.GetLogEntryDurationSum)
+	// - Fetch a time series of practice duration with accumulation. This is ideal for graph.
 	apiV1.GET("/log/entries/duration/accum-time-series", logapi.GetLogEntryDurationCumulativeSumTimeSeries)
+	// - Fetch a time series of practice duration group by some time interval. This is ideal for heat map.
 	apiV1.GET("/log/entries/duration/time-series", logapi.GetLogEntryDurationTimeSeries)
 
 	/* Public
