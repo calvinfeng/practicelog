@@ -64,6 +64,7 @@ type (
 		// GetLogEntryDurationCumulativeSumTimeSeries compiles a time series of log entry durations.
 		// It will be cumulative sum over a specific interval of time, e.g. year, month, day
 		GetLogEntryDurationCumulativeSumTimeSeries(echo.Context) error
+		GetLogEntryDurationTimeSeries(echo.Context) error
 	}
 
 	SQLFilter func(squirrel.Eq)

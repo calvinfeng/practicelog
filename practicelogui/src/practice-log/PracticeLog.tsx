@@ -16,6 +16,8 @@ import AssignmentChecklistPopover from './AssignmentChecklistPopover'
 import LogEntryManagement from './log-entry-management/LogEntryManagement'
 import LogLabelManagement from './log-label-management/LogLabelManagement'
 import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
+import Heatmap from './metrics/Heatmap'
+
 import './PracticeLog.scss'
 
 type Props = {
@@ -26,7 +28,8 @@ type DataStore = {
   logEntries: LogEntryJSON[]
   logLabels: LogLabelJSON[]
 
-  practiceTimeSeries: PracticeTimeSeriesDataPoint[]
+  practiceTimeSeriesByMonth: PracticeTimeSeriesDataPoint[]
+  practiceTimeSeriesByDay: PracticeTimeSeriesDataPoint[]
   totalPracticeTime: number
 }
 
@@ -68,7 +71,8 @@ export default class PracticeLog extends React.Component<Props, State> {
       alertShown: false,
       alertMessage: "",
       alertSeverity: "info",
-      practiceTimeSeries: []
+      practiceTimeSeriesByMonth: [],
+      practiceTimeSeriesByDay: []
     }
     this.http = axios.create({
       baseURL: process.env.REACT_APP_API_URL,
@@ -149,16 +153,30 @@ export default class PracticeLog extends React.Component<Props, State> {
    * either by day or by month.
    */
   fetchPracticeTimeSeries() {
-    this.http.get('/api/v1/log/entries/duration/time-series?group=by_month')
+    this.http.get('/api/v1/log/entries/duration/accum-time-series?group=by_month')
       .then((resp: AxiosResponse) => {
         this.setState({
-          practiceTimeSeries: resp.data.time_series as PracticeTimeSeriesDataPoint[]
+          practiceTimeSeriesByMonth: resp.data.time_series as PracticeTimeSeriesDataPoint[]
         })
       })
       .catch((reason: any) => {
         this.setState({
           alertShown: true,
-          alertMessage: `Failed to fetch log entry time-series duration due to ${reason}`,
+          alertMessage: `Failed to fetch log entry time series duration due to ${reason}`,
+          alertSeverity: "error"
+        })
+      })
+
+    this.http.get('/api/v1/log/entries/duration/time-series?group=by_day')
+      .then((resp: AxiosResponse) => {
+        this.setState({
+          practiceTimeSeriesByDay: resp.data.time_series as PracticeTimeSeriesDataPoint[]
+        })
+      })
+      .catch((reason: any) => {
+        this.setState({
+          alertShown: true,
+          alertMessage: `Failed to fetch log entry time series duration due to ${reason}`,
           alertSeverity: "error"
         })
       })
@@ -565,8 +583,10 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
           handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
           handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
+        <Heatmap
+          timeSeries={this.state.practiceTimeSeriesByDay} />
         <PracticeTimeLineChart
-            timeSeries={this.state.practiceTimeSeries} />
+          timeSeries={this.state.practiceTimeSeriesByMonth} />
         <Snackbar
           open={this.state.alertShown}
           autoHideDuration={6000}
