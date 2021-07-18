@@ -23,7 +23,7 @@ type videoLogEntryResponse struct {
 	IsRequesterOwner bool         `json:"is_requester_owner"`
 }
 
-func (s *server) ListVideoLogEntriesByProfileID(c echo.Context) error {
+func (api *apiV2) ListVideoLogEntries(c echo.Context) error {
 	email, _ := auth.GetEmailFromContext(c)
 
 	profileID := c.QueryParam("profile")
@@ -32,7 +32,7 @@ func (s *server) ListVideoLogEntriesByProfileID(c echo.Context) error {
 			"query param ?profile= is required")
 	}
 
-	profile, err := s.videoLogStore.GetVideoLogProfileByID(profileID)
+	profile, err := api.videoLogStore.GetVideoLogProfileByID(profileID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,
 			fmt.Errorf("video log profile not found %w", err).Error())
@@ -43,7 +43,7 @@ func (s *server) ListVideoLogEntriesByProfileID(c echo.Context) error {
 			fmt.Sprint("profile is not public"))
 	}
 
-	videos, err := s.videoLogStore.SelectVideoLogEntries(vstore.ByUsername(profile.Username))
+	videos, err := api.videoLogStore.SelectVideoLogEntries(vstore.ByUsername(profile.Username))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			fmt.Errorf("server failed to query database %w", err).Error())

@@ -56,7 +56,7 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 
 	logrus.Infof("connected to database on %s", addr)
 	logapi := practicelogapi.New(practicelogstore.New(pg))
-	videoapi := videologapi.New(
+	videologAPIv1 := videologapi.NewAPIv1(
 		videologstore.New(pg),
 		practicelogstore.New(pg),
 		youtubeapi.New(youtubeapi.Config{
@@ -64,6 +64,15 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 		}),
 		viper.GetBool("authentication.enabled"),
 	)
+	videologAPIv2 := videologapi.NewAPIv2(
+		videologstore.New(pg),
+		practicelogstore.New(pg),
+		youtubeapi.New(youtubeapi.Config{
+			APIKey: os.Getenv("YOUTUBE_API_KEY"),
+		}),
+		viper.GetBool("authentication.enabled"),
+	)
+
 	oauthSrv, err := oauth2.NewService(context.Background(), option.WithHTTPClient(http.DefaultClient))
 	if err != nil {
 		return err
@@ -90,10 +99,6 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	apiV1.PUT("/log/entries/:entry_id", logapi.UpdatePracticeLogEntry)
 	apiV1.DELETE("/log/entries/:entry_id", logapi.DeletePracticeLogEntry)
 
-	// Summaries
-	apiV1.POST("/videolog/summaries", nil)
-	apiV1.PUT("videolog/summaries/:summary_id", nil)
-
 	// Assignments
 	apiV1.PUT("/log/entries/:entry_id/assignments", logapi.UpdatePracticeLogAssignments)
 
@@ -112,8 +117,12 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	Deprecate the following API near future.
 	*/
 	publicAPI := e.Group("/public/api/v1")
-	publicAPI.GET("/videolog/entries", videoapi.ListVideoLogEntries)
-	publicAPI.GET("/videolog/summaries", videoapi.ListProgressSummaries)
+	publicAPI.GET("/videolog/entries", videologAPIv1.ListVideoLogEntries)
+	publicAPI.GET("/videolog/summaries", videologAPIv1.ListProgressSummaries)
+
+	// Summaries
+	apiV1.POST("/videolog/summaries", videologAPIv1.UpsertProgressSummary)
+	apiV1.PUT("/videolog/summaries/:summary_id", videologAPIv1.UpsertProgressSummary)
 
 	/* V2
 	============================================================================
@@ -126,15 +135,15 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	apiV2 := e.Group("/api/v2")
 	apiV2.Use(auth.NewGoogleIDTokenValidateMiddleware(oauthSrv, viper.GetBool("authentication.enabled")))
 
-	apiV2.GET("/videolog/profiles/mine", videoapi.GetMyVideoLogProfile)
-	apiV2.POST("/videolog/profiles/mine", videoapi.UpsertMyVideoLogProfile)
+	apiV2.GET("/videolog/profiles/mine", videologAPIv2.GetMyVideoLogProfile)
+	apiV2.POST("/videolog/profiles/mine", videologAPIv2.UpsertMyVideoLogProfile)
 
 	// Query params are ?profile=string in order to view a specific profile.
-	apiV2.GET("/videolog/entries", videoapi.ListVideoLogEntriesByProfileID)
-	apiV2.POST("/videolog/entries/reload", videoapi.LoadFromYouTubePlaylist)
+	apiV2.GET("/videolog/entries", videologAPIv2.ListVideoLogEntries)
+	apiV2.POST("/videolog/entries/reload", videologAPIv2.LoadFromYouTubePlaylist)
 
-	apiV2.GET("/videolog/summaries", videoapi.ListProgressSummariesByProfileID)
-	apiV2.POST("/videolog/summaries", videoapi.UpsertProgressSummary)
+	apiV2.GET("/videolog/summaries", videologAPIv2.ListProgressSummaries)
+	apiV2.POST("/videolog/summaries", videologAPIv2.UpsertProgressSummary)
 
 	logrus.Infof("http server is listening on %s", viper.GetString("http.port"))
 	return e.Start(fmt.Sprintf(":%s", viper.GetString("http.port")))

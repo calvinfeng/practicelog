@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"github.com/calvinfeng/practicelog/videolog"
 	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 	"net/http"
 )
 
-func (s *server) ListVideoLogEntries(c echo.Context) error {
+func (api *apiV1) ListVideoLogEntries(c echo.Context) error {
 	var err error
 	var videos []*videolog.Entry
-	videos, err = s.videoLogStore.SelectVideoLogEntries()
+	videos, err = api.videoLogStore.SelectVideoLogEntries()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			fmt.Errorf("server failed to query database %w", err).Error())
@@ -45,14 +44,4 @@ func (s *server) ListVideoLogEntries(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, groups)
-}
-
-func (s *server) ListProgressSummaries(c echo.Context) error {
-	summaries, err := s.videoLogStore.SelectProgressSummaries()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError,
-			errors.Wrap(err, "server failed to query database").Error())
-	}
-
-	return c.JSON(http.StatusOK, summaries)
 }

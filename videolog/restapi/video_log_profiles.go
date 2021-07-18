@@ -11,13 +11,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *server) GetMyVideoLogProfile(c echo.Context) error {
+func (api *apiV2) GetMyVideoLogProfile(c echo.Context) error {
 	email, err := auth.GetEmailFromContext(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
 	}
 
-	profile, err := s.videoLogStore.GetVideoLogProfileByUsername(email)
+	profile, err := api.videoLogStore.GetVideoLogProfileByUsername(email)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,
 			fmt.Errorf("video log profile not found %w", err).Error())
@@ -26,14 +26,14 @@ func (s *server) GetMyVideoLogProfile(c echo.Context) error {
 	return c.JSON(http.StatusOK, profile)
 }
 
-func (s *server) UpsertMyVideoLogProfile(c echo.Context) error {
+func (api *apiV2) UpsertMyVideoLogProfile(c echo.Context) error {
 	email, err := auth.GetEmailFromContext(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
 	}
 
 	var profile *videolog.Profile
-	profile, err = s.videoLogStore.GetVideoLogProfileByUsername(email)
+	profile, err = api.videoLogStore.GetVideoLogProfileByUsername(email)
 	if err != nil {
 		logrus.Warnf("profile not found for user %s, proceed to create one", email)
 		profile = new(videolog.Profile)
@@ -52,7 +52,7 @@ func (s *server) UpsertMyVideoLogProfile(c echo.Context) error {
 	}
 
 	profile.Username = email
-	if err := s.videoLogStore.UpsertVideoLogProfile(profile); err != nil {
+	if err := api.videoLogStore.UpsertVideoLogProfile(profile); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrap(err, "failed to update profile in database"))
 	}

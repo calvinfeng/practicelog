@@ -23,16 +23,16 @@ type loadPlaylistResponse struct {
 
 // Todo: This is slow, we should queue it up instead of running it synchronously.
 
-func (s *server) LoadFromYouTubePlaylist(c echo.Context) error {
+func (api *apiV2) LoadFromYouTubePlaylist(c echo.Context) error {
 	email, err := auth.GetEmailFromContext(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "email is not found in provided ID token")
 	}
 
-	profile, err := s.videoLogStore.GetVideoLogProfileByUsername(email)
+	profile, err := api.videoLogStore.GetVideoLogProfileByUsername(email)
 	if err != nil && profile == nil {
 		// Create a profile if not exist
-		s.videoLogStore.UpsertVideoLogProfile(&videolog.Profile{
+		api.videoLogStore.UpsertVideoLogProfile(&videolog.Profile{
 			Username: email,
 			Privacy:  videolog.PrivacyPrivate,
 		})
@@ -50,23 +50,23 @@ func (s *server) LoadFromYouTubePlaylist(c echo.Context) error {
 	}
 
 	var videos []*videolog.Entry
-	videos, err = s.loadPlaylist(body.MonthlyProgressPlaylistID, email, true)
+	videos, err = api.loadPlaylist(body.MonthlyProgressPlaylistID, email, true)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	resp := new(loadPlaylistResponse)
-	resp.MonthlyProgressVideoCount, err = s.videoLogStore.BatchUpsertVideoLogEntries(videos...)
+	resp.MonthlyProgressVideoCount, err = api.videoLogStore.BatchUpsertVideoLogEntries(videos...)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	videos, err = s.loadPlaylist(body.PracticeRecordingPlaylistID, email, false)
+	videos, err = api.loadPlaylist(body.PracticeRecordingPlaylistID, email, false)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	resp.PracticeRecordingVideoCount, err = s.videoLogStore.BatchUpsertVideoLogEntries(videos...)
+	resp.PracticeRecordingVideoCount, err = api.videoLogStore.BatchUpsertVideoLogEntries(videos...)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -74,8 +74,8 @@ func (s *server) LoadFromYouTubePlaylist(c echo.Context) error {
 	return c.JSON(http.StatusCreated, resp)
 }
 
-func (s *server) loadPlaylist(playlistID string, username string, isMonthlyProgress bool) ([]*videolog.Entry, error) {
-	items, err := s.youtubeAPI.PlaylistItems(playlistID)
+func (api *apiV2) loadPlaylist(playlistID string, username string, isMonthlyProgress bool) ([]*videolog.Entry, error) {
+	items, err := api.youtubeAPI.PlaylistItems(playlistID)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (s *server) loadPlaylist(playlistID string, username string, isMonthlyProgr
 			video.VideoOrientation = videolog.OrientationLandscape
 		}
 
-		sum, err := s.practiceLogStore.SumLogEntryDurationBefore(video.Published)
+		sum, err := api.practiceLogStore.SumLogEntryDurationBefore(video.Published)
 		if err != nil {
 			return nil, fmt.Errorf("failed to sum log entry duration for video %s %s: %w", video.ID, video.Title, err)
 		}

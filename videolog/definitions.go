@@ -70,20 +70,41 @@ type Profile struct {
 type (
 	// RESTAPI provides Echo server compatible handlers.
 	RESTAPI interface {
-		// Deprecate these as I move forward with profile based video log.
-		ListVideoLogEntries(echo.Context) error
-		ListProgressSummaries(echo.Context) error
+		// V1 will be deprecated
+		ListVideoLogEntriesV1(echo.Context) error
+		ListProgressSummariesV1(echo.Context) error
+		UpsertProgressSummaryV1(echo.Context) error
+
+		// V2 relies on profile ID to fetch data
+		ListVideoLogEntriesV2(echo.Context) error
+		ListProgressSummariesV2(echo.Context) error
+		UpsertProgressSummaryV2(echo.Context) error
 
 		// New API(s)
 		// GetMyVideoLogProfile fetches profile with privacy settings.
-		GetMyVideoLogProfile(echo.Context) error
 		// UpsertMyVideoLogProfile allows user to set privacy level.
-		UpsertMyVideoLogProfile(echo.Context) error
+		GetMyVideoLogProfileV2(echo.Context) error
+		UpsertMyVideoLogProfileV2(echo.Context) error
+		LoadFromYouTubePlaylistV2(echo.Context) error
+	}
 
-		ListProgressSummariesByProfileID(echo.Context) error
+	// APIv1 fetches data by email presented in token. However, due to the need for public API, and
+	// most viewers are not authenticated. The fetch will only fetch my personal data for the
+	// public.
+	APIv1 interface {
+		ListVideoLogEntries(echo.Context) error
+		ListProgressSummaries(echo.Context) error
 		UpsertProgressSummary(echo.Context) error
+	}
 
-		ListVideoLogEntriesByProfileID(echo.Context) error
+	// APIv2 fetches data by profile ID, this is geared toward multi-user usage for the future.
+	// This is if I decide to deploy the app for friends.
+	APIv2 interface {
+		ListVideoLogEntries(echo.Context) error
+		ListProgressSummaries(echo.Context) error
+		UpsertProgressSummary(echo.Context) error
+		GetMyVideoLogProfile(echo.Context) error
+		UpsertMyVideoLogProfile(echo.Context) error
 		LoadFromYouTubePlaylist(echo.Context) error
 	}
 
