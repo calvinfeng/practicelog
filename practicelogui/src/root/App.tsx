@@ -268,9 +268,9 @@ export default class App extends React.Component<Props, State> {
   }
 
   render() {
-    // if (process.env.NODE_ENV !== 'production') {
-    //   return this.renderCoreContent('development-dummy-token')
-    // }
+    if (process.env.NODE_ENV !== 'production') {
+      return this.renderCoreContent('development-dummy-token')
+    }
 
     if (this.state.userProfile !== null) {
       if (this.state.userProfile.email === "calvin.j.feng@gmail.com") {

@@ -33,6 +33,7 @@ func (api *apiV1) UpsertProgressSummary(c echo.Context) error {
 	summary.Username = email
 
 	if c.Param("summary_id") == "" {
+		summary.ID = uuid.New()
 		if err := api.videoLogStore.UpsertProgressSummaries(summary); err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError,
 				errors.Wrapf(err, "failed to create %d-%d progress summary", summary.Year, summary.Month))

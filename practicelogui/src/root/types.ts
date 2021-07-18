@@ -9,6 +9,12 @@ export type GoogleUserProfile = {
   avatar_url: string
 }
 
+export type VideoLogProfile = {
+  id: string
+  username: string
+  privacy: string
+}
+
 export type AuthValidationResponse = {
   expires_in: number
   id: string
