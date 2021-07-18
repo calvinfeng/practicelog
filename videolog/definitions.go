@@ -70,22 +70,8 @@ type Profile struct {
 type (
 	// RESTAPI provides Echo server compatible handlers.
 	RESTAPI interface {
-		// V1 will be deprecated
-		ListVideoLogEntriesV1(echo.Context) error
-		ListProgressSummariesV1(echo.Context) error
-		UpsertProgressSummaryV1(echo.Context) error
-
-		// V2 relies on profile ID to fetch data
-		ListVideoLogEntriesV2(echo.Context) error
-		ListProgressSummariesV2(echo.Context) error
-		UpsertProgressSummaryV2(echo.Context) error
-
-		// New API(s)
-		// GetMyVideoLogProfile fetches profile with privacy settings.
-		// UpsertMyVideoLogProfile allows user to set privacy level.
-		GetMyVideoLogProfileV2(echo.Context) error
-		UpsertMyVideoLogProfileV2(echo.Context) error
-		LoadFromYouTubePlaylistV2(echo.Context) error
+		V1() APIv1
+		V2() APIv2
 	}
 
 	// APIv1 fetches data by email presented in token. However, due to the need for public API, and
