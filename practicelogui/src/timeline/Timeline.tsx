@@ -20,6 +20,7 @@ import './Timeline.scss'
 import { ProgressVideoElement } from './ProgressVideoElement'
 import { PracticeVideoElement } from './PracticeVideoElement'
 import { resolve } from 'url';
+import { SummaryCreator } from './SummaryCreator';
 
 type Props = {} & RouteComponentProps
 
@@ -109,11 +110,10 @@ class Timeline extends React.Component<Props, State> {
   }
 
   get timelineContent() {
-    if (this.state.videoGroups.length === 0) {
-      return <div></div>
-    }
+    const elements: JSX.Element[] = [
+      <SummaryCreator />
+    ]
 
-    const elements: JSX.Element[] = []
     this.state.videoGroups.forEach((group: VideoGroupJSON) => {
       // Find a progress recording that is after 15th of each month
       group.progress_recordings.filter((video: VideoLogEntryJSON) => {
