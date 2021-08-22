@@ -11,7 +11,7 @@ import {
   useLocation,
   useHistory
 } from "react-router-dom"
-import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem } from '@material-ui/core';
+import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem, Avatar } from '@material-ui/core';
 import { MenuRounded } from '@material-ui/icons';
 
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
@@ -22,6 +22,28 @@ import Fretboard from '../fretboard/Fretboard'
 import Timeline from '../timeline/Timeline'
 import './App.scss'
 
+const Developer: GoogleUserProfile = {
+  id_token: "1234",
+  access_token: "1234",
+  user_id: "developer",
+  email: "developer@practicelog.com",
+  full_name: "Developer",
+  first_name: "Developer",
+  last_name: "",
+  avatar_url: "https://gravatar.com/avatar/ca5b06deee5db1797c406ca0a1bc5535?s=400&d=robohash&r=x"
+}
+
+const Guest: GoogleUserProfile = {
+  id_token: "1234",
+  access_token: "1234",
+  user_id: "guest",
+  email: "developer@practicelog.com",
+  full_name: "Guest",
+  first_name: "Guest",
+  last_name: "",
+  avatar_url: "https://gravatar.com/avatar/ca5b06deee5db1797c406ca0a1bc5535?s=400&d=robohash&r=x"
+}
+
 /**
  * Google Authentication
  * Token has scope [email, profile, openid, userinfo.profile, userinfo.email]
@@ -29,7 +51,7 @@ import './App.scss'
 
 type Props = {}
 type State = {
-  userProfile: GoogleUserProfile | null
+  currentUserProfile: GoogleUserProfile | null
   anchorEl: HTMLElement | null
   menuOpen: boolean
 }
@@ -47,7 +69,7 @@ export default class App extends React.Component<Props, State> {
     super(props)
     this.http = axios.create({ baseURL: process.env.REACT_APP_API_URL })
     this.state = {
-      userProfile: null,
+      currentUserProfile: null,
       anchorEl: null,
       menuOpen: false
     }
@@ -66,7 +88,7 @@ export default class App extends React.Component<Props, State> {
         if (resp.status === 200) {
           const info = resp.data as AuthValidationResponse
           this.setState({
-            userProfile: {
+            currentUserProfile: {
               id_token: IDToken,
               access_token: AccessToken,
               user_id: info.id,
@@ -105,7 +127,7 @@ export default class App extends React.Component<Props, State> {
   }
 
   clearStorageAndLogout = () => {
-    this.setState({ userProfile: null })
+    this.setState({ currentUserProfile: null })
     localStorage.clear()
   }
 
@@ -117,7 +139,7 @@ export default class App extends React.Component<Props, State> {
       console.log('user has scopes', resp.getGrantedScopes())
 
       this.setState({
-        userProfile: {
+        currentUserProfile: {
           id_token: resp.tokenId,
           access_token: resp.accessToken,
           user_id: resp.getBasicProfile().getId(),
@@ -153,7 +175,7 @@ export default class App extends React.Component<Props, State> {
     })
   }
 
-  get appBar() {
+  appBar(profile: GoogleUserProfile) {
     return (
       <AppBar position="static" color="default" className="app-bar">
         <section className="left-container">
@@ -175,6 +197,8 @@ export default class App extends React.Component<Props, State> {
           </Toolbar>
         </section>
         <section className="right-container">
+          <Avatar className="avatar" alt={profile.full_name} src={profile.avatar_url}/>
+          <Typography className="display-name" variant="body1">Hi, {profile.full_name}</Typography>
         </section>
       </AppBar>
     )
@@ -198,17 +222,17 @@ export default class App extends React.Component<Props, State> {
     return (
       <div className="App">
         <Unauthorized
-          userProfile={this.state.userProfile as GoogleUserProfile}
+          userProfile={this.state.currentUserProfile as GoogleUserProfile}
           clearStorageAndLogout={this.clearStorageAndLogout} />
       </div>
     )
   }
 
-  renderLandingPage() {
+  renderLandingPage(profile: GoogleUserProfile) {
     return (
       <div className="App">
         <BrowserRouter>
-          {this.appBar}
+          {this.appBar(profile)}
           <Switch>
             <Route
               exact path={Path.Root}
@@ -218,18 +242,18 @@ export default class App extends React.Component<Props, State> {
               render={() => <Fretboard />} />
             <Route
               path={Path.Timeline}
-              render={() => <Timeline />} />
+              render={() => <Timeline currentUserProfile={profile} />} />
           </Switch>
         </BrowserRouter>
       </div>
     )
   }
 
-  renderUnauthorizedPage() {
+  renderUnauthorizedPage(profile: GoogleUserProfile) {
     return (
       <div className="App">
         <BrowserRouter>
-          {this.appBar}
+          {this.appBar(profile)}
           <Switch>
             <Route
               exact path={Path.Root}
@@ -239,28 +263,28 @@ export default class App extends React.Component<Props, State> {
               render={() => <Fretboard />} />
             <Route
               exact path={Path.Timeline}
-              render={() => <Timeline />} />
+              render={() => <Timeline currentUserProfile={profile}/>} />
           </Switch>
         </BrowserRouter>
       </div>
     )
   }
 
-  renderCoreContent(idToken: string) {
+  renderCoreContent(profile: GoogleUserProfile) {
     return (
       <div className="App">
         <BrowserRouter>
-          {this.appBar}
+          {this.appBar(profile)}
           <Switch>
             <Route
               exact path={Path.Root}
-              render={() => <PracticeLog IDToken={idToken} />} />
+              render={() => <PracticeLog currentUserProfile={profile}/>} />
             <Route
               exact path={Path.Fretboard}
               render={() => <Fretboard />} />
             <Route
               path={Path.Timeline + "/:profileID"}
-              render={() => <Timeline />} />
+              render={() => <Timeline currentUserProfile={profile}/>} />
           </Switch>
         </BrowserRouter>
       </div>
@@ -268,18 +292,19 @@ export default class App extends React.Component<Props, State> {
   }
 
   render() {
+    // During development, authentication is disabled.
     if (process.env.NODE_ENV !== 'production') {
-      return this.renderCoreContent('development-dummy-token')
+      return this.renderCoreContent(Developer)
     }
 
-    if (this.state.userProfile !== null) {
-      if (this.state.userProfile.email === "calvin.j.feng@gmail.com") {
-        return this.renderCoreContent(this.state.userProfile.id_token)
+    if (this.state.currentUserProfile !== null) {
+      if (this.state.currentUserProfile.email === "calvin.j.feng@gmail.com") {
+        return this.renderCoreContent(this.state.currentUserProfile)
       }
-      return this.renderUnauthorizedPage()
+      return this.renderUnauthorizedPage(this.state.currentUserProfile)
     }
 
-    return this.renderLandingPage()
+    return this.renderLandingPage(Guest)
   }
 }
 

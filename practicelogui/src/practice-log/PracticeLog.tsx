@@ -19,9 +19,10 @@ import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
 import Heatmap from './metrics/Heatmap'
 
 import './PracticeLog.scss'
+import { GoogleUserProfile } from '../root/types';
 
 type Props = {
-  IDToken: string
+  currentUserProfile: GoogleUserProfile
 }
 
 type DataStore = {
@@ -78,7 +79,7 @@ export default class PracticeLog extends React.Component<Props, State> {
       baseURL: process.env.REACT_APP_API_URL,
       timeout: 1000,
       headers: {
-        "Authorization": props.IDToken
+        "Authorization": props.currentUserProfile.id_token
       }
     });
     this.pageAnchor = null

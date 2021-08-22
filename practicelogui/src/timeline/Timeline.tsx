@@ -21,8 +21,11 @@ import { ProgressVideoElement } from './ProgressVideoElement'
 import { PracticeVideoElement } from './PracticeVideoElement'
 import { resolve } from 'url';
 import { SummaryCreator } from './SummaryCreator';
+import { GoogleUserProfile } from '../root/types';
 
-type Props = {} & RouteComponentProps
+type Props = {
+  currentUserProfile: GoogleUserProfile | null
+} & RouteComponentProps
 
 type State = {
   videoGroups: VideoGroupJSON[],
@@ -170,19 +173,19 @@ class Timeline extends React.Component<Props, State> {
               A documentary of my learning progress from a beginner to an intermediate player
             </Typography>
             <Typography variant="body2" paragraph={true}>
-              To be fair, I wasn't a complete music beginner. I learned piano and violin in my
+              To be fair, I wasn't a complete music beginner. I played some piano and violin in my
               childhood. It was in the middle of 2019, I discovered Justin Sandercoe's online guitar
-              course. The lessons were so well structured, it motivated me to pick up guitar
-              seriously once again. And I figured, if I were to have a wedding any time soon, it is
+              course. The lessons were so well structured, it motivated me to pick up guitar as a
+              serious hobby. And I figured, if I were to have a wedding any time soon, it is
               the best time now to learn guitar and form a band with my friends so we can perform on
               weddng day!
             </Typography>
             <Typography variant="body2" paragraph={true}>
               Ever since August, 2019 I've been practicing with a rigorious schedule. I practiced
               strictly at least one hour a day. I wanted to see how far can discipline get me. I
-              decided to document my guitar playing. Every month I upload progress report
-              video and practice recordings. The idea of a progress report is to track the development
-              of my techique. I use songs as a metric to benchmark my skill level. If I am improving
+              decided to document my guitar playing. Every month I upload progress report video and
+              practice recordings. The idea of a progress report is to track the development of my
+              techiques. I use songs as a metric to benchmark my skill level. If I am improving
               over time, the songs I play will increase in fluidity, complexity and difficulty.
             </Typography>
           </CardContent>
