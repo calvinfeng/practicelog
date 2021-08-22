@@ -19,12 +19,11 @@ import { SummaryJSON, VideoGroupJSON, VideoLogEntryJSON } from './types'
 import './Timeline.scss'
 import { ProgressVideoElement } from './ProgressVideoElement'
 import { PracticeVideoElement } from './PracticeVideoElement'
-import { resolve } from 'url';
 import { SummaryCreator } from './SummaryCreator';
-import { GoogleUserProfile } from '../root/types';
+import { Developer, GoogleUserProfile } from '../root/types';
 
 type Props = {
-  currentUserProfile: GoogleUserProfile | null
+  currentUserProfile: GoogleUserProfile
 } & RouteComponentProps
 
 type State = {
@@ -113,9 +112,7 @@ class Timeline extends React.Component<Props, State> {
   }
 
   get timelineContent() {
-    const elements: JSX.Element[] = [
-      <SummaryCreator />
-    ]
+    const elements: JSX.Element[] = []
 
     this.state.videoGroups.forEach((group: VideoGroupJSON) => {
       // Find a progress recording that is after 15th of each month
@@ -136,7 +133,10 @@ class Timeline extends React.Component<Props, State> {
         }
       }
 
+      // TODO: Switch to V2 eventually, use profile ID to judge whether user has edit rights.
       elements.push(<PracticeVideoElement
+        hasPermissionToEdit={this.props.currentUserProfile.email == "calvin.j.feng@gmail.com" ||
+          this.props.currentUserProfile.user_id == Developer.user_id}
         createSummary={this.createSummary}
         updateSummary={this.updateSummary}
         year={group.year}

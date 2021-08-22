@@ -15,34 +15,12 @@ import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem, Avatar } from 
 import { MenuRounded } from '@material-ui/icons';
 
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
-import { GoogleUserProfile, GoogleError, AuthValidationResponse } from './types'
+import { GoogleUserProfile, GoogleError, AuthValidationResponse, Developer, Guest } from './types'
 import PracticeLog from '../practice-log/PracticeLog'
 import Unauthorized from './Unauthorized'
 import Fretboard from '../fretboard/Fretboard'
 import Timeline from '../timeline/Timeline'
 import './App.scss'
-
-const Developer: GoogleUserProfile = {
-  id_token: "1234",
-  access_token: "1234",
-  user_id: "developer",
-  email: "developer@practicelog.com",
-  full_name: "Developer",
-  first_name: "Developer",
-  last_name: "",
-  avatar_url: "https://gravatar.com/avatar/ca5b06deee5db1797c406ca0a1bc5535?s=400&d=robohash&r=x"
-}
-
-const Guest: GoogleUserProfile = {
-  id_token: "1234",
-  access_token: "1234",
-  user_id: "guest",
-  email: "developer@practicelog.com",
-  full_name: "Guest",
-  first_name: "Guest",
-  last_name: "",
-  avatar_url: "https://gravatar.com/avatar/ca5b06deee5db1797c406ca0a1bc5535?s=400&d=robohash&r=x"
-}
 
 /**
  * Google Authentication

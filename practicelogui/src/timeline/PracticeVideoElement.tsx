@@ -26,6 +26,7 @@ type Props = {
   month: number
   videos: VideoLogEntryJSON[]
   summary: SummaryJSON | null
+  hasPermissionToEdit: boolean
   updateSummary: (SummaryJSON) => Promise<any>
   createSummary: (SummaryJSON) => Promise<any>
 }
@@ -92,7 +93,7 @@ export function PracticeVideoElement(props: Props) {
   if (props.summary !== null) {
     summaryContainer = (
       <div className="summary-container">
-        <div className="text" onClick={() => setEditMode(true)}>
+        <div className="text" style={{"cursor": "pointer"}} onClick={() => setEditMode(true)}>
           <Typography variant="h6">{props.summary.title}</Typography>
           <Typography variant="subtitle1">{props.summary.subtitle}</Typography>
           <Typography variant="body2">{props.summary.body}</Typography>
@@ -115,10 +116,10 @@ export function PracticeVideoElement(props: Props) {
               onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setBody(ev.target.value)} />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog} color="primary">
+            <Button disabled={!props.hasPermissionToEdit} onClick={handleCloseDialog} color="primary">
               Cancel
             </Button>
-            <Button onClick={handleUpdateSummary} color="primary">
+            <Button disabled={!props.hasPermissionToEdit} onClick={handleUpdateSummary} color="primary">
               Confirm
             </Button>
           </DialogActions>
@@ -126,37 +127,47 @@ export function PracticeVideoElement(props: Props) {
       </div>
     )
   } else {
-    summaryContainer = (
-      <div className="summary-container">
-        <Button onClick={() => setEditMode(true)}>Add a Summary</Button>
-        <Dialog open={isEditMode} onClose={handleCloseDialog}>
-          <DialogTitle id="form-dialog-title">Add a Summary</DialogTitle>
-          <DialogContent>
-            <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
-              label="Title"
-              value={title}
-              onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setTitle(ev.target.value)} />
-            <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
-              label="Subtitle"
-              value={subtitle}
-              onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setSubtitle(ev.target.value)} />
-            <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
-              label="Body"
-              value={body}
-              multiline
-              onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setBody(ev.target.value)} />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={handleCreateSummary} color="primary">
-              Confirm
-            </Button>
-          </DialogActions>
-          </Dialog>
-      </div>
-    )
+    if (props.hasPermissionToEdit) {
+      summaryContainer = (
+        <div className="summary-container">
+          <Button onClick={() => setEditMode(true)}>Add a Summary</Button>
+          <Dialog open={isEditMode} onClose={handleCloseDialog}>
+            <DialogTitle id="form-dialog-title">Add a Summary</DialogTitle>
+            <DialogContent>
+              <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
+                label="Title"
+                value={title}
+                onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setTitle(ev.target.value)} />
+              <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
+                label="Subtitle"
+                value={subtitle}
+                onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setSubtitle(ev.target.value)} />
+              <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
+                label="Body"
+                value={body}
+                multiline
+                onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setBody(ev.target.value)} />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDialog} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleCreateSummary} color="primary">
+                Confirm
+              </Button>
+            </DialogActions>
+            </Dialog>
+        </div>
+      )
+    } else {
+      summaryContainer = (
+        <div></div>
+      )
+    }
+  }
+
+  if (props.videos.length === 0 && props.summary === null && !props.hasPermissionToEdit) {
+    return <div></div>
   }
 
   return (
