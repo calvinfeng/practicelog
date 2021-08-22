@@ -11,11 +11,11 @@ import {
   useLocation,
   useHistory
 } from "react-router-dom"
-import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem } from '@material-ui/core';
+import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem, Avatar } from '@material-ui/core';
 import { MenuRounded } from '@material-ui/icons';
 
-import axios, { AxiosResponse }  from 'axios'
-import { GoogleUserProfile, GoogleError, AuthValidationResponse } from './types'
+import axios, { AxiosInstance, AxiosResponse }  from 'axios'
+import { GoogleUserProfile, GoogleError, AuthValidationResponse, Developer, Guest } from './types'
 import PracticeLog from '../practice-log/PracticeLog'
 import Unauthorized from './Unauthorized'
 import Fretboard from '../fretboard/Fretboard'
@@ -29,7 +29,7 @@ import './App.scss'
 
 type Props = {}
 type State = {
-  userProfile: GoogleUserProfile | null
+  currentUserProfile: GoogleUserProfile | null
   anchorEl: HTMLElement | null
   menuOpen: boolean
 }
@@ -41,56 +41,71 @@ enum Path {
 }
 
 export default class App extends React.Component<Props, State> {
+  private http: AxiosInstance
+
   constructor(props: Props) {
     super(props)
+    this.http = axios.create({ baseURL: process.env.REACT_APP_API_URL })
     this.state = {
-      userProfile: null,
+      currentUserProfile: null,
       anchorEl: null,
       menuOpen: false
-    };
+    }
+  }
+
+  validateToken = (IDToken: string, AccessToken: string): Promise<any> => {
+    this.http = axios.create({
+      baseURL: process.env.REACT_APP_API_URL,
+      timeout: 1000,
+      headers: {
+        "Authorization": IDToken
+      }
+    });
+    return this.http.post('/api/v1/token/validate', { "access_token": AccessToken })
+      .then((resp: AxiosResponse) => {
+        if (resp.status === 200) {
+          const info = resp.data as AuthValidationResponse
+          this.setState({
+            currentUserProfile: {
+              id_token: IDToken,
+              access_token: AccessToken,
+              user_id: info.id,
+              email: info.email,
+              full_name: info.name,
+              first_name: info.given_name,
+              last_name: info.family_name,
+              avatar_url: info.picture
+            }
+          })
+          console.log('token expires in', info.expires_in)
+          setTimeout(this.clearStorageAndLogout, info.expires_in * 1000)
+        }
+      })
+      .catch((reason: any) => {
+        console.log('ID token in local storage is invalid', reason)
+        this.clearStorageAndLogout()
+      })
+  }
+
+  // TODO: Make use of this function
+  // TODO: What to do if video log fails to fetch? Create one for user!
+  fetchVideoLogProfile = (): Promise<any> => {
+    return this.http.get('/api/v2/videolog/profiles/mine').
+      then((resp: AxiosResponse) => {
+        console.log(resp)
+      })
   }
 
   componentDidMount() {
     const IDToken = localStorage.getItem('google_id_token')
     const AccessToken = localStorage.getItem('google_access_token')
     if (IDToken !== null && AccessToken !== null) {
-      const http = axios.create({
-        baseURL: process.env.REACT_APP_API_URL,
-        timeout: 1000,
-        headers: {
-          "Authorization": IDToken
-        }
-      });
-
-      http.post('/api/v1/token/validate', { "access_token": AccessToken })
-        .then((resp: AxiosResponse) => {
-          if (resp.status === 200) {
-            const info = resp.data as AuthValidationResponse
-            this.setState({
-              userProfile: {
-                id_token: IDToken,
-                access_token: AccessToken,
-                user_id: info.id,
-                email: info.email,
-                full_name: info.name,
-                first_name: info.given_name,
-                last_name: info.family_name,
-                avatar_url: info.picture
-              }
-            })
-            console.log('token expires in', info.expires_in)
-            setTimeout(this.clearStorageAndLogout, info.expires_in * 1000)
-          }
-        })
-        .catch((reason: any) => {
-          console.log('ID token in local storage is invalid', reason)
-          this.clearStorageAndLogout()
-        })
+      this.validateToken(IDToken, AccessToken)
     }
   }
 
   clearStorageAndLogout = () => {
-    this.setState({ userProfile: null })
+    this.setState({ currentUserProfile: null })
     localStorage.clear()
   }
 
@@ -102,7 +117,7 @@ export default class App extends React.Component<Props, State> {
       console.log('user has scopes', resp.getGrantedScopes())
 
       this.setState({
-        userProfile: {
+        currentUserProfile: {
           id_token: resp.tokenId,
           access_token: resp.accessToken,
           user_id: resp.getBasicProfile().getId(),
@@ -138,7 +153,7 @@ export default class App extends React.Component<Props, State> {
     })
   }
 
-  get appBar() {
+  appBar(profile: GoogleUserProfile) {
     return (
       <AppBar position="static" color="default" className="app-bar">
         <section className="left-container">
@@ -160,6 +175,8 @@ export default class App extends React.Component<Props, State> {
           </Toolbar>
         </section>
         <section className="right-container">
+          <Avatar className="avatar" alt={profile.full_name} src={profile.avatar_url}/>
+          <Typography className="display-name" variant="body1">Hi, {profile.full_name}</Typography>
         </section>
       </AppBar>
     )
@@ -183,17 +200,17 @@ export default class App extends React.Component<Props, State> {
     return (
       <div className="App">
         <Unauthorized
-          userProfile={this.state.userProfile as GoogleUserProfile}
+          userProfile={this.state.currentUserProfile as GoogleUserProfile}
           clearStorageAndLogout={this.clearStorageAndLogout} />
       </div>
     )
   }
 
-  renderLandingPage() {
+  renderLandingPage(profile: GoogleUserProfile) {
     return (
       <div className="App">
         <BrowserRouter>
-          {this.appBar}
+          {this.appBar(profile)}
           <Switch>
             <Route
               exact path={Path.Root}
@@ -203,18 +220,18 @@ export default class App extends React.Component<Props, State> {
               render={() => <Fretboard />} />
             <Route
               path={Path.Timeline}
-              render={() => <Timeline />} />
+              render={() => <Timeline currentUserProfile={profile} />} />
           </Switch>
         </BrowserRouter>
       </div>
     )
   }
 
-  renderUnauthorizedPage() {
+  renderUnauthorizedPage(profile: GoogleUserProfile) {
     return (
       <div className="App">
         <BrowserRouter>
-          {this.appBar}
+          {this.appBar(profile)}
           <Switch>
             <Route
               exact path={Path.Root}
@@ -224,28 +241,28 @@ export default class App extends React.Component<Props, State> {
               render={() => <Fretboard />} />
             <Route
               exact path={Path.Timeline}
-              render={() => <Timeline />} />
+              render={() => <Timeline currentUserProfile={profile}/>} />
           </Switch>
         </BrowserRouter>
       </div>
     )
   }
 
-  renderCoreContent(idToken: string) {
+  renderCoreContent(profile: GoogleUserProfile) {
     return (
       <div className="App">
         <BrowserRouter>
-          {this.appBar}
+          {this.appBar(profile)}
           <Switch>
             <Route
               exact path={Path.Root}
-              render={() => <PracticeLog IDToken={idToken} />} />
+              render={() => <PracticeLog currentUserProfile={profile}/>} />
             <Route
               exact path={Path.Fretboard}
               render={() => <Fretboard />} />
             <Route
               path={Path.Timeline + "/:profileID"}
-              render={() => <Timeline />} />
+              render={() => <Timeline currentUserProfile={profile}/>} />
           </Switch>
         </BrowserRouter>
       </div>
@@ -253,18 +270,19 @@ export default class App extends React.Component<Props, State> {
   }
 
   render() {
+    // During development, authentication is disabled.
     if (process.env.NODE_ENV !== 'production') {
-      return this.renderCoreContent('development-dummy-token')
+      return this.renderCoreContent(Developer)
     }
 
-    if (this.state.userProfile !== null) {
-      if (this.state.userProfile.email === "calvin.j.feng@gmail.com") {
-        return this.renderCoreContent(this.state.userProfile.id_token)
+    if (this.state.currentUserProfile !== null) {
+      if (this.state.currentUserProfile.email === "calvin.j.feng@gmail.com") {
+        return this.renderCoreContent(this.state.currentUserProfile)
       }
-      return this.renderUnauthorizedPage()
+      return this.renderUnauthorizedPage(this.state.currentUserProfile)
     }
 
-    return this.renderLandingPage()
+    return this.renderLandingPage(Guest)
   }
 }
 

@@ -55,8 +55,8 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	}
 
 	logrus.Infof("connected to database on %s", addr)
-	logapi := practicelogapi.New(practicelogstore.New(pg))
-	videoapi := videologapi.New(
+	logAPI := practicelogapi.New(practicelogstore.New(pg))
+	videologAPI := videologapi.New(
 		videologstore.New(pg),
 		practicelogstore.New(pg),
 		youtubeapi.New(youtubeapi.Config{
@@ -64,6 +64,7 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 		}),
 		viper.GetBool("authentication.enabled"),
 	)
+
 	oauthSrv, err := oauth2.NewService(context.Background(), option.WithHTTPClient(http.DefaultClient))
 	if err != nil {
 		return err
@@ -79,37 +80,41 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	apiV1.POST("/token/validate", auth.TokenValidationHandler)
 
 	// Labels
-	apiV1.GET("/log/labels", logapi.ListPracticeLogLabels)
-	apiV1.POST("/log/labels", logapi.CreatePracticeLogLabel)
-	apiV1.PUT("/log/labels/:label_id", logapi.UpdatePracticeLogLabel)
-	apiV1.DELETE("/log/labels/:label_id", logapi.DeletePracticeLogLabel)
+	apiV1.GET("/log/labels", logAPI.ListPracticeLogLabels)
+	apiV1.POST("/log/labels", logAPI.CreatePracticeLogLabel)
+	apiV1.PUT("/log/labels/:label_id", logAPI.UpdatePracticeLogLabel)
+	apiV1.DELETE("/log/labels/:label_id", logAPI.DeletePracticeLogLabel)
 
 	// Entries
-	apiV1.GET("/log/entries", logapi.ListPracticeLogEntries)
-	apiV1.POST("/log/entries", logapi.CreatePracticeLogEntry)
-	apiV1.PUT("/log/entries/:entry_id", logapi.UpdatePracticeLogEntry)
-	apiV1.DELETE("/log/entries/:entry_id", logapi.DeletePracticeLogEntry)
+	apiV1.GET("/log/entries", logAPI.ListPracticeLogEntries)
+	apiV1.POST("/log/entries", logAPI.CreatePracticeLogEntry)
+	apiV1.PUT("/log/entries/:entry_id", logAPI.UpdatePracticeLogEntry)
+	apiV1.DELETE("/log/entries/:entry_id", logAPI.DeletePracticeLogEntry)
 
 	// Assignments
-	apiV1.PUT("/log/entries/:entry_id/assignments", logapi.UpdatePracticeLogAssignments)
+	apiV1.PUT("/log/entries/:entry_id/assignments", logAPI.UpdatePracticeLogAssignments)
 
 	// Duration data
 	// - Fetch all labels' duration, each duration is a sum of log entries that share a common label association.
-	apiV1.GET("/log/labels/duration", logapi.ListLogLabelDurations)
+	apiV1.GET("/log/labels/duration", logAPI.ListLogLabelDurations)
 	// - Fetch the total sum of all durations, i.e. total hours of practice
-	apiV1.GET("/log/entries/duration", logapi.GetLogEntryDurationSum)
+	apiV1.GET("/log/entries/duration", logAPI.GetLogEntryDurationSum)
 	// - Fetch a time series of practice duration with accumulation. This is ideal for graph.
-	apiV1.GET("/log/entries/duration/accum-time-series", logapi.GetLogEntryDurationCumulativeSumTimeSeries)
+	apiV1.GET("/log/entries/duration/accum-time-series", logAPI.GetLogEntryDurationCumulativeSumTimeSeries)
 	// - Fetch a time series of practice duration group by some time interval. This is ideal for heat map.
-	apiV1.GET("/log/entries/duration/time-series", logapi.GetLogEntryDurationTimeSeries)
+	apiV1.GET("/log/entries/duration/time-series", logAPI.GetLogEntryDurationTimeSeries)
 
 	/* Public
 	============================================================================
 	Deprecate the following API near future.
 	*/
 	publicAPI := e.Group("/public/api/v1")
-	publicAPI.GET("/videolog/entries", videoapi.ListVideoLogEntries)
-	publicAPI.GET("/videolog/summaries", videoapi.ListProgressSummaries)
+	publicAPI.GET("/videolog/entries", videologAPI.V1().ListVideoLogEntries)
+	publicAPI.GET("/videolog/summaries", videologAPI.V1().ListProgressSummaries)
+
+	// Summaries
+	apiV1.POST("/videolog/summaries", videologAPI.V1().UpsertProgressSummary)
+	apiV1.PUT("/videolog/summaries/:summary_id", videologAPI.V1().UpsertProgressSummary)
 
 	/* V2
 	============================================================================
@@ -122,15 +127,15 @@ func serveRunE(_ *cobra.Command, _ []string) error {
 	apiV2 := e.Group("/api/v2")
 	apiV2.Use(auth.NewGoogleIDTokenValidateMiddleware(oauthSrv, viper.GetBool("authentication.enabled")))
 
-	apiV2.GET("/videolog/profiles/mine", videoapi.GetMyVideoLogProfile)
-	apiV2.POST("/videolog/profiles/mine", videoapi.UpsertMyVideoLogProfile)
+	apiV2.GET("/videolog/profiles/mine", videologAPI.V2().GetMyVideoLogProfile)
+	apiV2.POST("/videolog/profiles/mine", videologAPI.V2().UpsertMyVideoLogProfile)
 
 	// Query params are ?profile=string in order to view a specific profile.
-	apiV2.GET("/videolog/entries", videoapi.ListVideoLogEntriesByProfileID)
-	apiV2.POST("/videolog/entries/reload", videoapi.LoadFromYouTubePlaylist)
+	apiV2.GET("/videolog/entries", videologAPI.V2().ListVideoLogEntries)
+	apiV2.POST("/videolog/entries/reload", videologAPI.V2().LoadFromYouTubePlaylist)
 
-	apiV2.GET("/videolog/summaries", videoapi.ListProgressSummariesByProfileID)
-	apiV2.POST("/videolog/summaries", videoapi.UpsertProgressSummary)
+	apiV2.GET("/videolog/summaries", videologAPI.V2().ListProgressSummaries)
+	apiV2.POST("/videolog/summaries", videologAPI.V2().UpsertProgressSummary)
 
 	logrus.Infof("http server is listening on %s", viper.GetString("http.port"))
 	return e.Start(fmt.Sprintf(":%s", viper.GetString("http.port")))

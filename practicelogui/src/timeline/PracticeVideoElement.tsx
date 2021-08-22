@@ -4,34 +4,171 @@ import {
   Paper,
   ButtonBase,
   Tooltip,
-  Typography
+  Typography,
+  Button,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@material-ui/core'
-import { VerticalTimelineElement }  from 'react-vertical-timeline-component'
-import MusicNoteIcon from '@material-ui/icons/MusicNote'
 import ReactPlayer from 'react-player'
-
+import MusicNoteIcon from '@material-ui/icons/MusicNote'
+import { VerticalTimelineElement }  from 'react-vertical-timeline-component'
 import { contentStyle, contentArrowStyle, iconStyle } from './styles'
 import { MonthNames, SummaryJSON, ThumbnailJSON, VideoLogEntryJSON, VideoOrientation } from './types'
 
 import './PracticeVideoElement.scss'
+import { nilUUID } from '../practice-log/types'
 
 type Props = {
   year: number
   month: number
   videos: VideoLogEntryJSON[]
-  summary: SummaryJSON
+  summary: SummaryJSON | null
+  hasPermissionToEdit: boolean
+  updateSummary: (SummaryJSON) => Promise<any>
+  createSummary: (SummaryJSON) => Promise<any>
 }
+
 
 export function PracticeVideoElement(props: Props) {
   const dateString = `${MonthNames[props.month-1]}, ${props.year}`
 
-  const textContainer = (
-    <div className="text-container">
-      <Typography variant="h6">{props.summary.title}</Typography>
-      <Typography variant="subtitle1">{props.summary.subtitle}</Typography>
-      <Typography variant="body2">{props.summary.body}</Typography>
-    </div>
-  )
+  const [isEditMode, setEditMode] = React.useState<boolean>(false)
+  const [title, setTitle] = React.useState<string>("")
+  const [subtitle, setSubtitle] = React.useState<string>("")
+  const [body, setBody] = React.useState<string>("")
+
+  // useEffect accepts 2 arguments. The first argument is a callback that is going to be called.
+  // The second argument is the dependency, which when changed, it will trigger the callback.
+  React.useEffect(() => {
+    if (props.summary !== null) {
+      setTitle(props.summary.title)
+      setSubtitle(props.summary.subtitle)
+      setBody(props.summary.body)
+    }
+  }, [props.summary])
+
+  const handleCloseDialog = () => {
+    setEditMode(false)
+    if (props.summary !== null) {
+      setTitle(props.summary.title)
+      setSubtitle(props.summary.subtitle)
+      setBody(props.summary.body)
+    }
+  }
+
+  const handleUpdateSummary = () => {
+    if (props.summary !== null) {
+      const newSummary: SummaryJSON = {
+        id: props.summary.id,
+        username: props.summary.username,
+        year: props.year,
+        month: props.month,
+        title: title,
+        subtitle: subtitle,
+        body: body
+      }
+      props.updateSummary(newSummary)
+    }
+    setEditMode(false)
+  }
+
+  const handleCreateSummary = () => {
+    const newSummary: SummaryJSON = {
+      id: nilUUID,
+      username: "",
+      year: props.year,
+      month: props.month,
+      title: title,
+      subtitle: subtitle,
+      body: body
+    }
+    props.createSummary(newSummary)
+    setEditMode(false)
+  }
+
+  let summaryContainer;
+  if (props.summary !== null) {
+    summaryContainer = (
+      <div className="summary-container">
+        <div className="text" style={{"cursor": "pointer"}} onClick={() => setEditMode(true)}>
+          <Typography variant="h6">{props.summary.title}</Typography>
+          <Typography variant="subtitle1">{props.summary.subtitle}</Typography>
+          <Typography variant="body2">{props.summary.body}</Typography>
+        </div>
+        <Dialog open={isEditMode} onClose={handleCloseDialog}>
+          <DialogTitle id="form-dialog-title">Edit Summary {props.summary.id}</DialogTitle>
+          <DialogContent>
+            <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
+              label="Title"
+              value={title}
+              onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setTitle(ev.target.value)} />
+            <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
+              label="Subtitle"
+              value={subtitle}
+              onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setSubtitle(ev.target.value)} />
+            <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
+              label="Body"
+              value={body}
+              multiline
+              onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setBody(ev.target.value)} />
+          </DialogContent>
+          <DialogActions>
+            <Button disabled={!props.hasPermissionToEdit} onClick={handleCloseDialog} color="primary">
+              Cancel
+            </Button>
+            <Button disabled={!props.hasPermissionToEdit} onClick={handleUpdateSummary} color="primary">
+              Confirm
+            </Button>
+          </DialogActions>
+          </Dialog>
+      </div>
+    )
+  } else {
+    if (props.hasPermissionToEdit) {
+      summaryContainer = (
+        <div className="summary-container">
+          <Button onClick={() => setEditMode(true)}>Add a Summary</Button>
+          <Dialog open={isEditMode} onClose={handleCloseDialog}>
+            <DialogTitle id="form-dialog-title">Add a Summary</DialogTitle>
+            <DialogContent>
+              <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
+                label="Title"
+                value={title}
+                onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setTitle(ev.target.value)} />
+              <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
+                label="Subtitle"
+                value={subtitle}
+                onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setSubtitle(ev.target.value)} />
+              <TextField autoFocus fullWidth style={{"marginBottom": "0.5rem"}}
+                label="Body"
+                value={body}
+                multiline
+                onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setBody(ev.target.value)} />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDialog} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleCreateSummary} color="primary">
+                Confirm
+              </Button>
+            </DialogActions>
+            </Dialog>
+        </div>
+      )
+    } else {
+      summaryContainer = (
+        <div></div>
+      )
+    }
+  }
+
+  if (props.videos.length === 0 && props.summary === null && !props.hasPermissionToEdit) {
+    return <div></div>
+  }
 
   return (
     <VerticalTimelineElement
@@ -48,7 +185,7 @@ export function PracticeVideoElement(props: Props) {
             return <VideoPopover video={video} />
           })}
         </div>
-        {textContainer}
+        {summaryContainer}
       </div>
     </VerticalTimelineElement>
   )
@@ -83,11 +220,6 @@ function VideoPopover(props: VideoPopoverProps) {
     className = 'paper landscape-mode'
   }
 
-  // const oldButton = (
-  //   <Button variant="contained" color="primary" onClick={handleClick}>
-  //     {props.video.title}
-  //   </Button >
-  // )
 
   let thumbnailURL = `https://img.youtube.com/vi/${props.video.id}/1.jpg`
 

@@ -29,7 +29,7 @@ export enum VideoOrientation {
 }
 
 export type SummaryJSON = {
-  id: number
+  id: string
   username: string
   year: number
   month: number

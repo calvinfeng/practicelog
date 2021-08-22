@@ -19,8 +19,12 @@ import { SummaryJSON, VideoGroupJSON, VideoLogEntryJSON } from './types'
 import './Timeline.scss'
 import { ProgressVideoElement } from './ProgressVideoElement'
 import { PracticeVideoElement } from './PracticeVideoElement'
+import { SummaryCreator } from './SummaryCreator';
+import { Developer, GoogleUserProfile } from '../root/types';
 
-type Props = {} & RouteComponentProps
+type Props = {
+  currentUserProfile: GoogleUserProfile
+} & RouteComponentProps
 
 type State = {
   videoGroups: VideoGroupJSON[],
@@ -36,7 +40,7 @@ class Timeline extends React.Component<Props, State> {
       baseURL: process.env.REACT_APP_API_URL,
       timeout: 1000,
       headers: {
-        "Authorization": "Anything, this is placeholder"
+        "Authorization": "Anything, this is placeholder" // TODO This needs to be enabled.
       }
     })
     this.state = {
@@ -54,8 +58,8 @@ class Timeline extends React.Component<Props, State> {
   /**
    * Action to request videos
    */
-  fetchVideoLogEntries() {
-    this.http.get('/public/api/v1/videolog/entries')
+  async fetchVideoLogEntries(): Promise<any> {
+    return this.http.get('/public/api/v1/videolog/entries')
       .then((resp: AxiosResponse) => {
         this.setState({
           videoGroups: resp.data as VideoGroupJSON[]
@@ -69,8 +73,8 @@ class Timeline extends React.Component<Props, State> {
   /**
    * Action to request summaries
    */
-  fetchSummaries() {
-    this.http.get('/public/api/v1/videolog/summaries')
+  async fetchSummaries(): Promise<any> {
+    return this.http.get('/public/api/v1/videolog/summaries')
       .then((resp: AxiosResponse) => {
         this.setState({
           summaries: resp.data as SummaryJSON[]
@@ -81,13 +85,37 @@ class Timeline extends React.Component<Props, State> {
       })
   }
 
-  get timelineContent() {
-    if (this.state.videoGroups.length === 0) {
-      return <div></div>
-    }
+  /**
+   * Action to update summary. This will be passed to sub-components.
+   */
+  updateSummary = (summary: SummaryJSON):Promise<any> => {
+    return this.http.put(`api/v1/videolog/summaries/${summary.id}`, summary)
+      .then((resp: AxiosResponse) => {
+        this.fetchSummaries()
+      })
+      .catch((reason: any) => {
+        console.log(reason)
+      })
+  }
 
+  /**
+   * Action to create summary. This will be passed to sub-components.
+   */
+  createSummary = (summary: SummaryJSON): Promise<any> => {
+    return this.http.post(`api/v1/videolog/summaries`, summary)
+      .then((resp: AxiosResponse) => {
+        this.fetchSummaries()
+      })
+      .catch((reason: any) => {
+        console.log(reason)
+      })
+  }
+
+  get timelineContent() {
     const elements: JSX.Element[] = []
+
     this.state.videoGroups.forEach((group: VideoGroupJSON) => {
+      // Find a progress recording that is after 15th of each month
       group.progress_recordings.filter((video: VideoLogEntryJSON) => {
         const date = new Date(video.published)
         return date.getDay() > 15
@@ -95,23 +123,28 @@ class Timeline extends React.Component<Props, State> {
         elements.push(<ProgressVideoElement video={video} />)
       })
 
-      // If this is a performance issue, use map
+      // WARNING: If this is a performance issue, use map
       // This is a linear search for summary. Given that there are at most 12 summary per year, this
       // number is pretty small.
-      let summary: SummaryJSON | undefined
+      let summary: SummaryJSON | null = null
       for (let i = 0; i < this.state.summaries.length; i++) {
         if (group.year === this.state.summaries[i].year && group.month === this.state.summaries[i].month) {
           summary = this.state.summaries[i]
         }
       }
 
-      if (summary !== undefined) {
-        elements.push(<PracticeVideoElement
-          year={group.year} month={group.month}
-          summary={summary}
-          videos={group.practice_recordings} />)
-      }
+      // TODO: Switch to V2 eventually, use profile ID to judge whether user has edit rights.
+      elements.push(<PracticeVideoElement
+        hasPermissionToEdit={this.props.currentUserProfile.email == "calvin.j.feng@gmail.com" ||
+          this.props.currentUserProfile.user_id == Developer.user_id}
+        createSummary={this.createSummary}
+        updateSummary={this.updateSummary}
+        year={group.year}
+        month={group.month}
+        summary={summary}
+        videos={group.practice_recordings} />)
 
+      // Find a progress recording that is before 15th of each month.
       group.progress_recordings.filter((video: VideoLogEntryJSON) => {
         const date = new Date(video.published)
         return date.getDay() <= 15
@@ -140,19 +173,19 @@ class Timeline extends React.Component<Props, State> {
               A documentary of my learning progress from a beginner to an intermediate player
             </Typography>
             <Typography variant="body2" paragraph={true}>
-              To be fair, I wasn't a complete music beginner. I learned piano and violin in my
+              To be fair, I wasn't a complete music beginner. I played some piano and violin in my
               childhood. It was in the middle of 2019, I discovered Justin Sandercoe's online guitar
-              course. The lessons were so well structured, it motivated me to pick up guitar
-              seriously once again. And I figured, if I were to have a wedding any time soon, it is
+              course. The lessons were so well structured, it motivated me to pick up guitar as a
+              serious hobby. And I figured, if I were to have a wedding any time soon, it is
               the best time now to learn guitar and form a band with my friends so we can perform on
               weddng day!
             </Typography>
             <Typography variant="body2" paragraph={true}>
               Ever since August, 2019 I've been practicing with a rigorious schedule. I practiced
               strictly at least one hour a day. I wanted to see how far can discipline get me. I
-              decided to document my guitar playing. Every month I upload progress report
-              video and practice recordings. The idea of a progress report is to track the development
-              of my techique. I use songs as a metric to benchmark my skill level. If I am improving
+              decided to document my guitar playing. Every month I upload progress report video and
+              practice recordings. The idea of a progress report is to track the development of my
+              techiques. I use songs as a metric to benchmark my skill level. If I am improving
               over time, the songs I play will increase in fluidity, complexity and difficulty.
             </Typography>
           </CardContent>

@@ -18,12 +18,20 @@
       display: flex;
       flex-direction: row;
       justify-content: flex-start;
+      align-items: center;
     }
     .right-container {
       width: 50%;
       display: flex;
       flex-direction: row;
       justify-content: flex-end;
+      align-items: center;
+      .avatar {
+        margin-right: 0.5rem;
+      }
+      .display-name {
+        margin-right: 1rem;
+      }
     }
   }
 }

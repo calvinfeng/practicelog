@@ -16,7 +16,7 @@ type progressSummaryResponse struct {
 	IsRequesterOwner bool                        `json:"is_requester_owner"`
 }
 
-func (s *server) ListProgressSummariesByProfileID(c echo.Context) error {
+func (api *apiV2) ListProgressSummaries(c echo.Context) error {
 	email, _ := auth.GetEmailFromContext(c)
 
 	profileID := c.QueryParam("profile")
@@ -25,7 +25,7 @@ func (s *server) ListProgressSummariesByProfileID(c echo.Context) error {
 			"query param ?profile= is required")
 	}
 
-	profile, err := s.videoLogStore.GetVideoLogProfileByID(profileID)
+	profile, err := api.videoLogStore.GetVideoLogProfileByID(profileID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,
 			fmt.Errorf("video log profile not found %w", err).Error())
@@ -36,7 +36,7 @@ func (s *server) ListProgressSummariesByProfileID(c echo.Context) error {
 			fmt.Sprint("profile is not public"))
 	}
 
-	summaries, err := s.videoLogStore.SelectProgressSummaries(vstore.ByUsername(email))
+	summaries, err := api.videoLogStore.SelectProgressSummaries(vstore.ByUsername(email))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrap(err, "server failed to query database").Error())
@@ -48,7 +48,7 @@ func (s *server) ListProgressSummariesByProfileID(c echo.Context) error {
 	})
 }
 
-func (s *server) UpsertProgressSummary(c echo.Context) error {
+func (api *apiV2) UpsertProgressSummary(c echo.Context) error {
 	email, _ := auth.GetEmailFromContext(c)
 
 	profileID := c.QueryParam("profile")
@@ -57,7 +57,7 @@ func (s *server) UpsertProgressSummary(c echo.Context) error {
 			"query param ?profile= is required")
 	}
 
-	profile, err := s.videoLogStore.GetVideoLogProfileByID(profileID)
+	profile, err := api.videoLogStore.GetVideoLogProfileByID(profileID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest,
 			fmt.Errorf("video log profile not found %w", err).Error())
@@ -74,7 +74,7 @@ func (s *server) UpsertProgressSummary(c echo.Context) error {
 			errors.Wrap(err, "failed to parse JSON data"))
 	}
 
-	if err := s.videoLogStore.UpsertProgressSummaries(summary); err != nil {
+	if err := api.videoLogStore.UpsertProgressSummaries(summary); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrapf(err, "failed to update %d-%d progress summary", summary.Year, summary.Month))
 	}
