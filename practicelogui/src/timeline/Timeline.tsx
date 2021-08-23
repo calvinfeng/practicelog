@@ -40,7 +40,7 @@ class Timeline extends React.Component<Props, State> {
       baseURL: process.env.REACT_APP_API_URL,
       timeout: 1000,
       headers: {
-        "Authorization": "Anything, this is placeholder" // TODO This needs to be enabled.
+        "Authorization": props.currentUserProfile.id_token
       }
     })
     this.state = {
@@ -135,8 +135,8 @@ class Timeline extends React.Component<Props, State> {
 
       // TODO: Switch to V2 eventually, use profile ID to judge whether user has edit rights.
       elements.push(<PracticeVideoElement
-        hasPermissionToEdit={this.props.currentUserProfile.email == "calvin.j.feng@gmail.com" ||
-          this.props.currentUserProfile.user_id == Developer.user_id}
+        hasPermissionToEdit={this.props.currentUserProfile.email === "calvin.j.feng@gmail.com" ||
+          this.props.currentUserProfile.user_id === Developer.user_id}
         createSummary={this.createSummary}
         updateSummary={this.updateSummary}
         year={group.year}

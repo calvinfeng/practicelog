@@ -90,8 +90,8 @@ export default class App extends React.Component<Props, State> {
   // TODO: Make use of this function
   // TODO: What to do if video log fails to fetch? Create one for user!
   fetchVideoLogProfile = (): Promise<any> => {
-    return this.http.get('/api/v2/videolog/profiles/mine').
-      then((resp: AxiosResponse) => {
+    return this.http.get('/api/v2/videolog/profiles/mine')
+      .then((resp: AxiosResponse) => {
         console.log(resp)
       })
   }

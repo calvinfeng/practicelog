@@ -10,7 +10,7 @@ export type GoogleUserProfile = {
 }
 
 export const Developer: GoogleUserProfile = {
-  id_token: "",
+  id_token: "developer-id-mock-token",
   access_token: "",
   user_id: "6920d960-3fd9-4226-9db6-2aa2cb1e4db9",
   email: "developer@practicelog.com",
@@ -21,7 +21,7 @@ export const Developer: GoogleUserProfile = {
 }
 
 export const Guest: GoogleUserProfile = {
-  id_token: "",
+  id_token: "guest-id-mock-token",
   access_token: "",
   user_id: "d9d55b10-0e38-433a-9ef4-d5995219b9cb",
   email: "guest@practicelog.com",
