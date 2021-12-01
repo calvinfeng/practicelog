@@ -1,5 +1,7 @@
 # Practice Log
 
+[![CircleCI](https://circleci.com/gh/calvinfeng/practicelog/tree/circleci-project-setup.svg?style=svg&circle-token=5791ef5903afb3e828db533a44c388edf146e410)](https://circleci.com/gh/calvinfeng/practicelog/tree/circleci-project-setup)
+
 ## Usage
 
 ```bash
