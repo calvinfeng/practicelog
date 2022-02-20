@@ -38,8 +38,10 @@ export default function Heatmap(props: Props) {
       return 'color-github-3'
     } else if (dataPoint.value >= 60) {
       return 'color-github-2'
+    } else if (dataPoint.value > 0) {
+      return 'color-github-1'
     }
-    return 'color-github-1'
+    return 'color-empty'
   }
 
   const today = new Date();

@@ -1,5 +1,4 @@
 import React from 'react'
-import { withRouter, RouteComponentProps } from "react-router";
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 
 import {
@@ -21,20 +20,25 @@ import { ProgressVideoElement } from './ProgressVideoElement'
 import { PracticeVideoElement } from './PracticeVideoElement'
 import { SummaryCreator } from './SummaryCreator';
 import { Developer, GoogleUserProfile } from '../root/types';
+import { useParams } from 'react-router-dom'
 
 type Props = {
-  currentUserProfile: GoogleUserProfile
-} & RouteComponentProps
+  currentUserProfile: GoogleUserProfile,
+}
+
+type RouteProps = {
+  pathParams: any
+}
 
 type State = {
   videoGroups: VideoGroupJSON[],
   summaries: SummaryJSON[]
 }
 
-class Timeline extends React.Component<Props, State> {
+class Timeline extends React.Component<Props & RouteProps, State> {
   private http: AxiosInstance
 
-  constructor(props: Props) {
+  constructor(props: Props & RouteProps) {
     super(props)
     this.http = axios.create({
       baseURL: process.env.REACT_APP_API_URL,
@@ -50,7 +54,7 @@ class Timeline extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    console.log('profile ID', this.props.match.params["profileID"])
+    console.log('profile ID', this.props.pathParams["profileID"])
     this.fetchVideoLogEntries()
     this.fetchSummaries()
   }
@@ -193,6 +197,12 @@ class Timeline extends React.Component<Props, State> {
         {this.timelineContent}
       </div>
     )
+  }
+}
+
+function withRouter(Component: any) {
+  return (props: Props) => {
+    return <Component {...props} pathParams={useParams()} />
   }
 }
 

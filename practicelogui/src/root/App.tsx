@@ -7,9 +7,9 @@ import {
 import {
   BrowserRouter,
   Route,
-  Switch,
+  Routes,
   useLocation,
-  useHistory
+  useNavigate
 } from "react-router-dom"
 import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem, Avatar } from '@material-ui/core';
 import { MenuRounded } from '@material-ui/icons';
@@ -211,17 +211,17 @@ export default class App extends React.Component<Props, State> {
       <div className="App">
         <BrowserRouter>
           {this.appBar(profile)}
-          <Switch>
+          <Routes>
             <Route
-              exact path={Path.Root}
-              render={() => this.googleLogin} />
+              path={Path.Root}
+              element={this.googleLogin} />
             <Route
-              exact path={Path.Fretboard}
-              render={() => <Fretboard />} />
+              path={Path.Fretboard}
+              element={<Fretboard />} />
             <Route
               path={Path.Timeline}
-              render={() => <Timeline currentUserProfile={profile} />} />
-          </Switch>
+              element={<Timeline currentUserProfile={profile} />} />
+          </Routes>
         </BrowserRouter>
       </div>
     )
@@ -232,17 +232,17 @@ export default class App extends React.Component<Props, State> {
       <div className="App">
         <BrowserRouter>
           {this.appBar(profile)}
-          <Switch>
+          <Routes>
             <Route
-              exact path={Path.Root}
-              render={() => this.googleUnauthorized} />
+              path={Path.Root}
+              element={this.googleUnauthorized} />
             <Route
-              exact path={Path.Fretboard}
-              render={() => <Fretboard />} />
+              path={Path.Fretboard}
+              element={<Fretboard />} />
             <Route
-              exact path={Path.Timeline}
-              render={() => <Timeline currentUserProfile={profile}/>} />
-          </Switch>
+              path={Path.Timeline}
+              element={<Timeline currentUserProfile={profile}/>} />
+          </Routes>
         </BrowserRouter>
       </div>
     )
@@ -253,17 +253,17 @@ export default class App extends React.Component<Props, State> {
       <div className="App">
         <BrowserRouter>
           {this.appBar(profile)}
-          <Switch>
+          <Routes>
             <Route
-              exact path={Path.Root}
-              render={() => <PracticeLog currentUserProfile={profile}/>} />
+              path={Path.Root}
+              element={<PracticeLog currentUserProfile={profile}/>} />
             <Route
-              exact path={Path.Fretboard}
-              render={() => <Fretboard />} />
+              path={Path.Fretboard}
+              element={<Fretboard />} />
             <Route
               path={Path.Timeline + "/:profileID"}
-              render={() => <Timeline currentUserProfile={profile}/>} />
-          </Switch>
+              element={<Timeline currentUserProfile={profile}/>} />
+          </Routes>
         </BrowserRouter>
       </div>
     )
@@ -287,11 +287,11 @@ export default class App extends React.Component<Props, State> {
 }
 
 function PracticeLogMenuItem() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
 
   function handleClick() {
-    history.push(Path.Root);
+    navigate(Path.Root)
   }
 
   return (
@@ -302,11 +302,11 @@ function PracticeLogMenuItem() {
 }
 
 function FretboardMenuItem() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
 
   function handleClick() {
-    history.push(Path.Fretboard);
+    navigate(Path.Fretboard)
   }
 
   return (
@@ -317,11 +317,11 @@ function FretboardMenuItem() {
 }
 
 function TimelineMenuItem() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
 
   function handleClick() {
-    history.push(Path.Timeline + "/me");
+    navigate(Path.Timeline + "/me");
   }
 
   return (
