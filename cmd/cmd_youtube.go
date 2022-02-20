@@ -29,6 +29,8 @@ func youtubeRuneE(_ *cobra.Command, args []string) error {
 		return errors.New("provide an argument to YouTube utility command [reload]")
 	}
 
+	fmt.Println(os.Environ())
+
 	var addr string
 	switch viper.GetString("environment") {
 	case "production":
@@ -43,8 +45,7 @@ func youtubeRuneE(_ *cobra.Command, args []string) error {
 	case "reload":
 		return util.ConcatErrors(
 			reloadDBWithPlaylist(addr, practiceRecordingPlaylistID, false),
-			reloadDBWithPlaylist(addr, progressRecordingPlaylistID, true),
-			reloadDBWithProgressSummary(addr))
+			reloadDBWithPlaylist(addr, progressRecordingPlaylistID, true))
 	default:
 		return fmt.Errorf("%s is not a recognized command", args[0])
 	}
@@ -78,6 +79,10 @@ func reloadDBWithProgressSummary(addr string) error {
 }
 
 func reloadDBWithPlaylist(addr string, playlistID string, isProgressRecording bool) error {
+	if os.Getenv("YOUTUBE_API_KEY") == "" {
+		return errors.New("YouTube API key is empty")
+	}
+
 	logrus.Infof("starting YouTube API service with API key %s", os.Getenv("YOUTUBE_API_KEY"))
 	srv := youtubeapi.New(youtubeapi.Config{
 		APIKey: os.Getenv("YOUTUBE_API_KEY"),
