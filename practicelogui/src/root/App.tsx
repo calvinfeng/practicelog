@@ -13,8 +13,8 @@ import {
 } from "react-router-dom"
 import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem, Avatar } from '@material-ui/core';
 import { MenuRounded } from '@material-ui/icons';
-
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
+
 import { GoogleUserProfile, GoogleError, AuthValidationResponse, Developer, Guest } from './types'
 import PracticeLog from '../practice-log/PracticeLog'
 import Unauthorized from './Unauthorized'

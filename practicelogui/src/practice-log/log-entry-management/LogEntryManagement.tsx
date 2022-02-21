@@ -5,7 +5,7 @@ import {
 import {
   LogAssignmentJSON,
   LogEntryJSON,
-  LogLabelJSON, 
+  LogLabelJSON,
   Mode } from '../types'
 
 import DateSelector from './DateSelector'
@@ -163,7 +163,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
         <AssignmentEditor
           inputAssignmentList={this.state.inputAssignmentList}
           setInputAssignmentList={this.handleSetInputAssignmentList} />
-        <Submission 
+        <Submission
           mode={this.state.mode}
           inputID={this.state.inputID}
           inputDate={this.state.inputDate}

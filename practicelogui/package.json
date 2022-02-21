@@ -8,6 +8,7 @@
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.60",
     "@material-ui/pickers": "^3.3.10",
+    "@reduxjs/toolkit": "^1.7.2",
     "@types/lodash": "^4.14.178",
     "@types/luxon": "^2.0.9",
     "@types/node": "^17.0.18",
@@ -27,6 +28,7 @@
     "react-dom": "^16.14.0",
     "react-google-login": "^5.2.2",
     "react-player": "^2.9.0",
+    "react-redux": "^7.2.6",
     "react-router-dom": "^6.2.1",
     "react-scripts": "^5.0.0",
     "react-tooltip": "^4.2.21",
@@ -58,5 +60,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "eslint-plugin-react-hooks": "^4.3.0"
   }
 }

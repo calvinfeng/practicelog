@@ -15,6 +15,7 @@ import LogTable from './LogTable'
 import AssignmentChecklistPopover from './AssignmentChecklistPopover'
 import LogEntryManagement from './log-entry-management/LogEntryManagement'
 import LogLabelManagement from './log-label-management/LogLabelManagement'
+import LogLabelManagementV2 from './log-label-management/LogLabelManagementV2'
 import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
 import Heatmap from './metrics/Heatmap'
 
@@ -579,6 +580,12 @@ export default class PracticeLog extends React.Component<Props, State> {
           handleHTTPUpdateLogEntry={this.handleHTTPUpdateLogEntry}
           handleHTTPCreateLogEntry={this.handleHTTPCreateLogEntry} />
         <LogLabelManagement
+          logLabels={this.state.logLabels}
+          logLabelDurationFetched={this.state.logLabelDurationFetched}
+          handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
+          handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
+          handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
+        <LogLabelManagementV2
           logLabels={this.state.logLabels}
           logLabelDurationFetched={this.state.logLabelDurationFetched}
           handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
