@@ -1,30 +1,67 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '.'
 
-interface CounterState {
-  value: number;
+type CounterState = {
+  value: number
+  status: string
 }
 
 const initialState: CounterState = {
   value: 0,
+  status: 'idle'
 };
+
+function fetchCount(amount: number) {
+  return new Promise((resolve) =>
+    setTimeout(() => resolve({ data: amount }), 500)
+  )
+}
 
 const counterSlice = createSlice({
   name: 'counter',
   initialState,
   reducers: {
-    incremented(state) {
-      // it's okay to do this because immer makes it immutable
-      // under the hood
+    increment(state: CounterState) {
+      console.log('increment reducer')
       state.value++;
     },
-
-    amountAdded(state, action: PayloadAction<number>) {
-      state.value += action.payload;
+    decrement: (state: CounterState) => {
+      console.log('decrement reducer')
+      state.value -= 1;
     },
-    // decrement
-    // reset
+    incrementByAmount(state: CounterState, action: PayloadAction<number>) {
+      console.log('increment by amount reducer')
+      state.value += action.payload;
+    }
   },
+  extraReducers: (builder: any) => {
+    builder
+      .addCase(incrementAsync.pending, (state: CounterState) => {
+        state.status = 'loading';
+      })
+      .addCase(incrementAsync.fulfilled, (state: CounterState, action: PayloadAction<number>) => {
+        state.status = 'idle';
+        state.value += action.payload;
+      });
+  }
 });
 
-export const { incremented, amountAdded } = counterSlice.actions;
-export default counterSlice.reducer;
+/**
+ * Export Actions
+ */
+export const { increment, decrement, incrementByAmount } = counterSlice.actions
+export const incrementAsync = createAsyncThunk('counter/fetchCount',
+  async (amount: number) => {
+    const response: any = await fetchCount(amount);
+    // The value we return becomes the `fulfilled` action payload
+    return response.data;
+  }
+)
+/**
+ * Export Reducer
+ */
+export const counterReducer = counterSlice.reducer
+
+
+export const selectCount = (state: RootState) => state.counter.value
+export const selectStatus = (state: RootState) => state.counter.status

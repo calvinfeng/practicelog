@@ -4,13 +4,16 @@ import ReactDOM from 'react-dom';
 import reportWebVitals from './reportWebVitals';
 import App from './root/App';
 import { Provider } from 'react-redux'
-import { store } from './store/store'
+import { store } from './store'
+import { Counter, CounterDisplay, LogLabelDisplay } from './store/component'
 import './index.css';
 
 ReactDOM.render(
   <Provider store={store}>
     <React.StrictMode>
-      <App />
+      <Counter />
+      <CounterDisplay />
+      <LogLabelDisplay />
     </React.StrictMode>
   </Provider>,
   document.getElementById('root')

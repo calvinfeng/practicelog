@@ -82,7 +82,7 @@ export default class PracticeLog extends React.Component<Props, State> {
       headers: {
         "Authorization": props.currentUserProfile.id_token
       }
-    });
+    })
     this.pageAnchor = null
   }
 
