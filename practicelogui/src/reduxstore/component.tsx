@@ -55,7 +55,7 @@ export function CounterDisplay() {
   )
 }
 
-export function LogLabelDisplay() {
+export function LogLabelDisplay(props) {
   const logLabels = useAppSelector(selectLogLabels)
   const isLoading = useAppSelector(selectIsLoading)
   const errorMessage = useAppSelector(selectErrorMessage)
