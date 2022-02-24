@@ -31,10 +31,13 @@ export default function PracticeLog(props: Props) {
     }
   })
 
+  const pageAnchor = React.useRef<null | HTMLDivElement>(null)
+
   // Default states
   const [logEntryState, dispatchLogEntryAction] = React.useReducer(logEntryReducer, defaultLogEntryState)
 
   React.useEffect(() => {
+    console.log('fetch log entries')
     fetchLogEntriesByPage(http, logEntryState.currPage)
       .then((action: LogEntryAction) => dispatchLogEntryAction(action))
   }, [logEntryState.currPage])
@@ -45,22 +48,40 @@ export default function PracticeLog(props: Props) {
   const handlePrevPage = () => {
     dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage - 1})
   }
+  const handleSelectLogEntry = (entry: LogEntryJSON) => {
+    dispatchLogEntryAction({ type: LogEntryActionType.Select, selectedLogEntry: entry })
+  }
+
+  const handleScrollToBottom = () => {
+    if (pageAnchor.current !== null) {
+      pageAnchor.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
 
   return (
-    <LogEntryContext.Provider value={{state: logEntryState, handleNextPage, handlePrevPage}}>
+    <LogEntryContext.Provider value={{
+      state: logEntryState, handleNextPage, handlePrevPage, handleSelectLogEntry}}>
       <Paper style={{"margin": "1rem"}}>
         <ButtonToolbar />
         <EntryList />
+        <div ref={pageAnchor} />
       </Paper>
     </LogEntryContext.Provider>
   )
 }
 
-function EntryList() {
-  const logEntryContext = React.useContext(LogEntryContext)
+function EntryList(props) {
+  const ctx = React.useContext(LogEntryContext)
 
-  const listItems = logEntryContext.state.logEntries.map((entry: LogEntryJSON) => {
-    return <ListItem key={entry.id}>{entry.date.toDateString()} {entry.message}</ListItem>
+  const listItems = ctx.state.logEntries.map((entry: LogEntryJSON) => {
+    if (ctx.state.selectedLogEntry !== null && entry.id === ctx.state.selectedLogEntry.id) {
+      return <ListItem key={entry.id}>{entry.date.toDateString()} <b>{entry.message}</b></ListItem>
+    }
+    return (
+      <ListItem key={entry.id} onClick={() => ctx.handleSelectLogEntry(entry)}>
+        {entry.date.toDateString()} {entry.message}
+      </ListItem>
+    )
   })
   return (
     <List>
