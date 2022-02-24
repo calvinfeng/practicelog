@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Typography } from '@material-ui/core';
-import { GoogleUserProfile } from './types'
+import { GoogleUserProfile } from '../types'
 import './Unauthorized.scss'
 
 type Props = {

@@ -15,11 +15,11 @@ import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem, Avatar } from 
 import { MenuRounded } from '@material-ui/icons';
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 
-import { GoogleUserProfile, GoogleError, AuthValidationResponse, Developer, Guest } from './types'
-import PracticeLog from '../practice-log/PracticeLog'
+import { GoogleUserProfile, GoogleError, AuthValidationResponse, Developer, Guest } from '../types'
 import Unauthorized from './Unauthorized'
-import Fretboard from '../fretboard/Fretboard'
-import Timeline from '../timeline/Timeline'
+import PracticeLog from '../../practice-log/PracticeLog'
+import Fretboard from '../../fretboard/Fretboard'
+import Timeline from '../../timeline/Timeline'
 import './App.scss'
 
 /**

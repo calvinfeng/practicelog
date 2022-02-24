@@ -20,7 +20,7 @@ import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
 import Heatmap from './metrics/Heatmap'
 
 import './PracticeLog.scss'
-import { GoogleUserProfile } from '../root/types';
+import { GoogleUserProfile } from '../app/types';
 
 type Props = {
   currentUserProfile: GoogleUserProfile

@@ -71,6 +71,17 @@ function TodoReducer(state: TodoState, action: TodoAction): TodoState {
   }
 }
 
+async function fetchTodo(): Promise<TodoAction> {
+  try {
+    const resp: AxiosResponse = await axios.get('https://jsonplaceholder.typicode.com/todos')
+    const todos: Todo[] = resp.data
+    return { type: 'FETCH', newTodos: todos }
+  } catch (err: unknown) {
+    const error = err as AxiosError
+    return { type: 'ERROR', newTodos: [], error: error.message}
+  }
+}
+
 export function ThemedComponent() {
   const [style, setStyle] = useState<Style>({"background": "black"})
   const [todoState, dispatch] = useReducer(TodoReducer, { todos: [] })
@@ -83,21 +94,11 @@ export function ThemedComponent() {
   */
   const defaultTheme = useMemo(() => ({style , setStyle}), [style])
 
-  const fetchHTTPJSON = async () => {
-    try {
-      const resp: AxiosResponse = await axios.get('https://jsonplaceholder.typicode.com/todos')
-      const todos: Todo[] = resp.data
-      dispatch({ type: 'FETCH', newTodos: todos })
-    } catch (err: unknown) {
-      const error = err as AxiosError
-      if (error.isAxiosError) {
-        dispatch({ type: 'ERROR', newTodos: [], error: error.message})
-      }
-    }
-  }
-
   // This is equivalent to componentDidUpdate()
-  useEffect(() => { fetchHTTPJSON() }, [style])
+  useEffect(() => {
+    console.log('fetch todos now')
+    fetchTodo().then((action: TodoAction) => dispatch(action))
+   }, [style])
 
   const listItems: JSX.Element[] = todoState.todos.map((todo: Todo) => {
     if (todoState.selectedTodoID !== null && todoState.selectedTodoID === todo.id) {

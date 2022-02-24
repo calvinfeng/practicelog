@@ -18,7 +18,7 @@ import { SummaryJSON, VideoGroupJSON, VideoLogEntryJSON } from './types'
 import './Timeline.scss'
 import { ProgressVideoElement } from './ProgressVideoElement'
 import { PracticeVideoElement } from './PracticeVideoElement'
-import { Developer, GoogleUserProfile } from '../root/types';
+import { Developer, GoogleUserProfile } from '../app/types';
 import { useParams } from 'react-router-dom'
 
 type Props = {

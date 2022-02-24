@@ -2,17 +2,18 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import reportWebVitals from './reportWebVitals';
-import App from './root/App';
+import App from './app/components/App';
 import { Provider } from 'react-redux'
 import { store } from './redux-store'
 import { Counter, CounterDisplay, LogLabelDisplay } from './redux-store/component'
 import './index.css';
 import { ThemedComponent } from './context-api/ThemedComponent';
+import PracticeLog from './practice-log-v2/components/PracticeLog';
 
 ReactDOM.render(
   <Provider store={store}>
     <React.StrictMode>
-      <ThemedComponent />
+      <PracticeLog currentUser={null} />
     </React.StrictMode>
   </Provider>,
   document.getElementById('root')
