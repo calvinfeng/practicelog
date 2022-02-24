@@ -2,7 +2,7 @@ import React from 'react'
 import { Paper, Typography } from '@material-ui/core';
 import { AreaChart, XAxis, YAxis, CartesianGrid, Area, Tooltip } from 'recharts';
 
-import { PracticeTimeSeriesDataPoint } from '../types';
+import { PracticeTimeSeriesDataPoint } from '../../types';
 import './PracticeTimeLineChart.scss'
 
 type Props = {

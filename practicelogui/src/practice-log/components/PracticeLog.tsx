@@ -10,7 +10,7 @@ import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 import { Map } from 'immutable'
 import _ from "lodash" // Import the entire lodash library
 
-import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON, PracticeTimeSeriesDataPoint } from './types'
+import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON, PracticeTimeSeriesDataPoint } from '../types'
 import LogTable from './LogTable'
 import AssignmentChecklistPopover from './AssignmentChecklistPopover'
 import LogEntryManagement from './log-entry-management/LogEntryManagement'
@@ -20,7 +20,7 @@ import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
 import Heatmap from './metrics/Heatmap'
 
 import './PracticeLog.scss'
-import { GoogleUserProfile } from '../app/types';
+import { GoogleUserProfile } from '../../app/types';
 
 type Props = {
   currentUserProfile: GoogleUserProfile

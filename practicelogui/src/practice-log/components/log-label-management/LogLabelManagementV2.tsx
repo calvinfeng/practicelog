@@ -1,7 +1,7 @@
 import { Button, Chip, Divider, Grid, Paper, TextField, Typography } from '@material-ui/core';
 import { MusicNote } from '@material-ui/icons';
 import React, { useEffect, useState } from 'react'
-import { DeleteConfirmationTarget, LogLabelJSON, nilUUID } from '../types';
+import { DeleteConfirmationTarget, LogLabelJSON, nilUUID } from '../../types';
 import DeleteConfirmation from './DeleteConfirmation';
 
 

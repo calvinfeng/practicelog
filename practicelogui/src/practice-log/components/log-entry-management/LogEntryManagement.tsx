@@ -6,7 +6,7 @@ import {
   LogAssignmentJSON,
   LogEntryJSON,
   LogLabelJSON,
-  Mode } from '../types'
+  Mode } from '../../types'
 
 import DateSelector from './DateSelector'
 import LabelSelector from './LabelSelector'

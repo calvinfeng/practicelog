@@ -12,6 +12,7 @@ import {
   LogEntryState
 } from '../globalstate/log_entries'
 import { LogEntryJSON } from '../types'
+import './PracticeLog.scss'
 
 type Props = {
   currentUser: GoogleUserProfile | null

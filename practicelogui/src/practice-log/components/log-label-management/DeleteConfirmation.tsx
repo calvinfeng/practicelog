@@ -7,7 +7,7 @@ import {
   DialogActions,
   Button
 } from '@material-ui/core'
-import { DeleteConfirmationTarget, LogLabelJSON } from '../types'
+import { DeleteConfirmationTarget, LogLabelJSON } from '../../types'
 
 type Props = {
   open: boolean

@@ -20,7 +20,7 @@ import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { DateTime } from 'luxon'
 
-import { LogLabelJSON, LogEntryJSON, LogAssignmentJSON } from './types'
+import { LogLabelJSON, LogEntryJSON, LogAssignmentJSON } from '../types'
 import './LogTable.scss'
 
 type Props = {

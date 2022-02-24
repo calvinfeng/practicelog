@@ -1,6 +1,6 @@
-import { AxiosError, AxiosInstance, AxiosResponse } from "axios";
-import { LogEntryAction, LogEntryActionType } from "../globalstate/log_entries";
-import { LogEntryJSON } from "../types";
+import { AxiosError, AxiosInstance, AxiosResponse } from "axios"
+import { LogEntryAction, LogEntryActionType } from "../globalstate/log_entries"
+import { LogEntryJSON } from "../types"
 
 export async function fetchLogEntriesByPage(http: AxiosInstance, page: number): Promise<LogEntryAction> {
   try {

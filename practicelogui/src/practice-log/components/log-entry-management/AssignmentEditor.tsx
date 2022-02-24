@@ -8,7 +8,7 @@ import {
   Grid,
   TextField} from "@material-ui/core"
 import React from "react"
-import { LogAssignmentJSON } from "../types"
+import { LogAssignmentJSON } from "../../types"
 import FormatListBulletedIcon from '@material-ui/icons/FormatListBulleted';
 import EditIcon from '@material-ui/icons/Edit'
 import DeleteIcon from '@material-ui/icons/Delete'

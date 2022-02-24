@@ -8,7 +8,7 @@ import { store } from './redux-store'
 import { Counter, CounterDisplay, LogLabelDisplay } from './redux-store/component'
 import './index.css';
 import { ThemedComponent } from './context-api/ThemedComponent';
-import PracticeLog from './practice-log-v2/components/PracticeLog';
+import PracticeLog from './practice-log/components/PracticeLogV2';
 
 ReactDOM.render(
   <Provider store={store}>
