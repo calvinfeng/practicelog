@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import React, { createContext, useContext, useEffect, useMemo, useState, useReducer } from 'react'
+import { Button, List, ListItem, ListItemButton, Paper } from '@mui/material';
 
 type Style = {
   background: string
@@ -100,12 +101,20 @@ export function ThemedComponent() {
 
   const listItems: JSX.Element[] = todoState.todos.map((todo: Todo) => {
     if (todoState.selectedTodoID !== null && todoState.selectedTodoID === todo.id) {
-      return <li key={todo.id}><b>{todo.title}</b></li>
+      return (
+        <ListItem key={todo.id}>
+          <ListItemButton>
+            <b>{todo.title}</b>
+          </ListItemButton>
+        </ListItem>
+      )
     }
     return (
-      <li key={todo.id} onClick={() => dispatch({ type: 'SELECT', newTodos: [], selectedID: todo.id})}>
-        {todo.title}
-      </li>
+      <ListItem key={todo.id}>
+        <ListItemButton onClick={() => dispatch({ type: 'SELECT', newTodos: [], selectedID: todo.id})}>
+          {todo.title}
+        </ListItemButton>
+      </ListItem>
     )
   })
 
@@ -120,9 +129,11 @@ export function ThemedComponent() {
   return (
     <ThemeContext.Provider value={defaultTheme}>
       <GrandParentComponent />
-      <ul>
-        {listItems}
-      </ul>
+      <Paper style={{"margin": "1rem"}}>
+        <List>
+          {listItems}
+        </List>
+      </Paper>
       {errorWidget}
     </ThemeContext.Provider>
   )
@@ -152,9 +163,9 @@ function SonComponent() {
   return (
     <div style={style}>
       <h3>Son</h3>
-      <button onClick={() => setStyle({ "background": "green"})}>
+      <Button variant='contained' onClick={() => setStyle({ "background": "green"})}>
         Set Background Green
-      </button>
+      </Button>
     </div>
   )
 }
@@ -164,9 +175,9 @@ function DaughterComponent() {
   return (
     <div style={style}>
       <h3>Daughter</h3>
-      <button onClick={() => setStyle({ "background": "red"})}>
+      <Button variant='contained' onClick={() => setStyle({ "background": "red"})}>
         Set Background Red
-      </button>
+      </Button>
     </div>
   )
 }

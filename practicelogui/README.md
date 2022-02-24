@@ -2,8 +2,18 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-```
+```sh
 npx react-create-app practicelogui --template typescript
+```
+
+## NPM Install
+
+React Heatmap Calendar is too old. The original author hasn't updated his peer dependencies. I have
+upgraded to React 17. NPM will complain when I try to `npm install`. The solution is to force the
+installation.
+
+```sh
+npm install --force
 ```
 
 ## Environment Variables
