@@ -1,5 +1,5 @@
 import { AxiosError, AxiosInstance, AxiosResponse } from "axios"
-import { LogEntryAction, LogEntryActionType } from "../global-state/log_entries"
+import { LogEntryAction, LogEntryActionType } from "../contexts/log_entries"
 import { LogEntryJSON } from "../types"
 
 export async function fetchLogEntriesByPage(http: AxiosInstance, page: number): Promise<LogEntryAction> {
@@ -63,31 +63,6 @@ export async function createLogEntries(http: AxiosInstance, entry: LogEntryJSON)
   }
 }
 
-export async function deleteLogEntries(http: AxiosInstance, entry: LogEntryJSON): Promise<LogEntryAction> {
-  try {
-    const resp: AxiosResponse = await http.delete(`/api/v1/log/entries/${entry.id}`)
-
-    if (resp.status === 200) {
-      return {
-        type: LogEntryActionType.DeleteSuccess
-      }
-    }
-
-    return {
-      type: LogEntryActionType.Error,
-      error: `failed to delete log entry, server returned status ${resp.status}`
-    }
-
-  } catch (err: unknown) {
-    const error = err as AxiosError
-
-    return {
-      type: LogEntryActionType.Error,
-      error: `failed to delete log entry, reason: ${error.message}`
-    }
-  }
-}
-
 export async function updateLogEntries(http: AxiosInstance, entry: LogEntryJSON): Promise<LogEntryAction> {
   try {
     const resp: AxiosResponse = await http.put(`/api/v1/log/entries/${entry.id}`, entry)
@@ -110,6 +85,57 @@ export async function updateLogEntries(http: AxiosInstance, entry: LogEntryJSON)
     return {
       type: LogEntryActionType.Error,
       error: `failed to update log entry, reason: ${error.message}`
+    }
+  }
+}
+
+export async function updateLogAssignment(http: AxiosInstance, entry: LogEntryJSON): Promise<LogEntryAction> {
+  try {
+    const resp: AxiosResponse = await http.put(`/api/v1/log/entries/${entry.id}/assignments`, entry)
+
+    if (resp.status === 200) {
+      return {
+        type: LogEntryActionType.UpdateSuccess,
+        payload: resp.data as LogEntryJSON
+      }
+    }
+
+    return {
+      type: LogEntryActionType.Error,
+      error: `failed to update log assignments, server returned status ${resp.status}`
+    }
+
+  } catch (err: unknown) {
+    const error = err as AxiosError
+
+    return {
+      type: LogEntryActionType.Error,
+      error: `failed to update log assignments, reason: ${error.message}`
+    }
+  }
+}
+
+export async function deleteLogEntries(http: AxiosInstance, entry: LogEntryJSON): Promise<LogEntryAction> {
+  try {
+    const resp: AxiosResponse = await http.delete(`/api/v1/log/entries/${entry.id}`)
+
+    if (resp.status === 200) {
+      return {
+        type: LogEntryActionType.DeleteSuccess
+      }
+    }
+
+    return {
+      type: LogEntryActionType.Error,
+      error: `failed to delete log entry, server returned status ${resp.status}`
+    }
+
+  } catch (err: unknown) {
+    const error = err as AxiosError
+
+    return {
+      type: LogEntryActionType.Error,
+      error: `failed to delete log entry, reason: ${error.message}`
     }
   }
 }

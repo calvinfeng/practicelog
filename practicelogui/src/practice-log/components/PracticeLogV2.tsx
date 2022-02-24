@@ -9,7 +9,7 @@ import {
   LogEntryAction,
   LogEntryActionType,
   LogEntryState
-} from '../global-state/log_entries'
+} from '../contexts/log_entries'
 import { LogEntryJSON } from '../types'
 import './PracticeLog.scss'
 import { is } from 'immutable'
@@ -77,6 +77,12 @@ export default function PracticeLog(props: Props) {
   /**
    *
    */
+  const handleDeselectLogEntry = () => {
+    dispatchLogEntryAction({ type: LogEntryActionType.Deselect })
+  }
+  /**
+   *
+   */
   const handleScrollToBottom = () => {
     if (pageAnchor.current !== null) {
       pageAnchor.current.scrollIntoView({ behavior: 'smooth' })
@@ -87,7 +93,12 @@ export default function PracticeLog(props: Props) {
 
   return (
     <LogEntryContext.Provider value={{
-      state: logEntryState, handleNextPage, handlePrevPage, handleSelectLogEntry}}>
+        state: logEntryState,
+        handleNextPage,
+        handlePrevPage,
+        handleSelectLogEntry,
+        handleDeselectLogEntry
+      }}>
       <Paper style={{"margin": "1rem"}}>
         <ButtonToolbar />
         <EntryList isFetching={logEntryState.isFetching} />

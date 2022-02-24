@@ -1,11 +1,21 @@
 import React from 'react'
 import { LogEntryJSON } from "../types"
 
+export type LogEntryState = {
+  logEntries: LogEntryJSON[]
+  isFetching: boolean
+  currPage: number
+  hasNextPage: boolean
+  selectedLogEntry: LogEntryJSON | null
+  error: string | null
+}
+
 interface ILogEntryContext {
   state: LogEntryState
   handleNextPage: () => void
   handlePrevPage: () => void
   handleSelectLogEntry: (entry: LogEntryJSON) => void
+  handleDeselectLogEntry: () => void
 }
 
 // Use {} as T to avoid complaints.
@@ -32,23 +42,11 @@ export type LogEntryAction = {
   selectedLogEntry?: LogEntryJSON
 }
 
-export type LogEntryState = {
-  logEntries: LogEntryJSON[]
-  isFetching: boolean
-  currPage: number
-  hasNextPage: boolean
-  selectedLogEntry: LogEntryJSON | null
-  error: string | null
-}
-
 export function logEntryReducer(state: LogEntryState, action: LogEntryAction): LogEntryState {
   switch (action.type) {
     case LogEntryActionType.Fetch:
-      return {
-        ...state,
-        error: null,
-        isFetching: true
-      }
+      return { ...state, error: null, isFetching: true }
+
     case LogEntryActionType.FetchSuccess:
       return {
         ...state,
@@ -58,6 +56,7 @@ export function logEntryReducer(state: LogEntryState, action: LogEntryAction): L
         error: null,
         selectedLogEntry: null
       }
+
     case LogEntryActionType.UpdateSuccess:
       const newState = { ... state, error: null }
       const payload = action.payload as LogEntryJSON
@@ -67,33 +66,23 @@ export function logEntryReducer(state: LogEntryState, action: LogEntryAction): L
         }
       }
       return newState
+
     case LogEntryActionType.CreateSuccess:
     case LogEntryActionType.DeleteSuccess:
-      return {
-        ...state,
-        error: null
-      }
+      return { ...state, error: null }
+
     case LogEntryActionType.Error:
-      return {
-        ...state,
-        isFetching: false,
-        error: action.error as string
-      }
+      return { ...state, isFetching: false, error: action.error as string }
+
     case LogEntryActionType.SetPage:
-      return {
-        ...state,
-        currPage: action.page as number
-      }
+      return { ...state, currPage: action.page as number }
+
     case LogEntryActionType.Select:
-      return {
-        ...state,
-        selectedLogEntry: action.selectedLogEntry as LogEntryJSON
-      }
+      return { ...state, selectedLogEntry: action.selectedLogEntry as LogEntryJSON }
+
     case LogEntryActionType.Deselect:
-      return {
-        ...state,
-        selectedLogEntry: null
-      }
+      return { ...state, selectedLogEntry: null }
+
     default:
       return state
   }
