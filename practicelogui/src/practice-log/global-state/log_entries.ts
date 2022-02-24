@@ -8,32 +8,25 @@ interface ILogEntryContext {
   handleSelectLogEntry: (entry: LogEntryJSON) => void
 }
 
-export const defaultLogEntryState: LogEntryState = {
-  currPage: 1,
-  hasNextPage: false,
-  logEntries: [],
-  error: null,
-  selectedLogEntry: null
-}
-
-export const LogEntryContext = React.createContext<ILogEntryContext>({
-  state: defaultLogEntryState,
-  handleNextPage: () => {},
-  handlePrevPage: () => {},
-  handleSelectLogEntry: () => {}
-})
+// Use {} as T to avoid complaints.
+export const LogEntryContext = React.createContext<ILogEntryContext>({} as ILogEntryContext)
 
 export enum LogEntryActionType {
   Fetch = 'FETCH',
+  FetchSuccess = 'FETCH_SUCCESS',
+  CreateSuccess = 'CREATE_SUCCESS',
+  DeleteSuccess = 'DELETE_SUCCESS',
+  UpdateSuccess = 'UPDATE_SUCCESS',
   Error = 'ERROR',
   Select = 'SELECT',
-  SetPage = 'SET_PAGE',
+  Deselect = 'DESELECT',
+  SetPage = 'SET_PAGE'
 }
 
 export type LogEntryAction = {
   type: LogEntryActionType
   page?: number
-  payload?: LogEntryJSON[]
+  payload?: LogEntryJSON[] | LogEntryJSON
   error?: string
   hasNextPage?: boolean
   selectedLogEntry?: LogEntryJSON
@@ -41,6 +34,7 @@ export type LogEntryAction = {
 
 export type LogEntryState = {
   logEntries: LogEntryJSON[]
+  isFetching: boolean
   currPage: number
   hasNextPage: boolean
   selectedLogEntry: LogEntryJSON | null
@@ -52,14 +46,37 @@ export function logEntryReducer(state: LogEntryState, action: LogEntryAction): L
     case LogEntryActionType.Fetch:
       return {
         ...state,
+        error: null,
+        isFetching: true
+      }
+    case LogEntryActionType.FetchSuccess:
+      return {
+        ...state,
         logEntries: action.payload as LogEntryJSON[],
         hasNextPage: action.hasNextPage as boolean,
+        isFetching: false,
         error: null,
         selectedLogEntry: null
+      }
+    case LogEntryActionType.UpdateSuccess:
+      const newState = { ... state, error: null }
+      const payload = action.payload as LogEntryJSON
+      for (let i = 0; i < newState.logEntries.length; i++) {
+        if (newState.logEntries[i].id === payload.id) {
+          newState.logEntries[i] = payload
+        }
+      }
+      return newState
+    case LogEntryActionType.CreateSuccess:
+    case LogEntryActionType.DeleteSuccess:
+      return {
+        ...state,
+        error: null
       }
     case LogEntryActionType.Error:
       return {
         ...state,
+        isFetching: false,
         error: action.error as string
       }
     case LogEntryActionType.SetPage:
@@ -71,6 +88,11 @@ export function logEntryReducer(state: LogEntryState, action: LogEntryAction): L
       return {
         ...state,
         selectedLogEntry: action.selectedLogEntry as LogEntryJSON
+      }
+    case LogEntryActionType.Deselect:
+      return {
+        ...state,
+        selectedLogEntry: null
       }
     default:
       return state

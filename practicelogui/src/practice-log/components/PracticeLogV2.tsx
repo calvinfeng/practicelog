@@ -1,18 +1,18 @@
 import axios from 'axios'
-import { Button, List, ListItem, Paper, Stack } from '@mui/material'
+import { Button, List, ListItem, Paper, Stack, CircularProgress } from '@mui/material'
 import React from 'react'
 import { GoogleUserProfile } from '../../app/types'
 import { fetchLogEntriesByPage } from '../api/log_entries'
 import {
-  defaultLogEntryState,
   LogEntryContext,
   logEntryReducer,
   LogEntryAction,
   LogEntryActionType,
   LogEntryState
-} from '../globalstate/log_entries'
+} from '../global-state/log_entries'
 import { LogEntryJSON } from '../types'
 import './PracticeLog.scss'
+import { is } from 'immutable'
 
 type Props = {
   currentUser: GoogleUserProfile | null
@@ -32,39 +32,65 @@ export default function PracticeLog(props: Props) {
     }
   })
 
+  // Setup default states
   const pageAnchor = React.useRef<null | HTMLDivElement>(null)
+  const [popoverAnchor, setPopoverAnchor] = React.useState<HTMLButtonElement | null>(null)
+  const [focusedLogEntry, setFocusedLogEntry] = React.useState<LogEntryJSON | null>(null)
+  const [logEntryState, dispatchLogEntryAction] = React.useReducer(logEntryReducer, {
+    currPage: 1,
+    hasNextPage: false,
+    isFetching: false,
+    logEntries: [],
+    error: null,
+    selectedLogEntry: null
+  })
 
-  // Default states
-  const [logEntryState, dispatchLogEntryAction] = React.useReducer(logEntryReducer, defaultLogEntryState)
-
-  React.useEffect(() => {
+  /**
+   * Fetch log entries asynchronously
+   */
+  const handleFetchLogEntries = async () => {
     console.log('fetch log entries')
-    fetchLogEntriesByPage(http, logEntryState.currPage)
-      .then((action: LogEntryAction) => dispatchLogEntryAction(action))
-  }, [logEntryState.currPage])
-
+    dispatchLogEntryAction({type: LogEntryActionType.Fetch})
+    const action = await fetchLogEntriesByPage(http, logEntryState.currPage)
+    dispatchLogEntryAction(action)
+  }
+  /**
+   *
+   */
   const handleNextPage = () => {
     dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage + 1})
   }
+  /**
+   *
+   */
   const handlePrevPage = () => {
     dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage - 1})
   }
+  /**
+   *
+   * @param entry
+   */
   const handleSelectLogEntry = (entry: LogEntryJSON) => {
     dispatchLogEntryAction({ type: LogEntryActionType.Select, selectedLogEntry: entry })
   }
 
+  /**
+   *
+   */
   const handleScrollToBottom = () => {
     if (pageAnchor.current !== null) {
       pageAnchor.current.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
+  React.useEffect(() => { handleFetchLogEntries() }, [logEntryState.currPage])
+
   return (
     <LogEntryContext.Provider value={{
       state: logEntryState, handleNextPage, handlePrevPage, handleSelectLogEntry}}>
       <Paper style={{"margin": "1rem"}}>
         <ButtonToolbar />
-        <EntryList />
+        <EntryList isFetching={logEntryState.isFetching} />
         <div ref={pageAnchor} />
       </Paper>
     </LogEntryContext.Provider>
@@ -73,6 +99,10 @@ export default function PracticeLog(props: Props) {
 
 function EntryList(props) {
   const ctx = React.useContext(LogEntryContext)
+
+  if (props.isFetching) {
+    return <CircularProgress />
+  }
 
   const listItems = ctx.state.logEntries.map((entry: LogEntryJSON) => {
     if (ctx.state.selectedLogEntry !== null && entry.id === ctx.state.selectedLogEntry.id) {
