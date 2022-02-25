@@ -87,6 +87,7 @@ export default function AssignmentEditor(props: Props) {
   const buttons: JSX.Element[] = [
     <Grid item>
       <TextField
+        key="assignment-name"
         style={{width: "500px"}}
         label="Assignment Name"
         value={textFieldAssignmentName}
@@ -98,8 +99,9 @@ export default function AssignmentEditor(props: Props) {
 
   if (selectedAssignment !== null) {
     buttons.push(
-      <Grid item key={"save-assignment"}>
+      <Grid item>
         <Button
+          key={"save-assignment"}
           form="assignment-submission-form"
           type="submit"
           variant="outlined"
@@ -116,8 +118,9 @@ export default function AssignmentEditor(props: Props) {
     }
 
     buttons.push(
-      <Grid item key={"add-assignment"}>
+      <Grid item>
         <Button
+          key={"add-assignment"}
           form="assignment-submission-form"
           type="submit"
           variant="outlined"
@@ -130,8 +133,9 @@ export default function AssignmentEditor(props: Props) {
   }
 
   buttons.push(
-    <Grid item key={"clear"}>
+    <Grid item>
       <Button
+        key={"clear"}
         variant="outlined"
         color="secondary"
         onClick={() => { setSelectedAssignment(null) }}

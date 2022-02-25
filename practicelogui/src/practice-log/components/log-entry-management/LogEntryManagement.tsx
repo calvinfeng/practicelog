@@ -82,6 +82,7 @@ export default class LogEntryManagement extends React.Component<Props, State> {
       return
     }
 
+    console.log(nextProps)
     if (nextProps.selectedLogEntry === null) {
       this.setState(defaultState)
       return

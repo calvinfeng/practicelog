@@ -1,24 +1,40 @@
-import axios from 'axios'
-import { Button, List, ListItem, Paper, Stack, CircularProgress, Grid, Typography } from '@mui/material'
 import React from 'react'
+import axios from 'axios'
+import { Button, List, ListItem, CircularProgress, Grid, Typography, Snackbar, Alert, AlertColor } from '@mui/material'
+
 import { GoogleUserProfile } from '../../app/types'
-import { deleteLogEntry, fetchLogEntriesByPage } from '../api/log_entries'
+
+// API
 import {
-  LogEntryContext,
+  createLogEntry,
+  deleteLogEntry,
+  fetchLogEntriesByPage,
+  updateLogAssignment,
+  updateLogEntry
+} from '../api/log_entries'
+import { fetchLogTimeSeries } from '../api/log_time_series'
+import { fetchLogLabelDurations, fetchLogLabels } from '../api/log_labels'
+
+// Contexts
+import {
   logEntryReducer,
   LogEntryAction,
   LogEntryActionType,
+  LogEntryContext,
   LogEntryState
 } from '../contexts/log_entries'
 import { LogEntryJSON } from '../types'
-import './PracticeLog.scss'
-import { is } from 'immutable'
 import { LogTimeSeriesActionType, logTimeSeriesReducer } from '../contexts/log_time_series'
-import { logLabelReducer } from '../contexts/log_labels'
-import { fetchLogTimeSeries } from '../api/log_time_series'
+import { LogLabelAction, logLabelReducer } from '../contexts/log_labels'
+
+// Components
 import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
+import LogEntryManagement from './log-entry-management/LogEntryManagement'
+import AssignmentChecklistPopover from './AssignmentChecklistPopover'
 import Heatmap from './metrics/Heatmap'
 import LogTable from './LogTable'
+import './PracticeLog.scss'
+import { AlertActionType, alertReducer } from '../contexts/alert'
 
 type Props = {
   currentUser: GoogleUserProfile | null
@@ -42,6 +58,12 @@ export default function PracticeLog(props: Props) {
   const pageAnchor = React.useRef<null | HTMLDivElement>(null)
   const [popoverAnchor, setPopoverAnchor] = React.useState<HTMLButtonElement | null>(null)
   const [focusedLogEntry, setFocusedLogEntry] = React.useState<LogEntryJSON | null>(null)
+  const [alert, dispatchAlertAction] = React.useReducer(alertReducer, {
+    shown: false,
+    severity: "info",
+    message: ""
+  })
+
   const [logEntryState, dispatchLogEntryAction] = React.useReducer(logEntryReducer, {
     currPage: 1,
     hasNextPage: false,
@@ -66,13 +88,58 @@ export default function PracticeLog(props: Props) {
   })
 
   /**
-   * Fetch log entries asynchronously
+   * Fetch log entries asynchronously.
    */
   const handleFetchLogEntries = async () => {
     console.log('fetch log entries')
     dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
     const action = await fetchLogEntriesByPage(http, logEntryState.currPage)
     dispatchLogEntryAction(action)
+  }
+
+  /**
+   * Create a log entry and re-load the list of entries.
+   * @param entry
+   */
+  const handleCreateLogEntry = async (entry: LogEntryJSON) => {
+    let action: LogEntryAction
+    console.log('create log entry')
+    action = await createLogEntry(http, entry)
+    dispatchLogEntryAction(action)
+    console.log('re-fetch log entry')
+    dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
+    action = await fetchLogEntriesByPage(http, logEntryState.currPage)
+    dispatchLogEntryAction(action)
+  }
+
+  /**
+   * Update a log entry.
+   * @param entry
+   */
+  const handleUpdateLogEntry = async (entry: LogEntryJSON) => {
+    console.log('update log entry', entry.id)
+    const action = await updateLogEntry(http, entry)
+    dispatchLogEntryAction(action)
+    if (action.type === LogEntryActionType.UpdateSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully updated log entry" })
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
+  }
+
+  /**
+   * Update assignments of a log entry.
+   * @param entry
+   */
+  const handleUpdateLogAssignments = async (entry: LogEntryJSON) => {
+    console.log('update log assignment', entry.id)
+    const action = await updateLogAssignment(http, entry)
+    dispatchLogEntryAction(action)
+    if (action.type === LogEntryActionType.UpdateSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully updated log assignment" })
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
   }
 
   /**
@@ -88,6 +155,15 @@ export default function PracticeLog(props: Props) {
     dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
     action = await fetchLogEntriesByPage(http, logEntryState.currPage)
     dispatchLogEntryAction(action)
+  }
+
+  const handleFetchLogLabels = async () => {
+    let action: LogLabelAction
+    console.log('fetch log labels')
+    action = await fetchLogLabels(http)
+    dispatchLogLabelAction(action)
+    action = await fetchLogLabelDurations(http)
+    dispatchLogLabelAction(action)
   }
 
   /**
@@ -126,6 +202,7 @@ export default function PracticeLog(props: Props) {
 
   React.useEffect(() => { handleFetchLogEntries() }, [logEntryState.currPage])
   React.useEffect(() => { handleFetchTimeSeries() }, [])
+  React.useEffect(() => { handleFetchLogLabels() }, [])
 
   return (
     <section className="PracticeLog">
@@ -134,6 +211,14 @@ export default function PracticeLog(props: Props) {
           handleSelectLogEntry,
           handleDeselectLogEntry
         }}>
+        <AssignmentChecklistPopover
+          focusedLogEntry={focusedLogEntry}
+          popoverAnchor={popoverAnchor}
+          handleClearPopoverAnchorEl={() => {
+            setPopoverAnchor(null)
+            setFocusedLogEntry(null)
+          }}
+          handleHTTPUpdateLogAssignments={handleUpdateLogAssignments} />
         <LogTable
           scrollToBottom={handleScrollToBottom}
           logEntries={logEntryState.logEntries}
@@ -147,18 +232,29 @@ export default function PracticeLog(props: Props) {
           handleHTTPDeleteLogEntry={handleDeleteLogEntry} />
         <PaginationControlPanel
           logEntryState={logEntryState}
-          handleNextPage={() => {
-            dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage + 1})
-          }}
-          handlePrevPage={() => {
-            dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage - 1})
-          }}
-        />
+          handleNextPage={() => dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage + 1})}
+          handlePrevPage={() => dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage - 1})} />
+        <LogEntryManagement
+          logLabels={logLabelState.logLabels}
+          selectedLogEntry={logEntryState.selectedLogEntry}
+          handleDeselectLogEntry={handleDeselectLogEntry}
+          handleHTTPUpdateLogEntry={handleUpdateLogEntry}
+          handleHTTPCreateLogEntry={handleCreateLogEntry} />
         <div ref={pageAnchor} />
         <Heatmap
           timeSeries={logTimeSeriesState.byDay} />
         <PracticeTimeLineChart
           timeSeries={logTimeSeriesState.byMonth} />
+        <Snackbar
+          open={alert.shown}
+          autoHideDuration={6000}
+          onClose={() => dispatchAlertAction({ type: AlertActionType.Hide })}>
+          <Alert
+            onClose={() => dispatchAlertAction({ type: AlertActionType.Hide })}
+            severity={alert.severity}>
+            {alert.message}
+          </Alert>
+        </Snackbar>
       </LogEntryContext.Provider>
     </section>
   )
@@ -196,29 +292,5 @@ function PaginationControlPanel(props: PaginationControlPanelProps) {
         <Typography>Page {props.logEntryState.currPage} </Typography>
       </Grid>
     </Grid>
-  )
-}
-
-function EntryList(props) {
-  const ctx = React.useContext(LogEntryContext)
-
-  if (props.isFetching) {
-    return <CircularProgress />
-  }
-
-  const listItems = ctx.state.logEntries.map((entry: LogEntryJSON) => {
-    if (ctx.state.selectedLogEntry !== null && entry.id === ctx.state.selectedLogEntry.id) {
-      return <ListItem key={entry.id}>{entry.date.toDateString()} <b>{entry.message}</b></ListItem>
-    }
-    return (
-      <ListItem key={entry.id} onClick={() => ctx.handleSelectLogEntry(entry)}>
-        {entry.date.toDateString()} {entry.message}
-      </ListItem>
-    )
-  })
-  return (
-    <List>
-      {listItems}
-    </List>
   )
 }

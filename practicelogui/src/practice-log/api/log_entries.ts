@@ -38,7 +38,7 @@ export async function fetchLogEntriesByPage(http: AxiosInstance, page: number): 
   }
 }
 
-export async function createLogEntries(http: AxiosInstance, entry: LogEntryJSON): Promise<LogEntryAction> {
+export async function createLogEntry(http: AxiosInstance, entry: LogEntryJSON): Promise<LogEntryAction> {
   try {
     const resp: AxiosResponse = await http.post('/api/v1/log/entries', entry)
 
@@ -63,14 +63,23 @@ export async function createLogEntries(http: AxiosInstance, entry: LogEntryJSON)
   }
 }
 
-export async function updateLogEntries(http: AxiosInstance, entry: LogEntryJSON): Promise<LogEntryAction> {
+export async function updateLogEntry(http: AxiosInstance, entry: LogEntryJSON): Promise<LogEntryAction> {
   try {
     const resp: AxiosResponse = await http.put(`/api/v1/log/entries/${entry.id}`, entry)
 
     if (resp.status === 200) {
       return {
         type: LogEntryActionType.UpdateSuccess,
-        payload: resp.data as LogEntryJSON
+        payload: {
+          id: resp.data.id,
+          date: new Date(resp.data.date),
+          username: resp.data.username,
+          labels: resp.data.labels,
+          message: resp.data.message,
+          details: resp.data.details,
+          duration: resp.data.duration,
+          assignments: resp.data.assignments
+        }
       }
     }
 

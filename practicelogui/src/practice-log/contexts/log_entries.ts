@@ -10,15 +10,6 @@ export type LogEntryState = {
   error: string | null
 }
 
-interface ILogEntryContext {
-  state: LogEntryState
-  handleSelectLogEntry: (entry: LogEntryJSON) => void
-  handleDeselectLogEntry: () => void
-}
-
-// Use {} as T to avoid complaints.
-export const LogEntryContext = React.createContext<ILogEntryContext>({} as ILogEntryContext)
-
 export enum LogEntryActionType {
   Fetch = 'FETCH',
   FetchSuccess = 'FETCH_SUCCESS',
@@ -56,7 +47,7 @@ export function logEntryReducer(state: LogEntryState, action: LogEntryAction): L
       }
 
     case LogEntryActionType.UpdateSuccess:
-      const newState = { ... state, error: null }
+      const newState = { ... state, error: null, selectedLogEntry: null }
       const payload = action.payload as LogEntryJSON
       for (let i = 0; i < newState.logEntries.length; i++) {
         if (newState.logEntries[i].id === payload.id) {
@@ -67,7 +58,7 @@ export function logEntryReducer(state: LogEntryState, action: LogEntryAction): L
 
     case LogEntryActionType.CreateSuccess:
     case LogEntryActionType.DeleteSuccess:
-      return { ...state, error: null }
+      return { ...state, error: null, selectedLogEntry: null }
 
     case LogEntryActionType.Error:
       return { ...state, isFetching: false, error: action.error as string }
@@ -85,3 +76,12 @@ export function logEntryReducer(state: LogEntryState, action: LogEntryAction): L
       return state
   }
 }
+
+interface ILogEntryContext {
+  state: LogEntryState
+  handleSelectLogEntry: (entry: LogEntryJSON) => void
+  handleDeselectLogEntry: () => void
+}
+
+// Use {} as T to avoid complaints.
+export const LogEntryContext = React.createContext<ILogEntryContext>({} as ILogEntryContext)
