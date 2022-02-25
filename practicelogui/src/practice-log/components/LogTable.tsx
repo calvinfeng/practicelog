@@ -19,7 +19,7 @@ import {
   Edit,
   Delete,
   FileCopy
-} from '@material-ui/icons'
+} from '@mui/icons-material'
 import { DateTime } from 'luxon'
 
 import { LogLabelJSON, LogEntryJSON, LogAssignmentJSON } from '../types'

@@ -1,5 +1,5 @@
-import { Typography, Slider } from "@material-ui/core"
 import React from "react"
+import { Typography, Slider } from "@mui/material"
 
 type Props = {
   inputDuration: number
@@ -7,7 +7,7 @@ type Props = {
 }
 
 export default function DurationSelector(props: Props) {
-  const handleOnChange = (_: React.ChangeEvent<{}>, value: unknown) => {
+  const handleOnChange =  (event: Event, value: number | number[], activeThumb: number)=> {
     props.setInputDuration(value as number)
   }
 
@@ -17,10 +17,11 @@ export default function DurationSelector(props: Props) {
         Duration: {props.inputDuration} minutes
       </Typography>
       <Slider
+        style={{"margin": "5px"}}
+        size={"medium"}
         defaultValue={0}
         value={props.inputDuration}
         onChange={handleOnChange}
-        aria-labelledby="discrete-minute-slider"
         valueLabelDisplay="auto"
         step={5}
         marks={true}

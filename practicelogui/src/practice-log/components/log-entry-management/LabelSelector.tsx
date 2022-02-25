@@ -7,9 +7,13 @@ import {
   Typography,
   InputLabel,
   Select,
-  MenuItem } from "@material-ui/core"
-import MusicNote from "@material-ui/icons/MusicNote"
-import AddIcon from '@material-ui/icons/Add'
+  SelectChangeEvent,
+  MenuItem } from "@mui/material"
+import {
+  MusicNote,
+  Add
+} from "@mui/icons-material"
+
 import { LogLabelJSON } from "../../types"
 import { alphabetOrder } from "../../callbacks"
 
@@ -25,7 +29,7 @@ type Props = {
 
 export default function LabelSelector(props: Props) {
 
-  const [selectedLabelID, setSelectLabelID] = React.useState<string | null>(null)
+  const [selectedLabelID, setSelectLabelID] = React.useState<string>('')
 
   if (props.logLabels.length === 0) {
     return <Typography>Create a Label</Typography>
@@ -48,7 +52,7 @@ export default function LabelSelector(props: Props) {
     props.removeFromInputLabelList(labelID)
   }
 
-  const handleOnChange = (ev: React.ChangeEvent<{ name?: string; value: unknown }>) => {
+  const handleOnChange = (ev: SelectChangeEvent<string>, child: React.ReactNode) => {
     setSelectLabelID(ev.target.value as string)
   }
 
@@ -95,13 +99,13 @@ export default function LabelSelector(props: Props) {
 
   return (
     <section className="LabelSelector">
-      <Grid direction="row" justify="flex-start" alignItems="center" container spacing={0}>
+      <Grid container direction="row" justifyContent="flex-start" alignItems="center" spacing={0}>
         {chips}
       </Grid>
-      <Grid direction="row" justify="flex-end" alignItems="flex-end" container spacing={0}>
+      <Grid container direction="row" justifyContent="flex-end" alignItems="flex-end" spacing={1}>
         <Grid item>
-        <FormControl style={{width: "200px"}}>
-          <InputLabel id="label-selector-label">Label</InputLabel>
+          <FormControl variant="standard" style={{width: "200px"}}>
+            <InputLabel id="label-selector-label">Label</InputLabel>
             <Select
               labelId="label-selector-label"
               id="label-selector"
@@ -113,7 +117,7 @@ export default function LabelSelector(props: Props) {
                   </MenuItem>
                 })}
             </Select>
-        </FormControl>
+          </FormControl>
         </Grid>
         <Grid item>
           <Button
@@ -121,7 +125,7 @@ export default function LabelSelector(props: Props) {
             color="primary"
             style={{marginLeft: "0.5rem"}}
             onClick={handleAddLabel}
-            startIcon={<AddIcon/>}>
+            startIcon={<Add />}>
             Add Label
           </Button>
         </Grid>

@@ -13,9 +13,8 @@ import LabelSelector from './LabelSelector'
 import DurationSelector from './DurationSelector'
 import MessageEditor from './MessageEditor'
 import AssignmentEditor from './AssignmentEditor'
-
-import './LogEntryManagement.scss'
 import Submission from './Submission'
+import './LogEntryManagement.scss'
 
 type Props = {
   // Prefix selected means the current entity is selected for modification.

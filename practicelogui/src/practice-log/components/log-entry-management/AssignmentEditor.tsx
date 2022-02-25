@@ -1,3 +1,4 @@
+import { Delete, Edit, FormatListBulleted } from "@mui/icons-material"
 import {
   List,
   ListItem,
@@ -6,12 +7,10 @@ import {
   IconButton,
   Button,
   Grid,
-  TextField} from "@material-ui/core"
+  TextField} from "@mui/material"
 import React from "react"
 import { LogAssignmentJSON } from "../../types"
-import FormatListBulletedIcon from '@material-ui/icons/FormatListBulleted';
-import EditIcon from '@material-ui/icons/Edit'
-import DeleteIcon from '@material-ui/icons/Delete'
+
 
 type Props = {
   inputAssignmentList: LogAssignmentJSON[]
@@ -43,14 +42,14 @@ export default function AssignmentEditor(props: Props) {
     assignmentListItems = props.inputAssignmentList.map((assignment: LogAssignmentJSON) => {
       return (
         <ListItem key={assignment.position+assignment.name}>
-          <FormatListBulletedIcon color="action" />
+          <FormatListBulleted color="action" />
           <ListItemText primary={assignment.name} style={{"marginLeft": "1rem"}}/>
           <ListItemSecondaryAction>
             <IconButton edge="end" aria-label="Edit" onClick={makeHandlerEditAssignment(assignment)}>
-              <EditIcon />
+              <Edit />
             </IconButton>
             <IconButton edge="end" aria-label="Delete" onClick={makeHandlerDeleteAssignment(assignment)}>
-              <DeleteIcon />
+              <Delete />
             </IconButton>
           </ListItemSecondaryAction>
         </ListItem>
@@ -85,9 +84,8 @@ export default function AssignmentEditor(props: Props) {
   }
 
   const buttons: JSX.Element[] = [
-    <Grid item>
+    <Grid item key="assignment-name">
       <TextField
-        key="assignment-name"
         style={{width: "500px"}}
         label="Assignment Name"
         value={textFieldAssignmentName}
@@ -99,9 +97,8 @@ export default function AssignmentEditor(props: Props) {
 
   if (selectedAssignment !== null) {
     buttons.push(
-      <Grid item>
+      <Grid item key="save-assignment">
         <Button
-          key={"save-assignment"}
           form="assignment-submission-form"
           type="submit"
           variant="outlined"
@@ -118,9 +115,8 @@ export default function AssignmentEditor(props: Props) {
     }
 
     buttons.push(
-      <Grid item>
+      <Grid item key="add-assignment">
         <Button
-          key={"add-assignment"}
           form="assignment-submission-form"
           type="submit"
           variant="outlined"
@@ -133,12 +129,12 @@ export default function AssignmentEditor(props: Props) {
   }
 
   buttons.push(
-    <Grid item>
-      <Button
-        key={"clear"}
-        variant="outlined"
-        color="secondary"
-        onClick={() => { setSelectedAssignment(null) }}
+    <Grid item key="clear">
+      <Button variant="outlined" color="secondary"
+        onClick={() => {
+          setSelectedAssignment(null)
+          setTextFieldAssignmentName("")
+        }}
         disabled={selectedAssignment === null}
         style={{marginLeft: "0.5rem"}}>
           Clear
@@ -154,7 +150,7 @@ export default function AssignmentEditor(props: Props) {
         onSubmit={handleFormSubmitAssignment}>
         <Grid container
           direction="row"
-          justify="flex-end"
+          justifyContent="flex-end"
           alignItems="flex-end"
           spacing={0}
           style={{ marginTop: "1rem "}}>

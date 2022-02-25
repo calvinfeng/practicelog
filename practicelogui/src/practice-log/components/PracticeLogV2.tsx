@@ -1,6 +1,12 @@
 import React from 'react'
 import axios from 'axios'
-import { Button, List, ListItem, CircularProgress, Grid, Typography, Snackbar, Alert, AlertColor } from '@mui/material'
+import {
+  Button,
+  Grid,
+  Typography,
+  Snackbar,
+  Alert
+} from '@mui/material'
 
 import { GoogleUserProfile } from '../../app/types'
 
@@ -35,6 +41,7 @@ import Heatmap from './metrics/Heatmap'
 import LogTable from './LogTable'
 import './PracticeLog.scss'
 import { AlertActionType, alertReducer } from '../contexts/alert'
+import LogEntryManagementV2 from './log-entry-management/LogEntryManagementV2'
 
 type Props = {
   currentUser: GoogleUserProfile | null
@@ -234,7 +241,7 @@ export default function PracticeLog(props: Props) {
           logEntryState={logEntryState}
           handleNextPage={() => dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage + 1})}
           handlePrevPage={() => dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage - 1})} />
-        <LogEntryManagement
+        <LogEntryManagementV2
           logLabels={logLabelState.logLabels}
           selectedLogEntry={logEntryState.selectedLogEntry}
           handleDeselectLogEntry={handleDeselectLogEntry}
