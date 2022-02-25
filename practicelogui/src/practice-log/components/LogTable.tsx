@@ -10,14 +10,16 @@ import {
   Table,
   TableHead,
   TableBody,
-} from '@material-ui/core'
-import MusicNote from '@material-ui/icons/MusicNote'
-import DeleteIcon from '@material-ui/icons/Delete'
-import EditIcon from '@material-ui/icons/Edit'
-import AssignmentIcon from '@material-ui/icons/Assignment';
-import AssignmentTurnedInSharpIcon from '@material-ui/icons/AssignmentTurnedInSharp';
-import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
+} from '@mui/material'
+import {
+  MusicNote,
+  Assignment,
+  AssignmentOutlined,
+  AssignmentTurnedInSharp,
+  Edit,
+  Delete,
+  FileCopy
+} from '@material-ui/icons'
 import { DateTime } from 'luxon'
 
 import { LogLabelJSON, LogEntryJSON, LogAssignmentJSON } from '../types'
@@ -51,7 +53,7 @@ export default function LogTable(props: Props) {
     props.handleHTTPDeleteLogEntry(log)
   }
 
-  const makeHandlerSetLogCopy = (log: LogEntryJSON) => () => {
+  const makeHandlerCopyLogEntry = (log: LogEntryJSON) => () => {
     const copy: LogEntryJSON = Object.assign({}, log, {id: ""})
     copy.date = new Date()
     if (copy.assignments) {
@@ -90,19 +92,19 @@ export default function LogTable(props: Props) {
       assignmentIconButton = (
         <IconButton color="primary" component="span" onClick={makeHandlerSetLogViewAndAssignment(log)}
           disabled={true}>
-          <AssignmentOutlinedIcon />
+          <AssignmentOutlined />
         </IconButton>
       )
     } else if (hasAllAssignmentCompleted(log.assignments)) {
       assignmentIconButton = (
         <IconButton color="primary" component="span" onClick={makeHandlerSetLogViewAndAssignment(log)}>
-          <AssignmentTurnedInSharpIcon />
+          <AssignmentTurnedInSharp />
         </IconButton>
       )
     } else {
       assignmentIconButton = (
         <IconButton color="primary" component="span" onClick={makeHandlerSetLogViewAndAssignment(log)}>
-          <AssignmentIcon />
+          <Assignment />
         </IconButton>
       )
     }
@@ -116,13 +118,13 @@ export default function LogTable(props: Props) {
         <TableCell style={cellStyle}>
         {assignmentIconButton}
         <IconButton color="primary" component="span" onClick={makeHandlerSelectLogEntry(log)}>
-          <EditIcon />
+          <Edit />
         </IconButton>
-        <IconButton color="primary" component="span" onClick={makeHandlerSetLogCopy(log)}>
-          <FileCopyIcon />
+        <IconButton color="primary" component="span" onClick={makeHandlerCopyLogEntry(log)}>
+          <FileCopy />
         </IconButton>
-        <IconButton color="secondary" component="span" onClick={makeHandlerDeleteLogEntry(log)}>
-          <DeleteIcon />
+        <IconButton color="error" component="span" onClick={makeHandlerDeleteLogEntry(log)}>
+          <Delete />
         </IconButton>
         </TableCell>
       </TableRow>

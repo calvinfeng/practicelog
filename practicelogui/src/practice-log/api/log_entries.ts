@@ -105,7 +105,16 @@ export async function updateLogAssignment(http: AxiosInstance, entry: LogEntryJS
     if (resp.status === 200) {
       return {
         type: LogEntryActionType.UpdateSuccess,
-        payload: resp.data as LogEntryJSON
+        payload: {
+          id: resp.data.id,
+          date: new Date(resp.data.date),
+          username: resp.data.username,
+          labels: resp.data.labels,
+          message: resp.data.message,
+          details: resp.data.details,
+          duration: resp.data.duration,
+          assignments: resp.data.assignments
+        }
       }
     }
 

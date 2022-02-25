@@ -1,15 +1,15 @@
 import React from 'react'
 import {
+  Checkbox,
+  Paper,
   Popover,
-  TableHead,
-  TableRow,
   Table,
   TableBody,
   TableCell,
   TableContainer,
-  Paper,
-  Checkbox
-} from '@material-ui/core'
+  TableHead,
+  TableRow
+} from '@mui/material'
 
 import { LogEntryJSON, LogAssignmentJSON } from '../types'
 import './AssignmentChecklistPopover.scss'

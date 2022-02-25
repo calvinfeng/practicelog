@@ -11,11 +11,9 @@ import { ThemedComponent } from './context-api/ThemedComponent';
 import PracticeLog from './practice-log/components/PracticeLogV2';
 
 ReactDOM.render(
-  <Provider store={store}>
-    <React.StrictMode>
-      <PracticeLog currentUser={null} />
-    </React.StrictMode>
-  </Provider>,
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
   document.getElementById('root')
 );
 

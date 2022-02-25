@@ -18,6 +18,7 @@ import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 import { GoogleUserProfile, GoogleError, AuthValidationResponse, Developer, Guest } from '../types'
 import Unauthorized from './Unauthorized'
 import PracticeLog from '../../practice-log/components/PracticeLog'
+import PracticeLogV2 from '../../practice-log/components/PracticeLogV2';
 import Fretboard from '../../fretboard/Fretboard'
 import Timeline from '../../timeline/Timeline'
 import './App.scss'
@@ -256,7 +257,7 @@ export default class App extends React.Component<Props, State> {
           <Routes>
             <Route
               path={Path.Root}
-              element={<PracticeLog currentUserProfile={profile}/>} />
+              element={<PracticeLogV2 currentUser={profile}/>} />
             <Route
               path={Path.Fretboard}
               element={<Fretboard />} />
