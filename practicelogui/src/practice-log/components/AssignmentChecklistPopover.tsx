@@ -35,7 +35,7 @@ export default function AssignmentChecklistPopover(props: Props) {
     entryToUpdate.assignments[position].completed = event.target.checked
     console.log(entryToUpdate.assignments[position].name, 'set to', event.target.checked)
     props.handleHTTPUpdateLogAssignments(entryToUpdate)
-  } 
+  }
 
   const content = (
     <TableContainer component={Paper} className="table-content">

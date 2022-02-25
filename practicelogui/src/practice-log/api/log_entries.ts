@@ -115,7 +115,7 @@ export async function updateLogAssignment(http: AxiosInstance, entry: LogEntryJS
   }
 }
 
-export async function deleteLogEntries(http: AxiosInstance, entry: LogEntryJSON): Promise<LogEntryAction> {
+export async function deleteLogEntry(http: AxiosInstance, entry: LogEntryJSON): Promise<LogEntryAction> {
   try {
     const resp: AxiosResponse = await http.delete(`/api/v1/log/entries/${entry.id}`)
 

@@ -1,8 +1,8 @@
 import axios from 'axios'
-import { Button, List, ListItem, Paper, Stack, CircularProgress } from '@mui/material'
+import { Button, List, ListItem, Paper, Stack, CircularProgress, Grid, Typography } from '@mui/material'
 import React from 'react'
 import { GoogleUserProfile } from '../../app/types'
-import { fetchLogEntriesByPage } from '../api/log_entries'
+import { deleteLogEntry, fetchLogEntriesByPage } from '../api/log_entries'
 import {
   LogEntryContext,
   logEntryReducer,
@@ -13,6 +13,12 @@ import {
 import { LogEntryJSON } from '../types'
 import './PracticeLog.scss'
 import { is } from 'immutable'
+import { LogTimeSeriesActionType, logTimeSeriesReducer } from '../contexts/log_time_series'
+import { logLabelReducer } from '../contexts/log_labels'
+import { fetchLogTimeSeries } from '../api/log_time_series'
+import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
+import Heatmap from './metrics/Heatmap'
+import LogTable from './LogTable'
 
 type Props = {
   currentUser: GoogleUserProfile | null
@@ -44,28 +50,56 @@ export default function PracticeLog(props: Props) {
     error: null,
     selectedLogEntry: null
   })
+  const [logTimeSeriesState, dispatchLogTimeSeriesAction] = React.useReducer(logTimeSeriesReducer, {
+    isFetching: false,
+    byMonth: [],
+    byDay: [],
+    total: 0,
+    error: null
+  })
+  const [logLabelState, dispatchLogLabelAction] = React.useReducer(logLabelReducer, {
+    logLabels: [],
+    isFetching: false,
+    selectedParentLabel: null,
+    selectedChildLabel: null,
+    error: null
+  })
 
   /**
    * Fetch log entries asynchronously
    */
   const handleFetchLogEntries = async () => {
     console.log('fetch log entries')
-    dispatchLogEntryAction({type: LogEntryActionType.Fetch})
+    dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
     const action = await fetchLogEntriesByPage(http, logEntryState.currPage)
     dispatchLogEntryAction(action)
   }
+
   /**
-   *
+   * Delete a log entry and re-load the list of entries.
+   * @param entry
    */
-  const handleNextPage = () => {
-    dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage + 1})
+  const handleDeleteLogEntry = async (entry: LogEntryJSON) => {
+    let action: LogEntryAction
+    console.log('delete log entry', entry.id)
+    action = await deleteLogEntry(http, entry)
+    dispatchLogEntryAction(action)
+    console.log('re-fetch log entry')
+    dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
+    action = await fetchLogEntriesByPage(http, logEntryState.currPage)
+    dispatchLogEntryAction(action)
   }
+
   /**
-   *
+   * Fetch log time series data asynchronously
    */
-  const handlePrevPage = () => {
-    dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage - 1})
+  const handleFetchTimeSeries = async () => {
+    console.log('fetch time series data')
+    dispatchLogTimeSeriesAction({ type: LogTimeSeriesActionType.Fetch })
+    const action = await fetchLogTimeSeries(http)
+    dispatchLogTimeSeriesAction(action)
   }
+
   /**
    *
    * @param entry
@@ -80,6 +114,7 @@ export default function PracticeLog(props: Props) {
   const handleDeselectLogEntry = () => {
     dispatchLogEntryAction({ type: LogEntryActionType.Deselect })
   }
+
   /**
    *
    */
@@ -90,21 +125,77 @@ export default function PracticeLog(props: Props) {
   }
 
   React.useEffect(() => { handleFetchLogEntries() }, [logEntryState.currPage])
+  React.useEffect(() => { handleFetchTimeSeries() }, [])
 
   return (
-    <LogEntryContext.Provider value={{
-        state: logEntryState,
-        handleNextPage,
-        handlePrevPage,
-        handleSelectLogEntry,
-        handleDeselectLogEntry
-      }}>
-      <Paper style={{"margin": "1rem"}}>
-        <ButtonToolbar />
-        <EntryList isFetching={logEntryState.isFetching} />
+    <section className="PracticeLog">
+      <LogEntryContext.Provider value={{
+          state: logEntryState,
+          handleSelectLogEntry,
+          handleDeselectLogEntry
+        }}>
+        <LogTable
+          scrollToBottom={handleScrollToBottom}
+          logEntries={logEntryState.logEntries}
+          handleFocusLogEntryAndAnchorEl={
+            (event: React.MouseEvent<HTMLButtonElement>, entry: LogEntryJSON) => {
+              setFocusedLogEntry(entry)
+              setPopoverAnchor(event.currentTarget)
+            }
+          }
+          handleSelectLogEntry={handleSelectLogEntry}
+          handleHTTPDeleteLogEntry={handleDeleteLogEntry} />
+        <PaginationControlPanel
+          logEntryState={logEntryState}
+          handleNextPage={() => {
+            dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage + 1})
+          }}
+          handlePrevPage={() => {
+            dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage - 1})
+          }}
+        />
         <div ref={pageAnchor} />
-      </Paper>
-    </LogEntryContext.Provider>
+        <Heatmap
+          timeSeries={logTimeSeriesState.byDay} />
+        <PracticeTimeLineChart
+          timeSeries={logTimeSeriesState.byMonth} />
+      </LogEntryContext.Provider>
+    </section>
+  )
+}
+
+type PaginationControlPanelProps = {
+  logEntryState: LogEntryState
+  handleNextPage: () => void
+  handlePrevPage: () => void
+}
+
+function PaginationControlPanel(props: PaginationControlPanelProps) {
+  return (
+    <Grid container
+      direction="row"
+      justifyContent="flex-end"
+      alignItems="baseline"
+      spacing={1}
+      className="pagination-control-panel">
+      <Grid item>
+        <Button variant="contained" color="primary" key="prev-page"
+          disabled={props.logEntryState.currPage === 1}
+          onClick={props.handlePrevPage}>
+            Prev
+        </Button>
+      </Grid>
+      <Grid item>
+        <Button variant="contained" color="primary" key="next-page"
+          disabled={!props.logEntryState.hasNextPage}
+          onClick={props.handleNextPage}>
+          Next Page
+        </Button>
+      </Grid>
+      <Grid item>
+        <Typography>Page {props.logEntryState.currPage} </Typography>
+      </Grid>
+    </Grid>
   )
 }
 
@@ -129,23 +220,5 @@ function EntryList(props) {
     <List>
       {listItems}
     </List>
-  )
-}
-
-function ButtonToolbar() {
-  const logEntryContext = React.useContext(LogEntryContext)
-  return (
-    <Stack direction="row" spacing={2}>
-      <Button key="prev-page"
-        disabled={logEntryContext.state.currPage === 1}
-        onClick={logEntryContext.handlePrevPage}>
-        Prev Page
-      </Button>
-      <Button key="next-page"
-        disabled={!logEntryContext.state.hasNextPage}
-        onClick={logEntryContext.handleNextPage}>
-        Next Page
-      </Button>
-    </Stack>
   )
 }

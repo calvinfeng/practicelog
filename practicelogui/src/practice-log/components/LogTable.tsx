@@ -74,7 +74,11 @@ export default function LogTable(props: Props) {
     let labels: JSX.Element[] = []
     if (log.labels) {
       labels = log.labels.map((label: LogLabelJSON) => (
-        <Chip style={chipStyle} label={label.name} icon={<MusicNote />} color="primary" />
+        <Chip key={label.id}
+          style={chipStyle}
+          label={label.name}
+          icon={<MusicNote />}
+          color="primary" />
       ))
     }
 
@@ -150,19 +154,3 @@ function formatDate(d: Date): string {
   dt.setZone("America/Los_Angeles")
   return dt.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY).toString()
 }
-
-  // const parts = [`${dt.year}`]
-
-  // if (dt.month < 9) {
-  //   parts.push(`0${dt.month}`)
-  // } else {
-  //   parts.push(`${dt.month}`)
-  // }
-
-  // if (dt.day < 10) {
-  //   parts.push(`0${dt.day}`)
-  // } else {
-  //   parts.push(`${dt.day}`)
-  // }
-
-  // return parts.join("-")

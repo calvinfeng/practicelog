@@ -12,8 +12,6 @@ export type LogEntryState = {
 
 interface ILogEntryContext {
   state: LogEntryState
-  handleNextPage: () => void
-  handlePrevPage: () => void
   handleSelectLogEntry: (entry: LogEntryJSON) => void
   handleDeselectLogEntry: () => void
 }
