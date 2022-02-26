@@ -19,7 +19,7 @@ import {
   updateLogEntry
 } from '../api/log_entries'
 import { fetchLogTimeSeries } from '../api/log_time_series'
-import { fetchLogLabelDurations, fetchLogLabels } from '../api/log_labels'
+import { createLogLabel, deleteLogLabel, fetchLogLabelDurations, fetchLogLabels, updateLogLabel } from '../api/log_labels'
 
 // Contexts
 import {
@@ -29,9 +29,9 @@ import {
   LogEntryContext,
   LogEntryState
 } from '../contexts/log_entries'
-import { LogEntryJSON } from '../types'
+import { LogEntryJSON, LogLabelJSON } from '../types'
 import { LogTimeSeriesActionType, logTimeSeriesReducer } from '../contexts/log_time_series'
-import { LogLabelAction, logLabelReducer } from '../contexts/log_labels'
+import { LogLabelAction, LogLabelActionType, logLabelReducer } from '../contexts/log_labels'
 
 // Components
 import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
@@ -42,6 +42,7 @@ import LogTable from './LogTable'
 import './PracticeLog.scss'
 import { AlertActionType, alertReducer } from '../contexts/alert'
 import LogEntryManagementV2 from './log-entry-management/LogEntryManagementV2'
+import LogLabelManagementV2 from './log-label-management/LogLabelManagementV2'
 
 type Props = {
   currentUser: GoogleUserProfile | null
@@ -98,7 +99,6 @@ export default function PracticeLog(props: Props) {
    * Fetch log entries asynchronously.
    */
   const handleFetchLogEntries = async () => {
-    console.log('fetch log entries')
     dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
     const action = await fetchLogEntriesByPage(http, logEntryState.currPage)
     dispatchLogEntryAction(action)
@@ -110,13 +110,16 @@ export default function PracticeLog(props: Props) {
    */
   const handleCreateLogEntry = async (entry: LogEntryJSON) => {
     let action: LogEntryAction
-    console.log('create log entry')
     action = await createLogEntry(http, entry)
     dispatchLogEntryAction(action)
-    console.log('re-fetch log entry')
-    dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
-    action = await fetchLogEntriesByPage(http, logEntryState.currPage)
-    dispatchLogEntryAction(action)
+    if (action.type === LogEntryActionType.CreateSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully created log entry" })
+      dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
+      action = await fetchLogEntriesByPage(http, logEntryState.currPage)
+      dispatchLogEntryAction(action)
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
   }
 
   /**
@@ -124,7 +127,6 @@ export default function PracticeLog(props: Props) {
    * @param entry
    */
   const handleUpdateLogEntry = async (entry: LogEntryJSON) => {
-    console.log('update log entry', entry.id)
     const action = await updateLogEntry(http, entry)
     dispatchLogEntryAction(action)
     if (action.type === LogEntryActionType.UpdateSuccess) {
@@ -139,7 +141,6 @@ export default function PracticeLog(props: Props) {
    * @param entry
    */
   const handleUpdateLogAssignments = async (entry: LogEntryJSON) => {
-    console.log('update log assignment', entry.id)
     const action = await updateLogAssignment(http, entry)
     dispatchLogEntryAction(action)
     if (action.type === LogEntryActionType.UpdateSuccess) {
@@ -158,19 +159,68 @@ export default function PracticeLog(props: Props) {
     console.log('delete log entry', entry.id)
     action = await deleteLogEntry(http, entry)
     dispatchLogEntryAction(action)
-    console.log('re-fetch log entry')
-    dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
-    action = await fetchLogEntriesByPage(http, logEntryState.currPage)
-    dispatchLogEntryAction(action)
+    if (action.type === LogEntryActionType.DeleteSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully deleted log entry" })
+      dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
+      action = await fetchLogEntriesByPage(http, logEntryState.currPage)
+      dispatchLogEntryAction(action)
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
   }
 
+  /**
+   * Fetch log labels and durations.
+   */
   const handleFetchLogLabels = async () => {
     let action: LogLabelAction
-    console.log('fetch log labels')
     action = await fetchLogLabels(http)
     dispatchLogLabelAction(action)
     action = await fetchLogLabelDurations(http)
     dispatchLogLabelAction(action)
+  }
+
+  /**
+   * Create a log label.
+   * @param label
+   */
+  const handleCreateLogLabel = async (label: LogLabelJSON) => {
+    const action = await createLogLabel(http, label)
+    dispatchLogLabelAction(action)
+    if (action.type === LogLabelActionType.CreateSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully created log label" })
+      handleFetchLogLabels()
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
+  }
+
+  /**
+   * Update a log label.
+   * @param label
+   */
+  const handleUpdateLogLabel = async (label: LogLabelJSON) => {
+    const action = await updateLogLabel(http, label)
+    if (action.type === LogLabelActionType.UpdateSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully updated log label" })
+      handleFetchLogLabels()
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
+  }
+
+  /**
+   * Delete a log label.
+   * @param label
+   */
+  const handleDeleteLogLabel = async (label: LogLabelJSON) => {
+    const action = await deleteLogLabel(http, label)
+    if (action.type === LogLabelActionType.DeleteSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully deleted log label" })
+      handleFetchLogLabels()
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
   }
 
   /**
@@ -184,7 +234,7 @@ export default function PracticeLog(props: Props) {
   }
 
   /**
-   *
+   * Select a log entry so it can be edited.
    * @param entry
    */
   const handleSelectLogEntry = (entry: LogEntryJSON) => {
@@ -192,7 +242,7 @@ export default function PracticeLog(props: Props) {
   }
 
   /**
-   *
+   * Deselect a log entry.
    */
   const handleDeselectLogEntry = () => {
     dispatchLogEntryAction({ type: LogEntryActionType.Deselect })
@@ -241,13 +291,19 @@ export default function PracticeLog(props: Props) {
           logEntryState={logEntryState}
           handleNextPage={() => dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage + 1})}
           handlePrevPage={() => dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage - 1})} />
+        <div ref={pageAnchor} />
         <LogEntryManagementV2
+          logEntries={logEntryState.logEntries}
           logLabels={logLabelState.logLabels}
           selectedLogEntry={logEntryState.selectedLogEntry}
           handleDeselectLogEntry={handleDeselectLogEntry}
           handleHTTPUpdateLogEntry={handleUpdateLogEntry}
           handleHTTPCreateLogEntry={handleCreateLogEntry} />
-        <div ref={pageAnchor} />
+        <LogLabelManagementV2
+          logLabels={logLabelState.logLabels}
+          handleHTTPCreateLogLabel={handleCreateLogLabel}
+          handleHTTPUpdateLogLabel={handleUpdateLogLabel}
+          handleHTTPDeleteLogLabel={handleDeleteLogLabel} />
         <Heatmap
           timeSeries={logTimeSeriesState.byDay} />
         <PracticeTimeLineChart

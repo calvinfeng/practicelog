@@ -58,7 +58,7 @@ export async function createLogEntry(http: AxiosInstance, entry: LogEntryJSON): 
 
     return {
       type: LogEntryActionType.Error,
-      error: `failed to create log entry, reason: ${error.message}`
+      error: `failed to create log entry: ${error.message.toLowerCase()}`
     }
   }
 }
@@ -93,7 +93,7 @@ export async function updateLogEntry(http: AxiosInstance, entry: LogEntryJSON): 
 
     return {
       type: LogEntryActionType.Error,
-      error: `failed to update log entry, reason: ${error.message}`
+      error: `failed to update log entry: ${error.message.toLowerCase()}`
     }
   }
 }
@@ -128,7 +128,7 @@ export async function updateLogAssignment(http: AxiosInstance, entry: LogEntryJS
 
     return {
       type: LogEntryActionType.Error,
-      error: `failed to update log assignments, reason: ${error.message}`
+      error: `failed to update log assignments: ${error.message.toLowerCase()}`
     }
   }
 }
@@ -153,7 +153,7 @@ export async function deleteLogEntry(http: AxiosInstance, entry: LogEntryJSON): 
 
     return {
       type: LogEntryActionType.Error,
-      error: `failed to delete log entry, reason: ${error.message}`
+      error: `failed to delete log entry: ${error.message.toLowerCase()}`
     }
   }
 }

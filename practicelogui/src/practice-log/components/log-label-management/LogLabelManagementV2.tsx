@@ -1,13 +1,12 @@
-import { Button, Chip, Divider, Grid, Paper, TextField, Typography } from '@material-ui/core';
+import { Button, Chip, Divider, Grid, Paper, TextField, Typography } from '@mui/material';
 import { MusicNote } from '@material-ui/icons';
 import React, { useEffect, useState } from 'react'
 import { DeleteConfirmationTarget, LogLabelJSON, nilUUID } from '../../types';
 import DeleteConfirmation from './DeleteConfirmation';
-
+import './LogLabelManagement.scss'
 
 type Props = {
   logLabels: LogLabelJSON[]
-  logLabelDurationFetched: boolean
   handleHTTPCreateLogLabel: (label: LogLabelJSON) => void
   handleHTTPUpdateLogLabel: (label: LogLabelJSON) => void
   handleHTTPDeleteLogLabel: (label: LogLabelJSON) => void
@@ -106,7 +105,7 @@ function LogLabelManagement(props: Props) {
       <Grid
           style={{ width: "100%", marginTop: "1rem" }}
           direction="row"
-          justify="flex-start"
+          justifyContent="flex-start"
           alignItems="flex-start"
           container
           spacing={1}>
@@ -121,7 +120,6 @@ function LogLabelManagement(props: Props) {
             setUIState={setUIState} />
           <Divider orientation="vertical" flexItem />
           <LabelEditPanel
-            logLabelDurationFetched={props.logLabelDurationFetched}
             UIState={UIState}
             setUIState={setUIState}
             handleUpdateChildLabel={handleUpdateChildLabel}
@@ -174,7 +172,7 @@ function ParentLabelPanel(props: PanelProps) {
       handler = makeSelectParentLabelHandler(null)
     }
     return (
-      <Grid item>
+      <Grid item key={label.name}>
         <Chip onClick={handler} style={style} label={label.name} icon={<MusicNote />} color="primary" />
       </Grid>
     )
@@ -185,7 +183,7 @@ function ParentLabelPanel(props: PanelProps) {
     <Grid
       style={{ width: "30%", margin: "0.5rem" }}
       direction="row"
-      justify="flex-start"
+      justifyContent="flex-start"
       alignItems="center"
       container
       spacing={0}>
@@ -240,7 +238,7 @@ function ChildLabelPanel(props: PanelProps) {
     <Grid
       style={{ width: "30%", margin: "0.5rem" }}
       direction="row"
-      justify="flex-start"
+      justifyContent="flex-start"
       alignItems="center"
       container
       spacing={0}>
@@ -250,7 +248,6 @@ function ChildLabelPanel(props: PanelProps) {
 }
 
 type EditPanelProps = {
-  logLabelDurationFetched: boolean
   UIState: UIState
   setUIState: (value: React.SetStateAction<UIState>) => void
   handleUpdateChildLabel: () => void
@@ -279,19 +276,19 @@ function LabelEditPanel(props: EditPanelProps) {
       return []
     }
     return [
-      <Grid item>
+      <Grid item key="selected-child-label-name">
         <Typography variant="subtitle1">
           Selected Child Label: {props.UIState.selectedChildLabel.name}
         </Typography>
       </Grid>,
-      <Grid item>
+      <Grid item key="edit-child-label-name">
         <TextField
           label="Child Label Name"
           value={props.UIState.inputChildLabelName}
           onChange={handleChildLabelNameChange}
           fullWidth InputLabelProps={{ shrink: true }} />
       </Grid>,
-      <Grid item>
+      <Grid item key="child-button-group">
         <Button
           style={{margin: "0.1rem"}}
           onClick={props.handleUpdateChildLabel}
@@ -315,39 +312,39 @@ function LabelEditPanel(props: EditPanelProps) {
       return []
     }
     return [
-      <Grid item>
+      <Grid item key="selected-parent-label-name">
         <Typography variant="subtitle1">
           Selected Parent Label: {props.UIState.selectedParentLabel.name}
         </Typography>
       </Grid>,
-      <Grid item>
+      <Grid item key="edit-parent-label-name">
         <TextField
           label="Parent Label Name"
           value={props.UIState.inputParentLabelName}
           onChange={handleParentLabelNameChange}
           fullWidth InputLabelProps={{ shrink: true }} />
       </Grid>,
-      <Grid item>
-      <TextField
-        label="Child Label Name"
-        value={props.UIState.inputChildLabelName}
-        onChange={handleChildLabelNameChange}
-        fullWidth InputLabelProps={{ shrink: true }} />
+      <Grid item key="edit-child-label-name">
+        <TextField
+          label="Child Label Name"
+          value={props.UIState.inputChildLabelName}
+          onChange={handleChildLabelNameChange}
+          fullWidth InputLabelProps={{ shrink: true }} />
       </Grid>,
-      <Grid item>
+      <Grid item key="parent-button-group">
         <Button
           style={{margin: "0.1rem"}}
           onClick={props.handleCreateChildLabel}
           disabled={props.UIState.inputChildLabelName.length === 0}
           variant="contained" color="primary">
-            Create Child
+          Create Child
         </Button>
         <Button
           style={{margin: "0.1rem"}}
           onClick={props.handleUpdateParentLabel}
           disabled={props.UIState.inputParentLabelName === props.UIState.selectedParentLabel.name}
           variant="contained" color="primary">
-            Update
+          Update
         </Button>
         <Button
           style={{margin: "0.1rem"}}
@@ -361,7 +358,7 @@ function LabelEditPanel(props: EditPanelProps) {
 
   const selectedNoneButtonGroup = () => {
     return [
-      <Grid item>
+      <Grid item key="edit-new-label-name">
         <TextField
           label="New Label Name"
           value={props.UIState.inputParentLabelName}
@@ -369,7 +366,7 @@ function LabelEditPanel(props: EditPanelProps) {
           fullWidth
           InputLabelProps={{ shrink: true }} />
         </Grid>,
-      <Grid item>
+      <Grid item key="button-group">
         <Button
           style={{margin: "0.1rem"}}
           onClick={props.handleCreateParentLabel}
@@ -381,10 +378,6 @@ function LabelEditPanel(props: EditPanelProps) {
   }
 
   const durationView = () => {
-    if (!props.logLabelDurationFetched) {
-      return <Grid item></Grid>
-    }
-
     if (props.UIState.selectedParentLabel !== null && props.UIState.selectedChildLabel !== null) {
       return (
         <Grid item>
@@ -426,7 +419,7 @@ function LabelEditPanel(props: EditPanelProps) {
     <Grid
       style={{ width: "30%", margin: "0.5rem" }}
       direction="column"
-      justify="flex-start"
+      justifyContent="flex-start"
       alignItems="flex-start"
       container
       spacing={1}>

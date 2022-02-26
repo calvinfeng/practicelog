@@ -19,6 +19,7 @@ import './LogEntryManagement.scss'
 type Props = {
   // Collection of all labels
   logLabels: LogLabelJSON[]
+  logEntries: LogEntryJSON[]
 
   // Prefix selected means the current entity is selected for modification.
   // The assumption is that the entity already exists.
@@ -47,14 +48,24 @@ export default function LogEntryManagementV2(props: Props) {
       setInputLabelList(props.selectedLogEntry.labels)
       setInputAssignmentList(props.selectedLogEntry.assignments)
     } else {
-      // setInputID(null)
-      // setInputDate(null)
-      // setInputDuration(0)
-      // setInputMessage('')
-      // setInputLabelList([])
-      // setInputAssignmentList([])
+      // Deselected log entry will make props null.
+      setInputID(null)
+      setInputDate(null)
+      setInputDuration(0)
+      setInputMessage('')
+      setInputLabelList([])
+      setInputAssignmentList([])
     }
   }, [props.selectedLogEntry])
+
+  React.useEffect(() => {
+    setInputID(null)
+    setInputDate(null)
+    setInputDuration(0)
+    setInputMessage('')
+    setInputLabelList([])
+    setInputAssignmentList([])
+  }, [props.logEntries])
 
   const mode: Mode = props.selectedLogEntry === null ? Mode.NewEntry : Mode.EditEntry
 
