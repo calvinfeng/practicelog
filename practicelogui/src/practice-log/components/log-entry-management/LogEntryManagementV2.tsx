@@ -46,6 +46,13 @@ export default function LogEntryManagementV2(props: Props) {
       setInputMessage(props.selectedLogEntry.message)
       setInputLabelList(props.selectedLogEntry.labels)
       setInputAssignmentList(props.selectedLogEntry.assignments)
+    } else {
+      // setInputID(null)
+      // setInputDate(null)
+      // setInputDuration(0)
+      // setInputMessage('')
+      // setInputLabelList([])
+      // setInputAssignmentList([])
     }
   }, [props.selectedLogEntry])
 
@@ -69,6 +76,8 @@ export default function LogEntryManagementV2(props: Props) {
     )
   }
 
+  // TODO: As soon as handleCreateLogEntry is successful, clear the state.
+  // How to do it?
   return (
     <Paper className="LogEntryManagement">
       {header()}

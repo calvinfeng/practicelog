@@ -1,14 +1,16 @@
 import React from 'react'
-import { 
+import {
   Grid,
-  Button } from '@material-ui/core'
+  Button
+} from '@mui/material'
+
 import {
   LogLabelJSON,
   LogAssignmentJSON,
   LogEntryJSON,
   Mode } from '../../types'
-import SaveIcon from '@material-ui/icons/Save'
-import AddIcon from '@material-ui/icons/Add'
+
+import { Save, Add } from '@mui/icons-material'
 
 type Props = {
   mode: Mode
@@ -29,8 +31,8 @@ export default function Submission(props: Props) {
   switch (props.mode) {
     case Mode.EditEntry:
       buttonGridItems = [
-        <Grid item>
-          <Button style={buttonStyle} variant="contained" color="primary" startIcon={<SaveIcon />}
+        <Grid item key="save-entry-submission">
+          <Button style={buttonStyle} variant="contained" color="primary" startIcon={<Save />}
             onClick={ () => {
               const entry: LogEntryJSON = {
                 id: props.inputID as string,
@@ -51,7 +53,7 @@ export default function Submission(props: Props) {
             Save Entry
           </Button>
         </Grid>,
-        <Grid item>
+        <Grid item key="cancel-save-entry-submission">
           <Button style={buttonStyle} variant="contained" color="secondary"
             onClick={props.handleDeselectLogEntry}>
             Cancel
@@ -61,8 +63,8 @@ export default function Submission(props: Props) {
       break
     case Mode.NewEntry:
       buttonGridItems = [
-        <Grid item>
-          <Button style={buttonStyle} variant="contained" color="primary" startIcon={<AddIcon />}
+        <Grid item key="new-entry-submission">
+          <Button style={buttonStyle} variant="contained" color="primary" startIcon={<Add />}
             onClick={() => {
               const entry: LogEntryJSON = {
                 id: "00000000-0000-0000-0000-000000000000",
@@ -83,7 +85,7 @@ export default function Submission(props: Props) {
             New Entry
           </Button>
         </Grid>,
-        <Grid item>
+        <Grid item key="cancel-new-entry-submission">
           <Button
             style={buttonStyle}
             variant="contained"
@@ -97,8 +99,8 @@ export default function Submission(props: Props) {
   }
 
   return (
-    <Grid container 
-      direction="row" justify="flex-end" alignItems="flex-end" spacing={0} style={{ marginTop: "1rem "}}>
+    <Grid container
+      direction="row" justifyContent="flex-end" alignItems="flex-end" spacing={0} style={{ marginTop: "1rem "}}>
       {buttonGridItems}
     </Grid>
   )
