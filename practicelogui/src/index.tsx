@@ -3,12 +3,7 @@ import ReactDOM from 'react-dom';
 
 import reportWebVitals from './reportWebVitals';
 import App from './app/components/App';
-import { Provider } from 'react-redux'
-import { store } from './redux-store'
-import { Counter, CounterDisplay, LogLabelDisplay } from './redux-store/component'
 import './index.css';
-import { ThemedComponent } from './context-api/ThemedComponent';
-import PracticeLog from './practice-log/components/PracticeLogV2';
 
 ReactDOM.render(
   <React.StrictMode>

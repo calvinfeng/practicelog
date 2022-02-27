@@ -1,6 +1,6 @@
 import { Button, Chip, Divider, Grid, Paper, TextField, Typography } from '@mui/material';
 import { MusicNote } from '@material-ui/icons';
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { DeleteConfirmationTarget, LogLabelJSON, nilUUID } from '../../types';
 import DeleteConfirmation from './DeleteConfirmation';
 import './LogLabelManagement.scss'
@@ -27,9 +27,9 @@ const initialState: UIState = {
 }
 
 function LogLabelManagement(props: Props) {
-  const [UIState,setUIState] = useState<UIState>(initialState)
-  const [isDeleteDialogShown, setDeleteDialogShown] = useState<boolean>(false)
-  const [deleteTarget, setDeleteTarget] = useState<DeleteConfirmationTarget>(DeleteConfirmationTarget.None)
+  const [UIState,setUIState] = React.useState<UIState>(initialState)
+  const [isDeleteDialogShown, setDeleteDialogShown] = React.useState<boolean>(false)
+  const [deleteTarget, setDeleteTarget] = React.useState<DeleteConfirmationTarget>(DeleteConfirmationTarget.None)
 
   const handleCreateParentLabel = () => {
     const newLabel: LogLabelJSON = {
@@ -227,7 +227,7 @@ function ChildLabelPanel(props: PanelProps) {
     }
 
     return (
-      <Grid item>
+      <Grid item key={label.name}>
         <Chip onClick={handler} style={style} label={label.name} icon={<MusicNote />} color="primary" />
       </Grid>
     )

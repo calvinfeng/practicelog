@@ -1,608 +1,358 @@
 import React from 'react'
+import axios from 'axios'
 import {
-  Typography,
-  Grid,
   Button,
+  Grid,
+  Typography,
   Snackbar,
-} from '@material-ui/core'
-import MuiAlert, { AlertProps, Color } from '@material-ui/lab/Alert';
-import axios, { AxiosInstance, AxiosResponse }  from 'axios'
-import { Map } from 'immutable'
-import _ from "lodash" // Import the entire lodash library
+  Alert
+} from '@mui/material'
 
-import { LogEntryJSON, LogLabelJSON, LogLabelDurationJSON, PracticeTimeSeriesDataPoint } from '../types'
-import LogTable from './LogTable'
-import AssignmentChecklistPopover from './AssignmentChecklistPopover'
-import LogEntryManagement from './log-entry-management/LogEntryManagement'
-import LogLabelManagement from './log-label-management/LogLabelManagement'
+import { GoogleUserProfile } from '../../app/types'
+
+// API
+import {
+  createLogEntry,
+  deleteLogEntry,
+  fetchLogEntriesByPage,
+  updateLogAssignment,
+  updateLogEntry
+} from '../api/log_entries'
+import { fetchLogTimeSeries } from '../api/log_time_series'
+import { createLogLabel, deleteLogLabel, fetchLogLabelDurations, fetchLogLabels, updateLogLabel } from '../api/log_labels'
+
+// Contexts
+import {
+  logEntryReducer,
+  LogEntryAction,
+  LogEntryActionType,
+  LogEntryContext,
+  LogEntryState
+} from '../contexts/log_entries'
+import { LogEntryJSON, LogLabelJSON } from '../types'
+import { LogTimeSeriesActionType, logTimeSeriesReducer } from '../contexts/log_time_series'
+import { LogLabelAction, LogLabelActionType, logLabelReducer } from '../contexts/log_labels'
+
+// Components
 import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
+import AssignmentChecklistPopover from './AssignmentChecklistPopover'
 import Heatmap from './metrics/Heatmap'
-
+import LogTable from './LogTable'
 import './PracticeLog.scss'
-import { GoogleUserProfile } from '../../app/types';
+import { AlertActionType, alertReducer } from '../contexts/alert'
+import LogEntryManagementV2 from './log-entry-management/LogEntryManagementV2'
+import LogLabelManagementV2 from './log-label-management/LogLabelManagementV2'
 
 type Props = {
-  currentUserProfile: GoogleUserProfile
+  currentUser: GoogleUserProfile | null
 }
 
-type DataStore = {
-  logEntries: LogEntryJSON[]
-  logLabels: LogLabelJSON[]
+export default function PracticeLog(props: Props) {
+  let idToken = ""
+  if (props.currentUser) {
+    idToken = props.currentUser.id_token
+  }
 
-  practiceTimeSeriesByMonth: PracticeTimeSeriesDataPoint[]
-  practiceTimeSeriesByDay: PracticeTimeSeriesDataPoint[]
-  totalPracticeTime: number
-}
-
-type InternalState = {
-  logLabelDurationFetched: boolean
-}
-
-type InteractionState = {
-  selectedLogEntry: LogEntryJSON | null
-  focusedLogEntry: LogEntryJSON | null
-
-  pageNum: number
-  hasNextPage: boolean
-
-  popoverAnchor: HTMLButtonElement | null
-
-  alertShown: boolean
-  alertMessage: string
-  alertSeverity: Color
-}
-
-type State = DataStore & InternalState & InteractionState
-
-export default class PracticeLog extends React.Component<Props, State> {
-  private http: AxiosInstance
-  private pageAnchor: HTMLDivElement | null
-  constructor(props: Props) {
-    super(props)
-    this.state = {
-      logEntries: [],
-      logLabels: [],
-      totalPracticeTime: 0,
-      logLabelDurationFetched: false,
-      selectedLogEntry: null,
-      focusedLogEntry: null,
-      pageNum: 1,
-      hasNextPage: false,
-      popoverAnchor: null,
-      alertShown: false,
-      alertMessage: "",
-      alertSeverity: "info",
-      practiceTimeSeriesByMonth: [],
-      practiceTimeSeriesByDay: []
+  const http = axios.create({
+    baseURL: process.env.REACT_APP_API_URL,
+    timeout: 1000,
+    headers: {
+      "Authorization": idToken
     }
-    this.http = axios.create({
-      baseURL: process.env.REACT_APP_API_URL,
-      timeout: 1000,
-      headers: {
-        "Authorization": props.currentUserProfile.id_token
-      }
-    })
-    this.pageAnchor = null
-  }
+  })
 
-  componentDidUpdate(_: Props, prevState: State) {
-    if (this.state.pageNum !== prevState.pageNum) {
-      this.fetchLogEntriesByPage(this.state.pageNum)
-    }
-  }
+  // Setup default states
+  const pageAnchor = React.useRef<null | HTMLDivElement>(null)
+  const [popoverAnchor, setPopoverAnchor] = React.useState<HTMLButtonElement | null>(null)
+  const [focusedLogEntry, setFocusedLogEntry] = React.useState<LogEntryJSON | null>(null)
+  const [alert, dispatchAlertAction] = React.useReducer(alertReducer, {
+    shown: false,
+    severity: "info",
+    message: ""
+  })
 
-  componentDidMount() {
-    this.fetchLogEntriesByPage(this.state.pageNum)
-    this.fetchLogLabels()
-    this.fetchTotalPracticeTime()
-    this.fetchPracticeTimeSeries()
-  }
+  const [logEntryState, dispatchLogEntryAction] = React.useReducer(logEntryReducer, {
+    currPage: 1,
+    hasNextPage: false,
+    isFetching: false,
+    logEntries: [],
+    error: null,
+    selectedLogEntry: null
+  })
+  const [logTimeSeriesState, dispatchLogTimeSeriesAction] = React.useReducer(logTimeSeriesReducer, {
+    isFetching: false,
+    byMonth: [],
+    byDay: [],
+    total: 0,
+    error: null
+  })
+  const [logLabelState, dispatchLogLabelAction] = React.useReducer(logLabelReducer, {
+    logLabels: [],
+    isFetching: false,
+    selectedParentLabel: null,
+    selectedChildLabel: null,
+    error: null
+  })
 
   /**
-   * This is an internal class helper function to populate log label duration
-   * as state.
+   * Fetch log entries asynchronously.
    */
-  fetchLogLabelDurations() {
-    this.http.get('/api/v1/log/labels/duration')
-      .then((resp: AxiosResponse) => {
-        const labels = _.cloneDeep(this.state.logLabels)
-        const durations: LogLabelDurationJSON[] = resp.data.results
-        // This is an immutable map
-        let durationMap = Map<string, number>()
-        for (let i = 0; i < durations.length; i++) {
-          durationMap = durationMap.set(durations[i].id, durations[i].duration)
-        }
-        for (let i = 0; i < labels.length; i++) {
-          labels[i].duration = durationMap.get(labels[i].id) as number
-        }
-        this.setState({
-          logLabels: labels,
-          logLabelDurationFetched: true
-        })
-      })
-      .catch((reason: any) => {
-        this.setState({
-          alertShown: true,
-          alertMessage: `Failed to list log label durations due to ${reason}`,
-          alertSeverity: "error"
-        })
-      })
+  const handleFetchLogEntries = async () => {
+    dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
+    const action = await fetchLogEntriesByPage(http, logEntryState.currPage)
+    dispatchLogEntryAction(action)
   }
 
   /**
-   * This is an internal class helper to populate the state variable totalPracticeDuration.
+   * Create a log entry and re-load the list of entries.
+   * @param entry
    */
-  fetchTotalPracticeTime() {
-    this.http.get('/api/v1/log/entries/duration')
-      .then((resp: AxiosResponse) => {
-        this.setState({
-          totalPracticeTime: resp.data.in_minutes as number
-        })
-      })
-      .catch((reason: any) => {
-        this.setState({
-          alertShown: true,
-          alertMessage: `Failed to fetch log entries total duration to ${reason}`,
-          alertSeverity: "error"
-        })
-      })
-  }
-
-  /**
-   * This is an internal class helper to populate the state variable durationTimeSeries.
-   * By default this will fetch time series by month but maybe I will add a radial button to choose
-   * either by day or by month.
-   */
-  fetchPracticeTimeSeries() {
-    this.http.get('/api/v1/log/entries/duration/accum-time-series?group=by_month')
-      .then((resp: AxiosResponse) => {
-        this.setState({
-          practiceTimeSeriesByMonth: resp.data.time_series as PracticeTimeSeriesDataPoint[]
-        })
-      })
-      .catch((reason: any) => {
-        this.setState({
-          alertShown: true,
-          alertMessage: `Failed to fetch log entry time series duration due to ${reason}`,
-          alertSeverity: "error"
-        })
-      })
-
-    this.http.get('/api/v1/log/entries/duration/time-series?group=by_day')
-      .then((resp: AxiosResponse) => {
-        this.setState({
-          practiceTimeSeriesByDay: resp.data.time_series as PracticeTimeSeriesDataPoint[]
-        })
-      })
-      .catch((reason: any) => {
-        this.setState({
-          alertShown: true,
-          alertMessage: `Failed to fetch log entry time series duration due to ${reason}`,
-          alertSeverity: "error"
-        })
-      })
-  }
-
-  /**
-   * This is an internal class helper function to populate log labels as state.
-   */
-  fetchLogLabels() {
-    this.http.get('/api/v1/log/labels')
-      .then((resp: AxiosResponse) => {
-        const labels: LogLabelJSON[] = resp.data.results
-        let childrenIDByParentID = Map<string, string[]>()
-        labels.forEach((label: LogLabelJSON) => {
-          if (label.parent_id) {
-            let children = childrenIDByParentID.get(label.parent_id)
-            if (!children) {
-              children = []
-            }
-            children.push(label.id)
-            // WARNING: Using immutable map
-            childrenIDByParentID = childrenIDByParentID.set(label.parent_id, children)
-          }
-        })
-        labels.forEach((label: LogLabelJSON) => {
-          if (childrenIDByParentID.get(label.id)) {
-            label.children = childrenIDByParentID.get(label.id) as string[]
-          } else {
-            label.children = []
-          }
-        })
-        this.setState({
-          logLabels: labels
-        })
-      })
-      .then(() => {
-        this.fetchLogLabelDurations()
-      })
-      .catch((reason: any) => {
-        this.setState({
-          alertShown: true,
-          alertMessage: `Failed to list log labels due to ${reason}`,
-          alertSeverity: "error"
-        })
-      })
-  }
-
-  /**
-   * This is an internal class helper function to populate log entries as state.
-   * @param page indicates which page to fetch from.
-   */
-  fetchLogEntriesByPage(page: number) {
-    this.http.get('/api/v1/log/entries', {
-        params: {
-          "page": page
-        }
-      })
-      .then((resp: AxiosResponse) => {
-        // time.Time is parsed as string. The string needs to be converted back into date object.
-        const entries: LogEntryJSON[] = []
-        for (let i = 0; i < resp.data.results.length; i++) {
-          entries.push({
-            id: resp.data.results[i].id,
-            date: new Date(resp.data.results[i].date),
-            username: resp.data.results[i].username,
-            labels: resp.data.results[i].labels,
-            message: resp.data.results[i].message,
-            details: resp.data.results[i].details,
-            duration: resp.data.results[i].duration,
-            assignments: resp.data.results[i].assignments
-          })
-        }
-
-        // If a log entry is selected, when page loads, it should refresh and update the selected
-        // entry. Otherwise, let it stay the same.
-        let selectedLogEntry = this.state.selectedLogEntry
-        if (selectedLogEntry !== null) {
-          let target = entries.find((entry: LogEntryJSON) => entry.id === (selectedLogEntry as LogEntryJSON).id)
-          if  (target) {
-            selectedLogEntry = target
-          }
-        }
-
-        this.setState({
-          logEntries: entries,
-          hasNextPage: resp.data.more,
-          selectedLogEntry: selectedLogEntry
-        })
-      })
-      .catch((reason: any) => {
-        this.setState({
-          alertShown: true,
-          alertMessage: `Failed to list log entries due to ${reason}`,
-          alertSeverity: "error"
-        })
-      })
-  }
-  /**
-   * This is a callback for child components to call to create a log label.
-   * @param label is the log label to submit to API for create.
-   */
-  handleHTTPCreateLogLabel = (label: LogLabelJSON) => {
-    this.http.post(`/api/v1/log/labels`, label)
-    .then((resp: AxiosResponse) => {
-      if (resp.status === 201) {
-        this.fetchLogLabels()
-        this.setState({
-          alertShown: true,
-          alertMessage: `Successfully created log label ${label.name}`,
-          alertSeverity: "success"
-        })
-      }
-    })
-    .catch((reason: any) => {
-      this.setState({
-        alertShown: true,
-        alertMessage: `Failed to create log label ${label.name} due to ${reason}`,
-        alertSeverity: "error"
-      })
-    })
-  }
-  /**
-   * This is a callback for child components to call to update a log label.
-   * @param label is the log label to submit to API for update.
-   */
-  handleHTTPUpdateLogLabel = (label: LogLabelJSON) => {
-    this.http.put(`/api/v1/log/labels/${label.id}`, label)
-    .then((resp: AxiosResponse) => {
-      if (resp.status === 200) {
-        this.fetchLogLabels()
-        this.fetchLogEntriesByPage(this.state.pageNum)
-        this.setState({
-          alertShown: true,
-          alertMessage: `Successfully updated log label ${label.name}`,
-          alertSeverity: "success"
-        })
-      }
-    })
-    .catch((reason: any) => {
-      this.setState({
-        alertShown: true,
-        alertMessage: `Failed to update log label ${label.name} due to ${reason}`,
-        alertSeverity: "error"
-      })
-    })
-  }
-  /**
-   * This is a callback for child components to call to delete a log label.
-   * @param label is the log label to submit to API for delete.
-   */
-  handleHTTPDeleteLogLabel = (label: LogLabelJSON) => {
-    this.http.delete(`/api/v1/log/labels/${label.id}`)
-    .then((resp: AxiosResponse) => {
-      if (resp.status === 200) {
-        this.fetchLogLabels()
-        this.fetchLogEntriesByPage(this.state.pageNum)
-        this.setState({
-          alertShown: true,
-          alertMessage: `Successfully deleted log label ${label.name}`,
-          alertSeverity: "success"
-        })
-      }
-    })
-    .catch((reason: any) => {
-      this.setState({
-        alertShown: true,
-        alertMessage: `Failed to delete log label ${label.name} due to ${reason}`,
-        alertSeverity: "error"
-      })
-    })
-  }
-  /**
-   * This is a callback for child components to call to delete a log entry.
-   * @param entry is the entry to submit to API for create.
-   */
-  handleHTTPDeleteLogEntry = (entry: LogEntryJSON) => {
-    this.http.delete(`/api/v1/log/entries/${entry.id}`)
-      .then((resp: AxiosResponse) => {
-        if (resp.status === 200) {
-          this.fetchLogEntriesByPage(this.state.pageNum)
-          this.setState({
-            alertShown: true,
-            alertMessage: `Successfully deleted log entry ${entry.id}`,
-            alertSeverity: "success"
-          })
-        }
-      })
-      .catch((reason: any) => {
-        this.setState({
-          alertShown: true,
-          alertMessage: `Failed to delete log entry ${entry.id} due to ${reason}`,
-          alertSeverity: "error"
-        })
-      })
-  }
-  /**
-   * This is a callback for child components to call to create a log entry.
-   * @param entry is the entry to submit to API For create.
-   */
-  handleHTTPCreateLogEntry = (entry: LogEntryJSON) => {
-    this.http.post(`/api/v1/log/entries`, entry)
-      .then((resp: AxiosResponse) => {
-        if (resp.status === 201) {
-          this.fetchLogEntriesByPage(this.state.pageNum)
-          this.setState({
-            alertShown: true,
-            alertMessage: "Successfully created new log entry",
-            alertSeverity: "success",
-            selectedLogEntry: null
-          })
-        }
-      })
-      .catch((reason: any) => {
-        this.setState({
-          alertShown: true,
-          alertMessage: `Failed to create log entry due to ${reason}`,
-          alertSeverity: "error"
-        })
-      })
-  }
-  /**
-   * This is a callback for child components to call to update a log entry.
-   * It is unnecessary to refresh the page with a HTTP request. I expect frequent update here.
-   * @param entry is the entry to submit to API for assignments update.
-   */
-  handleHTTPUpdateLogAssignments = (entry: LogEntryJSON) => {
-    this.http.put(`/api/v1/log/entries/${entry.id}/assignments`, entry)
-      .then((resp: AxiosResponse) => {
-        const updatedEntry: LogEntryJSON = resp.data
-        const entries = this.state.logEntries
-        for (let i = 0; i < entries.length; i++) {
-          if (entries[i].id === updatedEntry.id) {
-            entries[i] = {
-              id: resp.data.id,
-              date: new Date(resp.data.date),
-              username: resp.data.username,
-              labels: resp.data.labels,
-              message: resp.data.message,
-              details: resp.data.details,
-              duration: resp.data.duration,
-              assignments: resp.data.assignments
-            }
-            break
-          }
-        }
-        this.setState({
-          logEntries: entries,
-          focusedLogEntry: updatedEntry,
-          alertShown: true,
-          alertSeverity: "success",
-          alertMessage: `Successfully updated entry ${entry.id} assignments`
-        })
-      })
-      .catch((reason: any) => {
-        this.setState({
-          alertShown: true,
-          alertMessage: `Failed to update log entry assignment due to ${reason}`,
-          alertSeverity: "error"
-        })
-      })
-  }
-  /**
-   * This is a callback for child components to call to update a log entry.
-   * It is unnecessary to refresh the page with a HTTP request. I expect frequent update here.
-   * @param entry is the entry to submit to API for update.
-   */
-  handleHTTPUpdateLogEntry = (entry: LogEntryJSON) => {
-    this.http.put(`/api/v1/log/entries/${entry.id}`, entry)
-      .then((resp: AxiosResponse) => {
-        const updatedEntry: LogEntryJSON = resp.data
-        const entries = this.state.logEntries
-        for (let i = 0; i < entries.length; i++) {
-          if (entries[i].id === updatedEntry.id) {
-            entries[i] = {
-              id: resp.data.id,
-              date: new Date(resp.data.date),
-              username: resp.data.username,
-              labels: resp.data.labels,
-              message: resp.data.message,
-              details: resp.data.details,
-              duration: resp.data.duration,
-              assignments: resp.data.assignments
-            }
-            break
-          }
-        }
-        this.setState({
-          logEntries: entries,
-          selectedLogEntry: null,
-          alertShown: true,
-          alertSeverity: "success",
-          alertMessage: `Successfully updated entry ${entry.id}`
-        })
-      })
-      .catch((reason: any) => {
-        this.setState({
-          alertShown: true,
-          alertMessage: `Failed to update log entry due to ${reason}`,
-          alertSeverity: "error"
-        })
-      })
-  }
-
-  scrollToBottom = () => {
-    if (this.pageAnchor) {
-      this.pageAnchor.scrollIntoView({ behavior: 'smooth' });
+  const handleCreateLogEntry = async (entry: LogEntryJSON) => {
+    let action: LogEntryAction
+    action = await createLogEntry(http, entry)
+    dispatchLogEntryAction(action)
+    if (action.type === LogEntryActionType.CreateSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully created log entry" })
+      dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
+      action = await fetchLogEntriesByPage(http, logEntryState.currPage)
+      dispatchLogEntryAction(action)
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
     }
   }
 
-  handleClearPopoverAnchorEl = () => {
-    this.setState({ popoverAnchor: null, focusedLogEntry: null })
+  /**
+   * Update a log entry.
+   * @param entry
+   */
+  const handleUpdateLogEntry = async (entry: LogEntryJSON) => {
+    const action = await updateLogEntry(http, entry)
+    dispatchLogEntryAction(action)
+    if (action.type === LogEntryActionType.UpdateSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully updated log entry" })
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
   }
 
-  handleSelectLogEntry = (log: LogEntryJSON) => {
-    this.setState({ selectedLogEntry: log })
+  /**
+   * Update assignments of a log entry.
+   * @param entry
+   */
+  const handleUpdateLogAssignments = async (entry: LogEntryJSON) => {
+    const action = await updateLogAssignment(http, entry)
+    dispatchLogEntryAction(action)
+    if (action.type === LogEntryActionType.UpdateSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully updated log assignment" })
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
   }
 
-  handleDeselectLogEntry = () => {
-    this.setState({ selectedLogEntry: null })
+  /**
+   * Delete a log entry and re-load the list of entries.
+   * @param entry
+   */
+  const handleDeleteLogEntry = async (entry: LogEntryJSON) => {
+    let action: LogEntryAction
+    console.log('delete log entry', entry.id)
+    action = await deleteLogEntry(http, entry)
+    dispatchLogEntryAction(action)
+    if (action.type === LogEntryActionType.DeleteSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully deleted log entry" })
+      dispatchLogEntryAction({ type: LogEntryActionType.Fetch })
+      action = await fetchLogEntriesByPage(http, logEntryState.currPage)
+      dispatchLogEntryAction(action)
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
   }
 
-  handleFocusLogEntryAndAnchorEl = (event: React.MouseEvent<HTMLButtonElement>, log: LogEntryJSON) => {
-    this.setState({
-      focusedLogEntry: log,
-      popoverAnchor: event.currentTarget
-    })
+  /**
+   * Fetch log labels and durations.
+   */
+  const handleFetchLogLabels = async () => {
+    let action: LogLabelAction
+    action = await fetchLogLabels(http)
+    dispatchLogLabelAction(action)
+    action = await fetchLogLabelDurations(http)
+    dispatchLogLabelAction(action)
   }
 
-  handleCloseAlert = (_ ?: React.SyntheticEvent, reason?: string) => {
-    if (reason !== 'clickaway') {
-      this.setState({alertShown: false});
+  /**
+   * Create a log label.
+   * @param label
+   */
+  const handleCreateLogLabel = async (label: LogLabelJSON) => {
+    const action = await createLogLabel(http, label)
+    dispatchLogLabelAction(action)
+    if (action.type === LogLabelActionType.CreateSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully created log label" })
+      handleFetchLogLabels()
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
     }
-  };
-
-  get PaginationControlPanel() {
-    const handlePrevPage = () => {
-      this.setState({ pageNum: this.state.pageNum - 1 })
-    }
-
-    const handleNextPage = () => {
-      this.setState({ pageNum: this.state.pageNum + 1 })
-    }
-
-    const items: JSX.Element[] = []
-    if (this.state.pageNum > 1) {
-      items.push(
-        <Grid item>
-          <Button variant="contained" color="primary" onClick={handlePrevPage}>Prev</Button>
-        </Grid>
-      )
-    }
-
-    if (this.state.hasNextPage) {
-      items.push(
-        <Grid item>
-          <Button variant="contained" color="primary" onClick={handleNextPage}>Next</Button>
-        </Grid>
-      )
-    }
-
-    items.push(
-      <Grid item>
-        <Typography>Page {this.state.pageNum} </Typography>
-      </Grid>
-    )
-
-    return (
-      <Grid container
-        direction="row"
-        justify="flex-end"
-        alignItems="baseline"
-        spacing={1}
-        className="pagination-control-panel">
-        {items}
-    </Grid>
-    )
   }
 
-  render() {
-    return (
-      <section className="PracticeLog">
+  /**
+   * Update a log label.
+   * @param label
+   */
+  const handleUpdateLogLabel = async (label: LogLabelJSON) => {
+    const action = await updateLogLabel(http, label)
+    if (action.type === LogLabelActionType.UpdateSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully updated log label" })
+      handleFetchLogLabels()
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
+  }
+
+  /**
+   * Delete a log label.
+   * @param label
+   */
+  const handleDeleteLogLabel = async (label: LogLabelJSON) => {
+    const action = await deleteLogLabel(http, label)
+    if (action.type === LogLabelActionType.DeleteSuccess) {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "success", message: "successfully deleted log label" })
+      handleFetchLogLabels()
+    } else {
+      dispatchAlertAction({ type: AlertActionType.Show, severity: "error", message: action.error as string })
+    }
+  }
+
+  /**
+   * Fetch log time series data asynchronously
+   */
+  const handleFetchTimeSeries = async () => {
+    console.log('fetch time series data')
+    dispatchLogTimeSeriesAction({ type: LogTimeSeriesActionType.Fetch })
+    const action = await fetchLogTimeSeries(http)
+    dispatchLogTimeSeriesAction(action)
+  }
+
+  /**
+   * Select a log entry so it can be edited.
+   * @param entry
+   */
+  const handleSelectLogEntry = (entry: LogEntryJSON) => {
+    dispatchLogEntryAction({ type: LogEntryActionType.Select, selectedLogEntry: entry })
+  }
+
+  /**
+   * Deselect a log entry.
+   */
+  const handleDeselectLogEntry = () => {
+    dispatchLogEntryAction({ type: LogEntryActionType.Deselect })
+  }
+
+  /**
+   *
+   */
+  const handleScrollToBottom = () => {
+    if (pageAnchor.current !== null) {
+      pageAnchor.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  React.useEffect(() => { handleFetchLogEntries() }, [logEntryState.currPage])
+  React.useEffect(() => { handleFetchTimeSeries() }, [])
+  React.useEffect(() => { handleFetchLogLabels() }, [])
+
+  return (
+    <section className="PracticeLog">
+      <LogEntryContext.Provider value={{
+          state: logEntryState,
+          handleSelectLogEntry,
+          handleDeselectLogEntry
+        }}>
         <AssignmentChecklistPopover
-          focusedLogEntry={this.state.focusedLogEntry}
-          popoverAnchor={this.state.popoverAnchor}
-          handleClearPopoverAnchorEl={this.handleClearPopoverAnchorEl}
-          handleHTTPUpdateLogAssignments={this.handleHTTPUpdateLogAssignments} />
+          focusedLogEntry={focusedLogEntry}
+          popoverAnchor={popoverAnchor}
+          handleClearPopoverAnchorEl={() => {
+            setPopoverAnchor(null)
+            setFocusedLogEntry(null)
+          }}
+          handleHTTPUpdateLogAssignments={handleUpdateLogAssignments} />
         <LogTable
-          scrollToBottom={this.scrollToBottom}
-          logEntries={this.state.logEntries}
-          handleFocusLogEntryAndAnchorEl={this.handleFocusLogEntryAndAnchorEl}
-          handleSelectLogEntry={this.handleSelectLogEntry}
-          handleHTTPDeleteLogEntry={this.handleHTTPDeleteLogEntry} />
-        {this.PaginationControlPanel}
-        <div ref={pageAnchor => { this.pageAnchor = pageAnchor; }} />
-        <LogEntryManagement
-          logLabels={this.state.logLabels}
-          selectedLogEntry={this.state.selectedLogEntry}
-          handleDeselectLogEntry={this.handleDeselectLogEntry}
-          handleHTTPUpdateLogEntry={this.handleHTTPUpdateLogEntry}
-          handleHTTPCreateLogEntry={this.handleHTTPCreateLogEntry} />
-        <LogLabelManagement
-          logLabels={this.state.logLabels}
-          logLabelDurationFetched={this.state.logLabelDurationFetched}
-          handleHTTPCreateLogLabel={this.handleHTTPCreateLogLabel}
-          handleHTTPUpdateLogLabel={this.handleHTTPUpdateLogLabel}
-          handleHTTPDeleteLogLabel={this.handleHTTPDeleteLogLabel} />
+          scrollToBottom={handleScrollToBottom}
+          logEntries={logEntryState.logEntries}
+          handleFocusLogEntryAndAnchorEl={
+            (event: React.MouseEvent<HTMLButtonElement>, entry: LogEntryJSON) => {
+              setFocusedLogEntry(entry)
+              setPopoverAnchor(event.currentTarget)
+            }
+          }
+          handleSelectLogEntry={handleSelectLogEntry}
+          handleHTTPDeleteLogEntry={handleDeleteLogEntry} />
+        <PaginationControlPanel
+          logEntryState={logEntryState}
+          handleNextPage={() => dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage + 1})}
+          handlePrevPage={() => dispatchLogEntryAction({ type: LogEntryActionType.SetPage, page: logEntryState.currPage - 1})} />
+        <div ref={pageAnchor} />
+        <LogEntryManagementV2
+          logEntries={logEntryState.logEntries}
+          logLabels={logLabelState.logLabels}
+          selectedLogEntry={logEntryState.selectedLogEntry}
+          handleDeselectLogEntry={handleDeselectLogEntry}
+          handleHTTPUpdateLogEntry={handleUpdateLogEntry}
+          handleHTTPCreateLogEntry={handleCreateLogEntry} />
+        <LogLabelManagementV2
+          logLabels={logLabelState.logLabels}
+          handleHTTPCreateLogLabel={handleCreateLogLabel}
+          handleHTTPUpdateLogLabel={handleUpdateLogLabel}
+          handleHTTPDeleteLogLabel={handleDeleteLogLabel} />
         <Heatmap
-          timeSeries={this.state.practiceTimeSeriesByDay} />
+          timeSeries={logTimeSeriesState.byDay} />
         <PracticeTimeLineChart
-          timeSeries={this.state.practiceTimeSeriesByMonth} />
+          timeSeries={logTimeSeriesState.byMonth} />
         <Snackbar
-          open={this.state.alertShown}
+          open={alert.shown}
           autoHideDuration={6000}
-          onClose={this.handleCloseAlert}>
+          onClose={() => dispatchAlertAction({ type: AlertActionType.Hide })}>
           <Alert
-            onClose={this.handleCloseAlert}
-            severity={this.state.alertSeverity}>
-            {this.state.alertMessage}
+            onClose={() => dispatchAlertAction({ type: AlertActionType.Hide })}
+            severity={alert.severity}>
+            {alert.message}
           </Alert>
         </Snackbar>
-      </section>
-    )
-  }
+      </LogEntryContext.Provider>
+    </section>
+  )
 }
 
-function Alert(props: AlertProps) {
-  return <MuiAlert elevation={6} variant="filled" {...props} />;
+type PaginationControlPanelProps = {
+  logEntryState: LogEntryState
+  handleNextPage: () => void
+  handlePrevPage: () => void
+}
+
+function PaginationControlPanel(props: PaginationControlPanelProps) {
+  return (
+    <Grid container
+      direction="row"
+      justifyContent="flex-end"
+      alignItems="baseline"
+      spacing={1}
+      className="pagination-control-panel">
+      <Grid item>
+        <Button variant="contained" color="primary" key="prev-page"
+          disabled={props.logEntryState.currPage === 1}
+          onClick={props.handlePrevPage}>
+            Prev
+        </Button>
+      </Grid>
+      <Grid item>
+        <Button variant="contained" color="primary" key="next-page"
+          disabled={!props.logEntryState.hasNextPage}
+          onClick={props.handleNextPage}>
+          Next Page
+        </Button>
+      </Grid>
+      <Grid item>
+        <Typography>Page {props.logEntryState.currPage} </Typography>
+      </Grid>
+    </Grid>
+  )
 }

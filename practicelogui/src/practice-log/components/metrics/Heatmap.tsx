@@ -1,9 +1,9 @@
-import { Paper } from '@material-ui/core'
 import React from 'react'
-import CalendarHeatmap from 'react-calendar-heatmap';
-
-import 'react-calendar-heatmap/dist/styles.css';
+import { Paper } from '@mui/material'
 import ReactTooltip from 'react-tooltip';
+import CalendarHeatmap from 'react-calendar-heatmap';
+import 'react-calendar-heatmap/dist/styles.css';
+
 import { PracticeTimeSeriesDataPoint } from '../../types';
 import './Heatmap.scss'
 
@@ -72,19 +72,4 @@ function shiftDate(date: Date, numDays: number): Date {
   const newDate = new Date(date);
   newDate.setDate(newDate.getDate() + numDays);
   return newDate;
-}
-
-function maxMinutes(data: PracticeTimeSeriesDataPoint[]): number {
-  if (data.length === 0) {
-    return 0
-  }
-
-  let max = data[0].value
-  for (let i = 1; i < data.length; i++) {
-    if (data[i].value > max) {
-      max = data[i].value
-    }
-  }
-
-  return max
 }

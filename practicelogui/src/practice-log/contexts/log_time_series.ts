@@ -8,10 +8,6 @@ export type LogTimeSeriesState = {
   error: string | null
 }
 
-interface ILogTimeSeriesContext {
-  state: LogTimeSeriesState
-}
-
 export enum LogTimeSeriesActionType {
   Fetch = 'FETCH',
   FetchSuccess = 'FETCH_BY_MONTH_SUCCESS',

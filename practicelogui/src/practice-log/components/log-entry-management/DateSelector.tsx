@@ -1,12 +1,9 @@
 import React from "react"
-import DateFnsUtils from "@date-io/date-fns"
 
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import LocalizationProvider from '@mui/lab/LocalizationProvider';
-import { DatePicker } from "@mui/lab";
+import { DatePicker, LocalizationProvider } from "@mui/lab";
 import { TextField } from "@mui/material/";
 
-import { MuiPickersUtilsProvider, KeyboardDatePicker } from "@material-ui/pickers";
 
 type Props = {
   inputDate: Date | null

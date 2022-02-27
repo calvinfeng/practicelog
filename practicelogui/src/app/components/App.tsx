@@ -11,14 +11,13 @@ import {
   useLocation,
   useNavigate
 } from "react-router-dom"
-import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem, Avatar } from '@material-ui/core';
-import { MenuRounded } from '@material-ui/icons';
+import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem, Avatar } from '@mui/material';
+import { MenuRounded } from '@mui/icons-material';
 import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 
 import { GoogleUserProfile, GoogleError, AuthValidationResponse, Developer, Guest } from '../types'
 import Unauthorized from './Unauthorized'
-import PracticeLog from '../../practice-log/components/PracticeLog'
-import PracticeLogV2 from '../../practice-log/components/PracticeLogV2';
+import PracticeLogV2 from '../../practice-log/components/PracticeLog';
 import Fretboard from '../../fretboard/Fretboard'
 import Timeline from '../../timeline/Timeline'
 import './App.scss'
@@ -165,7 +164,6 @@ export default class App extends React.Component<Props, State> {
             <Menu
               open={this.state.menuOpen}
               onClose={this.handleMenuOnClose}
-              getContentAnchorEl={null}
               anchorEl={this.state.anchorEl}
               anchorOrigin={{"vertical": "bottom", "horizontal": "center"}} >
               <PracticeLogMenuItem />

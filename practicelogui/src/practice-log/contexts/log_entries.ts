@@ -47,7 +47,7 @@ export function logEntryReducer(state: LogEntryState, action: LogEntryAction): L
       }
 
     case LogEntryActionType.UpdateSuccess:
-      const newState = { ... state, error: null, selectedLogEntry: null }
+      const newState = { ...state, error: null, selectedLogEntry: null }
       const payload = action.payload as LogEntryJSON
       for (let i = 0; i < newState.logEntries.length; i++) {
         if (newState.logEntries[i].id === payload.id) {

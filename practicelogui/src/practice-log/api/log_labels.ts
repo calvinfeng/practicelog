@@ -1,10 +1,6 @@
 import { AxiosInstance, AxiosResponse, AxiosError } from "axios"
-import { entries } from "lodash"
-import { LogEntryActionType } from "../contexts/log_entries"
 import { LogLabelAction, LogLabelActionType } from "../contexts/log_labels"
-import { LogEntryJSON, LogLabelDurationJSON, LogLabelJSON } from "../types"
-import { Map } from 'immutable'
-
+import { LogLabelDurationJSON, LogLabelJSON } from "../types"
 
 export async function fetchLogLabels(http: AxiosInstance): Promise<LogLabelAction> {
   try {
