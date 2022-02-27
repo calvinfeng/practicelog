@@ -309,7 +309,7 @@ function FretboardMenuItem() {
   }
 
   return (
-    <MenuItem onClick={handleClick} disabled={location.pathname === Path.Fretboard}>
+    <MenuItem onClick={handleClick} disabled={true}>
       Fretboard
     </MenuItem>
   );

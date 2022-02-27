@@ -226,7 +226,6 @@ export default function PracticeLog(props: Props) {
    * Fetch log time series data asynchronously
    */
   const handleFetchTimeSeries = async () => {
-    console.log('fetch time series data')
     dispatchLogTimeSeriesAction({ type: LogTimeSeriesActionType.Fetch })
     const action = await fetchLogTimeSeries(http)
     dispatchLogTimeSeriesAction(action)

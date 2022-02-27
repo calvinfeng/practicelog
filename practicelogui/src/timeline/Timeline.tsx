@@ -6,7 +6,7 @@ import {
   CardMedia,
   CardContent,
   Typography,
-} from '@material-ui/core'
+} from '@mui/material'
 
 import {
   VerticalTimeline,
@@ -123,7 +123,7 @@ class Timeline extends React.Component<Props & RouteProps, State> {
         const date = new Date(video.published)
         return date.getDay() > 15
       }).forEach((video: VideoLogEntryJSON) => {
-        elements.push(<ProgressVideoElement video={video} />)
+        elements.push(<ProgressVideoElement key={video.id} video={video} />)
       })
 
       // WARNING: If this is a performance issue, use map
@@ -138,6 +138,7 @@ class Timeline extends React.Component<Props & RouteProps, State> {
 
       // TODO: Switch to V2 eventually, use profile ID to judge whether user has edit rights.
       elements.push(<PracticeVideoElement
+        key={`practice-video-element-${group.year}-${group.month}`}
         hasPermissionToEdit={this.props.currentUserProfile.email === "calvin.j.feng@gmail.com" ||
           this.props.currentUserProfile.user_id === Developer.user_id}
         createSummary={this.createSummary}
@@ -152,7 +153,7 @@ class Timeline extends React.Component<Props & RouteProps, State> {
         const date = new Date(video.published)
         return date.getDay() <= 15
       }).forEach((video: VideoLogEntryJSON) => {
-        elements.push(<ProgressVideoElement video={video} />)
+        elements.push(<ProgressVideoElement key={video.id} video={video} />)
       })
     })
 

@@ -2,10 +2,10 @@ import React from 'react'
 import ReactPlayer from 'react-player'
 import { VideoLogEntryJSON, MonthNames } from './types'
 import { VerticalTimelineElement }  from 'react-vertical-timeline-component'
-import MusicNoteIcon from '@material-ui/icons/MusicNote'
+import {MusicNote} from '@mui/icons-material'
 import './ProgressVideoElement.scss'
 import { contentArrowStyle, contentStyle, iconStyle } from './styles'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 
 type Props = {
   video: VideoLogEntryJSON
@@ -21,7 +21,7 @@ export function ProgressVideoElement(props: Props) {
       contentArrowStyle={contentArrowStyle}
       contentStyle={contentStyle}
       iconStyle={iconStyle}
-      icon={<MusicNoteIcon />}>
+      icon={<MusicNote />}>
       <div className="ProgressVideoElement">
         <ReactPlayer
           url={`https://www.youtube.com/watch?v=${props.video.id}`}

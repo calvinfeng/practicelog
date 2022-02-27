@@ -11,9 +11,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions
-} from '@material-ui/core'
+} from '@mui/material'
 import ReactPlayer from 'react-player'
-import MusicNoteIcon from '@material-ui/icons/MusicNote'
+import { MusicNote } from '@mui/icons-material'
 import { VerticalTimelineElement }  from 'react-vertical-timeline-component'
 import { contentStyle, contentArrowStyle, iconStyle } from './styles'
 import { MonthNames, SummaryJSON, ThumbnailJSON, VideoLogEntryJSON, VideoOrientation } from './types'
@@ -176,13 +176,13 @@ export function PracticeVideoElement(props: Props) {
       contentArrowStyle={contentArrowStyle}
       contentStyle={contentStyle}
       iconStyle={iconStyle}
-      icon={<MusicNoteIcon />}>
+      icon={<MusicNote />}>
       <div
         className='PracticeVideoElement'
         id={`practice-video-element-${props.year}-${props.month}`}>
         <div className="video-thumbnail-container">
           {props.videos.map((video: VideoLogEntryJSON) => {
-            return <VideoPopover video={video} />
+            return <VideoPopover key={video.id} video={video} />
           })}
         </div>
         {summaryContainer}
@@ -219,7 +219,6 @@ function VideoPopover(props: VideoPopoverProps) {
     width = 480;
     className = 'paper landscape-mode'
   }
-
 
   let thumbnailURL = `https://img.youtube.com/vi/${props.video.id}/1.jpg`
 
