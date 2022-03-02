@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 
 import { GoogleUserProfile } from '../../app/types'
+import { LogEntryJSON, LogLabelJSON } from '../types'
 
 // API
 import {
@@ -29,9 +30,16 @@ import {
   LogEntryContext,
   LogEntryState
 } from '../contexts/log_entries'
-import { LogEntryJSON, LogLabelJSON } from '../types'
-import { LogTimeSeriesActionType, logTimeSeriesReducer } from '../contexts/log_time_series'
-import { LogLabelAction, LogLabelActionType, logLabelReducer } from '../contexts/log_labels'
+import {
+  logTimeSeriesReducer,
+  LogTimeSeriesActionType
+} from '../contexts/log_time_series'
+import {
+  logLabelReducer,
+  LogLabelAction,
+  LogLabelActionType,
+  LogLabelContext
+} from '../contexts/log_labels'
 
 // Components
 import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
@@ -246,6 +254,19 @@ export default function PracticeLog(props: Props) {
     dispatchLogEntryAction({ type: LogEntryActionType.Deselect })
   }
 
+  const handleSelectParentLabel = (label: LogLabelJSON) => {
+    dispatchLogLabelAction({ type: LogLabelActionType.SelectParent, selectedLogLabel: label })
+  }
+  const handleDeselectParentLabel = () => {
+    dispatchLogLabelAction({ type: LogLabelActionType.DeselectParent })
+  }
+  const handleSelectChildLabel = (label: LogLabelJSON) => {
+    dispatchLogLabelAction({ type: LogLabelActionType.SelectChild, selectedLogLabel: label })
+  }
+  const handleDeselectChildLabel = () => {
+    dispatchLogLabelAction({ type: LogLabelActionType.DeselectChild })
+  }
+
   /**
    *
    */
@@ -297,11 +318,18 @@ export default function PracticeLog(props: Props) {
           handleDeselectLogEntry={handleDeselectLogEntry}
           handleHTTPUpdateLogEntry={handleUpdateLogEntry}
           handleHTTPCreateLogEntry={handleCreateLogEntry} />
-        <LogLabelManagementV2
-          logLabels={logLabelState.logLabels}
-          handleHTTPCreateLogLabel={handleCreateLogLabel}
-          handleHTTPUpdateLogLabel={handleUpdateLogLabel}
-          handleHTTPDeleteLogLabel={handleDeleteLogLabel} />
+        <LogLabelContext.Provider value={{
+          state: logLabelState,
+          handleSelectParentLabel,
+          handleDeselectParentLabel,
+          handleSelectChildLabel,
+          handleDeselectChildLabel,
+          handleCreateLogLabel,
+          handleUpdateLogLabel,
+          handleDeleteLogLabel
+        }}>
+          <LogLabelManagementV2 />
+        </LogLabelContext.Provider>
         <Heatmap
           timeSeries={logTimeSeriesState.byDay} />
         <PracticeTimeLineChart

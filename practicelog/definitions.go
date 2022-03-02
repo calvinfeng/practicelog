@@ -59,7 +59,7 @@ type (
 
 		// GetLogEntryDurationSum returns total sum of all log entry durations.
 		GetLogEntryDurationSum(echo.Context) error
-		// GetLogEntryDurationSum returns sums of log entry durations grouped by label ID.
+		// ListLogLabelDurations returns sums of log entry durations grouped by label ID.
 		ListLogLabelDurations(echo.Context) error
 		// GetLogEntryDurationCumulativeSumTimeSeries compiles a time series of log entry durations.
 		// It will be cumulative sum over a specific interval of time, e.g. year, month, day

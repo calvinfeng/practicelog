@@ -3,6 +3,7 @@ package restapi
 import (
 	"fmt"
 	"github.com/calvinfeng/practicelog/practicelog"
+	"github.com/calvinfeng/practicelog/practicelog/store"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"net/http"
@@ -41,13 +42,19 @@ func (s *server) GetLogEntryDurationTimeSeries(c echo.Context) error {
 			fmt.Sprintf("query parameter is required ?group=[by_day, by_month, by_year]"))
 	}
 
+	filters := make([]practicelog.SQLFilter, 0, 1)
+	queryParams := c.Request().URL.Query()
+	if labelIDs, ok := queryParams["label_id"]; ok {
+		filters = append(filters, store.ByLabelIDList(labelIDs))
+	}
+
 	count, err := s.store.CountLogEntries()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrap(err, "failed to query database for log entry count").Error())
 	}
 
-	entries, err := s.store.SelectLogEntries(uint64(count), 0)
+	entries, err := s.store.SelectLogEntries(uint64(count), 0, filters...)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrap(err, "failed to query database for log entries").Error())
@@ -69,13 +76,19 @@ func (s *server) GetLogEntryDurationCumulativeSumTimeSeries(c echo.Context) erro
 			fmt.Sprintf("query parameter is required ?group=[by_day, by_month, by_year]"))
 	}
 
+	filters := make([]practicelog.SQLFilter, 0, 1)
+	queryParams := c.Request().URL.Query()
+	if labelIDs, ok := queryParams["label_id"]; ok {
+		filters = append(filters, store.ByLabelIDList(labelIDs))
+	}
+
 	count, err := s.store.CountLogEntries()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrap(err, "failed to query database for log entry count").Error())
 	}
 
-	entries, err := s.store.SelectLogEntries(uint64(count), 0)
+	entries, err := s.store.SelectLogEntries(uint64(count), 0, filters...)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			errors.Wrap(err, "failed to query database for log entries").Error())

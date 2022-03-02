@@ -1,103 +1,36 @@
-import { Button, Chip, Divider, Grid, Paper, TextField, Typography } from '@mui/material';
-import { MusicNote } from '@material-ui/icons';
 import React from 'react'
+import {
+  Button,
+  Chip, Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  Grid,
+  Paper,
+  TextField,
+  Typography
+} from '@mui/material';
+import { MusicNote } from '@material-ui/icons';
 import { DeleteConfirmationTarget, LogLabelJSON, nilUUID } from '../../types';
-import DeleteConfirmation from './DeleteConfirmation';
+import { LogLabelContext } from '../../contexts/log_labels';
 import './LogLabelManagement.scss'
 
-type Props = {
-  logLabels: LogLabelJSON[]
-  handleHTTPCreateLogLabel: (label: LogLabelJSON) => void
-  handleHTTPUpdateLogLabel: (label: LogLabelJSON) => void
-  handleHTTPDeleteLogLabel: (label: LogLabelJSON) => void
+type TextFieldState = {
+  parentLabelName: string
+  childLabelName: string
 }
 
-type UIState = {
-  selectedParentLabel: LogLabelJSON | null
-  selectedChildLabel: LogLabelJSON | null
-  inputParentLabelName: string
-  inputChildLabelName: string
+const initialState: TextFieldState = {
+  parentLabelName: "",
+  childLabelName: "",
 }
 
-const initialState: UIState = {
-  selectedParentLabel: null,
-  selectedChildLabel: null,
-  inputParentLabelName: "",
-  inputChildLabelName: "",
-}
-
-function LogLabelManagement(props: Props) {
-  const [UIState,setUIState] = React.useState<UIState>(initialState)
+function LogLabelManagement() {
+  const [textField,setTextField] = React.useState<TextFieldState>(initialState)
   const [isDeleteDialogShown, setDeleteDialogShown] = React.useState<boolean>(false)
   const [deleteTarget, setDeleteTarget] = React.useState<DeleteConfirmationTarget>(DeleteConfirmationTarget.None)
-
-  const handleCreateParentLabel = () => {
-    const newLabel: LogLabelJSON = {
-      id: nilUUID,
-      parent_id: null,
-      children: [],
-      name: UIState.inputParentLabelName,
-      duration: 0
-    }
-    props.handleHTTPCreateLogLabel(newLabel)
-    setUIState({...initialState})
-  }
-
-  const handleUpdateParentLabel = () => {
-    if (UIState.selectedParentLabel !== null) {
-      const payload: LogLabelJSON = {
-        id: UIState.selectedParentLabel.id,
-        parent_id: nilUUID,
-        name: UIState.inputParentLabelName,
-        duration: 0,
-        children: []
-      }
-      props.handleHTTPUpdateLogLabel(payload)
-      setUIState({...initialState})
-    }
-  }
-
-  const handleDeleteParentLabel = () => {
-    if (UIState.selectedParentLabel !== null) {
-      props.handleHTTPDeleteLogLabel(UIState.selectedParentLabel)
-      setUIState({...initialState})
-    }
-  }
-
-  const handleCreateChildLabel = () => {
-    if (UIState.selectedParentLabel !== null ) {
-      const newLabel: LogLabelJSON = {
-        id: nilUUID,
-        parent_id: UIState.selectedParentLabel.id,
-        name: UIState.inputChildLabelName,
-        duration: 0,
-        children: []
-      }
-      props.handleHTTPCreateLogLabel(newLabel)
-      setUIState({...initialState})
-    }
-  }
-
-  const handleUpdateChildLabel = () => {
-    if (UIState.selectedChildLabel !== null) {
-      const payload: LogLabelJSON = {
-        id: UIState.selectedChildLabel.id,
-        parent_id: UIState.selectedChildLabel.parent_id,
-        name: UIState.inputChildLabelName,
-        duration: 0,
-        children: []
-      }
-      props.handleHTTPUpdateLogLabel(payload)
-      setUIState({...initialState})
-    }
-  }
-
-  const handleDeleteChildLabel = () => {
-    if (UIState.selectedChildLabel !== null) {
-      props.handleHTTPDeleteLogLabel(UIState.selectedChildLabel)
-      setUIState({...initialState})
-    }
-  }
 
   return (
     <Paper className="LabelManagement">
@@ -110,53 +43,46 @@ function LogLabelManagement(props: Props) {
           container
           spacing={1}>
           <ParentLabelPanel
-            logLabels={props.logLabels}
-            UIState={UIState}
-            setUIState={setUIState} />
+            textField={textField}
+            setTextField={setTextField} />
           <Divider orientation="vertical" flexItem />
           <ChildLabelPanel
-            logLabels={props.logLabels}
-            UIState={UIState}
-            setUIState={setUIState} />
+            textField={textField}
+            setTextField={setTextField} />
           <Divider orientation="vertical" flexItem />
           <LabelEditPanel
-            UIState={UIState}
-            setUIState={setUIState}
-            handleUpdateChildLabel={handleUpdateChildLabel}
-            handleCreateChildLabel={handleCreateChildLabel}
-            handleUpdateParentLabel={handleUpdateParentLabel}
-            handleCreateParentLabel={handleCreateParentLabel}
+            textField={textField}
+            setTextField={setTextField}
             setDeleteDialogShown={setDeleteDialogShown}
             setDeleteTarget={setDeleteTarget} />
       </Grid>
       <DeleteConfirmation
+          setTextField={setTextField}
           target={deleteTarget}
           open={isDeleteDialogShown}
-          selectedChildLabel={UIState.selectedChildLabel}
-          selectedParentLabel={UIState.selectedParentLabel}
-          handleClose={() => setDeleteDialogShown(false)}
-          handleDeleteChildLabel={handleDeleteChildLabel}
-          handleDeleteParentLabel={handleDeleteParentLabel} />
+          handleClose={() => setDeleteDialogShown(false)} />
     </Paper>
   )
 }
 
 type PanelProps = {
-  logLabels: LogLabelJSON[]
-  UIState: UIState
-  setUIState: (value: React.SetStateAction<UIState>) => void
+  textField: TextFieldState
+  setTextField: (value: React.SetStateAction<TextFieldState>) => void
 }
 
 function ParentLabelPanel(props: PanelProps) {
+  const ctx = React.useContext(LogLabelContext)
+
   const makeSelectParentLabelHandler = (label: LogLabelJSON | null) => () => {
     if (label === null) {
-      props.setUIState({...initialState})
+      props.setTextField({...initialState})
+      ctx.handleDeselectParentLabel()
     } else {
-      props.setUIState(prevState => ({
+      props.setTextField(prevState => ({
         ...initialState,
-        selectedParentLabel: label,
         inputParentLabelName: label.name,
       }))
+      ctx.handleSelectParentLabel(label)
     }
   }
 
@@ -166,8 +92,7 @@ function ParentLabelPanel(props: PanelProps) {
   const mapper = (label: LogLabelJSON) => {
     let style = { margin: "0.1rem" }
     let handler = makeSelectParentLabelHandler(label)
-    if (props.UIState.selectedParentLabel !== null &&
-        props.UIState.selectedParentLabel.id === label.id) {
+    if (ctx.state.selectedParentLabel !== null && ctx.state.selectedParentLabel.id === label.id) {
       style["background"] = "green"
       handler = makeSelectParentLabelHandler(null)
     }
@@ -178,7 +103,7 @@ function ParentLabelPanel(props: PanelProps) {
     )
   }
 
-  const items: JSX.Element[] = props.logLabels.filter(filter).map(mapper)
+  const items: JSX.Element[] = ctx.state.logLabels.filter(filter).map(mapper)
   return (
     <Grid
       style={{ width: "30%", margin: "0.5rem" }}
@@ -193,35 +118,37 @@ function ParentLabelPanel(props: PanelProps) {
 }
 
 function ChildLabelPanel(props: PanelProps) {
+  const ctx = React.useContext(LogLabelContext)
+
   const makeSelectChildLabelHandler = (label: LogLabelJSON | null) => () => {
     if (label === null) {
-      props.setUIState(prevState => ({
+      props.setTextField(prevState => ({
         ...prevState,
-        selectedChildLabel: null,
-        inputChildLabelName: "",
+        childLabelName: "",
       }))
+      ctx.handleDeselectChildLabel()
     } else {
-      props.setUIState(prevState => ({
+      props.setTextField(prevState => ({
         ...prevState,
-        selectedChildLabel: label,
-        inputChildLabelName: label.name,
+        childLabelName: label.name,
       }))
+      ctx.handleSelectChildLabel(label)
     }
   }
 
   const filter = (label: LogLabelJSON) => {
-    if (props.UIState.selectedParentLabel === null) {
+    if (ctx.state.selectedParentLabel === null) {
       return false
     }
-    return label.parent_id === props.UIState.selectedParentLabel.id
+    return label.parent_id === ctx.state.selectedParentLabel.id
   }
 
   const mapper = (label: LogLabelJSON) => {
     let style = { margin: "0.1rem" }
     let handler = makeSelectChildLabelHandler(label)
-    if (props.UIState.selectedParentLabel !== null &&
-        props.UIState.selectedChildLabel !== null &&
-        props.UIState.selectedChildLabel.id === label.id) {
+
+    if (ctx.state.selectedParentLabel !== null && ctx.state.selectedChildLabel !== null &&
+      ctx.state.selectedChildLabel.id === label.id) {
       style["background"] = "green"
       handler = makeSelectChildLabelHandler(null)
     }
@@ -233,7 +160,7 @@ function ChildLabelPanel(props: PanelProps) {
     )
   }
 
-  const items: JSX.Element[] = props.logLabels.filter(filter).map(mapper)
+  const items: JSX.Element[] = ctx.state.logLabels.filter(filter).map(mapper)
   return (
     <Grid
       style={{ width: "30%", margin: "0.5rem" }}
@@ -248,51 +175,103 @@ function ChildLabelPanel(props: PanelProps) {
 }
 
 type EditPanelProps = {
-  UIState: UIState
-  setUIState: (value: React.SetStateAction<UIState>) => void
-  handleUpdateChildLabel: () => void
-  handleCreateChildLabel: () => void
-  handleUpdateParentLabel: () => void
-  handleCreateParentLabel: () => void
+  textField: TextFieldState
+  setTextField: (value: React.SetStateAction<TextFieldState>) => void
   setDeleteDialogShown: (value: React.SetStateAction<boolean>) => void
   setDeleteTarget: (value: React.SetStateAction<DeleteConfirmationTarget>) => void
 }
 
 function LabelEditPanel(props: EditPanelProps) {
+  const ctx = React.useContext(LogLabelContext)
+
+  const resetUI = () => {
+    ctx.handleDeselectChildLabel()
+    ctx.handleDeselectParentLabel()
+    props.setTextField({...initialState})
+  }
+  const handleCreateChildLabel = () => {
+    if (ctx.state.selectedParentLabel !== null ) {
+      const newLabel: LogLabelJSON = {
+        id: nilUUID,
+        parent_id: ctx.state.selectedParentLabel.id,
+        name: props.textField.childLabelName,
+        duration: 0,
+        children: []
+      }
+      ctx.handleCreateLogLabel(newLabel)
+      resetUI()
+    }
+  }
+  const handleUpdateChildLabel = () => {
+    if (ctx.state.selectedChildLabel !== null) {
+      const payload: LogLabelJSON = {
+        id: ctx.state.selectedChildLabel.id,
+        parent_id: ctx.state.selectedChildLabel.parent_id,
+        name: props.textField.childLabelName,
+        duration: 0,
+        children: []
+      }
+      ctx.handleUpdateLogLabel(payload)
+      resetUI()
+    }
+  }
+  const handleCreateParentLabel = () => {
+    const newLabel: LogLabelJSON = {
+      id: nilUUID,
+      parent_id: null,
+      children: [],
+      name: props.textField.parentLabelName,
+      duration: 0
+    }
+    ctx.handleCreateLogLabel(newLabel)
+    resetUI()
+  }
+  const handleUpdateParentLabel = () => {
+    if (ctx.state.selectedParentLabel !== null) {
+      const payload: LogLabelJSON = {
+        id: ctx.state.selectedParentLabel.id,
+        parent_id: nilUUID,
+        name: props.textField.parentLabelName,
+        duration: 0,
+        children: []
+      }
+      ctx.handleUpdateLogLabel(payload)
+      resetUI()
+    }
+  }
   const handleChildLabelNameChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-    props.setUIState(prevState => ({...prevState, inputChildLabelName: ev.target.value }))
+    props.setTextField(prevState => ({...prevState, childLabelName: ev.target.value }))
   }
   const handleParentLabelNameChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
-    props.setUIState(prevState => ({...prevState, inputParentLabelName: ev.target.value }))
+    props.setTextField(prevState => ({...prevState, parentLabelName: ev.target.value }))
   }
-
   const makeHandleDeleteClick = (target: DeleteConfirmationTarget) => () => {
     props.setDeleteDialogShown(true)
     props.setDeleteTarget(target)
   }
 
   const selectedChildButtonGroup = () => {
-    if (props.UIState.selectedParentLabel === null || props.UIState.selectedChildLabel === null) {
+    if (ctx.state.selectedParentLabel === null || ctx.state.selectedChildLabel === null) {
       return []
     }
     return [
       <Grid item key="selected-child-label-name">
         <Typography variant="subtitle1">
-          Selected Child Label: {props.UIState.selectedChildLabel.name}
+          Selected Child Label: {ctx.state.selectedChildLabel.name}
         </Typography>
       </Grid>,
       <Grid item key="edit-child-label-name">
         <TextField
           label="Child Label Name"
-          value={props.UIState.inputChildLabelName}
+          value={props.textField.childLabelName}
           onChange={handleChildLabelNameChange}
           fullWidth InputLabelProps={{ shrink: true }} />
       </Grid>,
       <Grid item key="child-button-group">
         <Button
           style={{margin: "0.1rem"}}
-          onClick={props.handleUpdateChildLabel}
-          disabled={props.UIState.inputChildLabelName === props.UIState.selectedChildLabel.name}
+          onClick={handleUpdateChildLabel}
+          disabled={props.textField.childLabelName === ctx.state.selectedChildLabel.name}
           variant="contained" color="primary">
           Update
         </Button>
@@ -301,48 +280,48 @@ function LabelEditPanel(props: EditPanelProps) {
           onClick={makeHandleDeleteClick(DeleteConfirmationTarget.Child)}
           variant="contained"
           color="secondary">
-          Delete {props.UIState.selectedChildLabel.name}
+          Delete {ctx.state.selectedChildLabel.name}
         </Button>
       </Grid>
     ]
   }
 
   const selectedParentButtonGroup = () => {
-    if (props.UIState.selectedParentLabel === null) {
+    if (ctx.state.selectedParentLabel === null) {
       return []
     }
     return [
       <Grid item key="selected-parent-label-name">
         <Typography variant="subtitle1">
-          Selected Parent Label: {props.UIState.selectedParentLabel.name}
+          Selected Parent Label: {ctx.state.selectedParentLabel.name}
         </Typography>
       </Grid>,
       <Grid item key="edit-parent-label-name">
         <TextField
           label="Parent Label Name"
-          value={props.UIState.inputParentLabelName}
+          value={props.textField.parentLabelName}
           onChange={handleParentLabelNameChange}
           fullWidth InputLabelProps={{ shrink: true }} />
       </Grid>,
       <Grid item key="edit-child-label-name">
         <TextField
           label="Child Label Name"
-          value={props.UIState.inputChildLabelName}
+          value={props.textField.childLabelName}
           onChange={handleChildLabelNameChange}
           fullWidth InputLabelProps={{ shrink: true }} />
       </Grid>,
       <Grid item key="parent-button-group">
         <Button
           style={{margin: "0.1rem"}}
-          onClick={props.handleCreateChildLabel}
-          disabled={props.UIState.inputChildLabelName.length === 0}
+          onClick={handleCreateChildLabel}
+          disabled={props.textField.childLabelName.length === 0}
           variant="contained" color="primary">
           Create Child
         </Button>
         <Button
           style={{margin: "0.1rem"}}
-          onClick={props.handleUpdateParentLabel}
-          disabled={props.UIState.inputParentLabelName === props.UIState.selectedParentLabel.name}
+          onClick={handleUpdateParentLabel}
+          disabled={props.textField.parentLabelName === ctx.state.selectedParentLabel.name}
           variant="contained" color="primary">
           Update
         </Button>
@@ -350,7 +329,7 @@ function LabelEditPanel(props: EditPanelProps) {
           style={{margin: "0.1rem"}}
           onClick={makeHandleDeleteClick(DeleteConfirmationTarget.Parent)}
           variant="contained" color="secondary">
-          Delete {props.UIState.selectedParentLabel.name}
+          Delete {ctx.state.selectedParentLabel.name}
         </Button>
       </Grid>
     ]
@@ -361,7 +340,7 @@ function LabelEditPanel(props: EditPanelProps) {
       <Grid item key="edit-new-label-name">
         <TextField
           label="New Label Name"
-          value={props.UIState.inputParentLabelName}
+          value={props.textField.parentLabelName}
           onChange={handleParentLabelNameChange}
           fullWidth
           InputLabelProps={{ shrink: true }} />
@@ -369,7 +348,7 @@ function LabelEditPanel(props: EditPanelProps) {
       <Grid item key="button-group">
         <Button
           style={{margin: "0.1rem"}}
-          onClick={props.handleCreateParentLabel}
+          onClick={handleCreateParentLabel}
           variant="contained" color="primary">
           Create
         </Button>
@@ -378,23 +357,23 @@ function LabelEditPanel(props: EditPanelProps) {
   }
 
   const durationView = () => {
-    if (props.UIState.selectedParentLabel !== null && props.UIState.selectedChildLabel !== null) {
+    if (ctx.state.selectedParentLabel !== null && ctx.state.selectedChildLabel !== null) {
       return (
         <Grid item>
           <Typography>
-            Accumulated {props.UIState.selectedChildLabel.duration} minutes of practice on
-            {props.UIState.selectedChildLabel.name}
+            Accumulated {ctx.state.selectedChildLabel.duration} minutes of practice on
+            {ctx.state.selectedChildLabel.name}
           </Typography>
         </Grid>
       )
     }
 
-    if (props.UIState.selectedParentLabel !== null) {
+    if (ctx.state.selectedParentLabel !== null) {
       return (
         <Grid item>
           <Typography>
-            Accumulated {props.UIState.selectedParentLabel.duration} minutes of practice on
-            {props.UIState.selectedParentLabel.name}
+            Accumulated {ctx.state.selectedParentLabel.duration} minutes of practice on
+            {ctx.state.selectedParentLabel.name}
           </Typography>
         </Grid>
       )
@@ -404,10 +383,10 @@ function LabelEditPanel(props: EditPanelProps) {
   }
 
   let gridItems: JSX.Element[]
-  if (props.UIState.selectedParentLabel !== null && props.UIState.selectedChildLabel !== null) {
+  if (ctx.state.selectedParentLabel !== null && ctx.state.selectedChildLabel !== null) {
     // Case 1: Parent & child are selected
     gridItems = selectedChildButtonGroup()
-  } else if (props.UIState.selectedParentLabel !== null && props.UIState.selectedChildLabel === null) {
+  } else if (ctx.state.selectedParentLabel !== null && ctx.state.selectedChildLabel === null) {
     // Case 2: Parent is selected
     gridItems = selectedParentButtonGroup()
   } else {
@@ -417,16 +396,96 @@ function LabelEditPanel(props: EditPanelProps) {
 
   return (
     <Grid
-      style={{ width: "30%", margin: "0.5rem" }}
+      style={{ width: "30%", minHeight: "300px", "marginLeft": "0.5rem" }}
       direction="column"
       justifyContent="flex-start"
       alignItems="flex-start"
       container
-      spacing={1}>
+      spacing={2}>
       {gridItems}
       {durationView()}
     </Grid>
   )
+}
+
+type DeleteConfirmationProps = {
+  open: boolean
+  setTextField: (value: React.SetStateAction<TextFieldState>) => void
+  handleClose: () => void
+  target: DeleteConfirmationTarget
+}
+
+function DeleteConfirmation(props: DeleteConfirmationProps) {
+
+  const ctx = React.useContext(LogLabelContext)
+
+  const resetUI = () => {
+    ctx.handleDeselectChildLabel()
+    ctx.handleDeselectParentLabel()
+    props.setTextField({...initialState})
+  }
+
+  const handleDeleteParentLabel = () => {
+    if (ctx.state.selectedParentLabel !== null) {
+      ctx.handleDeleteLogLabel(ctx.state.selectedParentLabel)
+      resetUI()
+    }
+  }
+
+  const handleDeleteChildLabel = () => {
+    if (ctx.state.selectedChildLabel !== null) {
+      ctx.handleDeleteLogLabel(ctx.state.selectedChildLabel)
+      resetUI()
+    }
+  }
+
+  if (ctx.state.selectedChildLabel != null && props.target === DeleteConfirmationTarget.Child) {
+    return (
+      <Dialog open={props.open} onClose={props.handleClose}>
+        <DialogTitle>Delete {ctx.state.selectedChildLabel.name}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete {ctx.state.selectedChildLabel.name}?
+          </DialogContentText>
+          <DialogContentText>
+            Child label {ctx.state.selectedChildLabel.id} will be deleted. The effect will propagate to
+            all log entries.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={props.handleClose} color="primary">Cancel</Button>
+          <Button onClick={props.handleClose} color="secondary" disabled={true}>
+            Confirm Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
+  if (ctx.state.selectedParentLabel != null && props.target === DeleteConfirmationTarget.Parent) {
+    return (
+      <Dialog open={props.open} onClose={props.handleClose}>
+        <DialogTitle>Delete {ctx.state.selectedParentLabel.name}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete {ctx.state.selectedParentLabel.name}?
+          </DialogContentText>
+          <DialogContentText>
+            Parent label {ctx.state.selectedParentLabel.id} will be deleted. This will affect all nested
+            child labels and log entries.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={props.handleClose} color="primary">Cancel</Button>
+          <Button onClick={props.handleClose} color="secondary" disabled={true}>
+            Confirm Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
+  return <div></div>
 }
 
 export default LogLabelManagement
