@@ -14,11 +14,11 @@ import {
 
 import 'react-vertical-timeline-component/style.min.css'
 
-import { SummaryJSON, VideoGroupJSON, VideoLogEntryJSON } from './types'
+import { SummaryJSON, VideoGroupJSON, VideoLogEntryJSON } from '../types'
 import './Timeline.scss'
 import { ProgressVideoElement } from './ProgressVideoElement'
 import { PracticeVideoElement } from './PracticeVideoElement'
-import { Developer, GoogleUserProfile } from '../app/types';
+import { Developer, GoogleUserProfile } from '../../app/types';
 import { useParams } from 'react-router-dom'
 
 type Props = {

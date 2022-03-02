@@ -15,11 +15,11 @@ import {
 import ReactPlayer from 'react-player'
 import { MusicNote } from '@mui/icons-material'
 import { VerticalTimelineElement }  from 'react-vertical-timeline-component'
-import { contentStyle, contentArrowStyle, iconStyle } from './styles'
-import { MonthNames, SummaryJSON, ThumbnailJSON, VideoLogEntryJSON, VideoOrientation } from './types'
+import { contentStyle, contentArrowStyle, iconStyle } from '../styles'
+import { MonthNames, SummaryJSON, ThumbnailJSON, VideoLogEntryJSON, VideoOrientation } from '../types'
 
 import './PracticeVideoElement.scss'
-import { nilUUID } from '../practice-log/types'
+import { nilUUID } from '../../practice-log/types'
 
 type Props = {
   year: number
@@ -27,10 +27,9 @@ type Props = {
   videos: VideoLogEntryJSON[]
   summary: SummaryJSON | null
   hasPermissionToEdit: boolean
-  updateSummary: (SummaryJSON) => Promise<any>
-  createSummary: (SummaryJSON) => Promise<any>
+  updateSummary: (summary: SummaryJSON) => Promise<any>
+  createSummary: (summary: SummaryJSON) => Promise<any>
 }
-
 
 export function PracticeVideoElement(props: Props) {
   const dateString = `${MonthNames[props.month-1]}, ${props.year}`

@@ -1,11 +1,12 @@
 import React from 'react'
 import ReactPlayer from 'react-player'
-import { VideoLogEntryJSON, MonthNames } from './types'
 import { VerticalTimelineElement }  from 'react-vertical-timeline-component'
-import {MusicNote} from '@mui/icons-material'
-import './ProgressVideoElement.scss'
-import { contentArrowStyle, contentStyle, iconStyle } from './styles'
 import { Typography } from '@mui/material'
+import {MusicNote} from '@mui/icons-material'
+
+import { VideoLogEntryJSON, MonthNames } from '../types'
+import { contentArrowStyle, contentStyle, iconStyle } from '../styles'
+import './ProgressVideoElement.scss'
 
 type Props = {
   video: VideoLogEntryJSON

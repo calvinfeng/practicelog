@@ -18,8 +18,8 @@ import axios, { AxiosInstance, AxiosResponse }  from 'axios'
 import { GoogleUserProfile, GoogleError, AuthValidationResponse, Developer, Guest } from '../types'
 import Unauthorized from './Unauthorized'
 import PracticeLogV2 from '../../practice-log/components/PracticeLog';
+import Timeline from '../../timeline/components/Timeline'
 import Fretboard from '../../fretboard/Fretboard'
-import Timeline from '../../timeline/Timeline'
 import './App.scss'
 
 /**
