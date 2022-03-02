@@ -3,6 +3,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Box,
   Button,
   Chip, Dialog,
   DialogActions,
@@ -10,6 +11,7 @@ import {
   DialogContentText,
   DialogTitle,
   Divider,
+  FormControl,
   Grid,
   Paper,
   TextField,
@@ -116,7 +118,7 @@ function LabelSelectPanel(props: PanelProps) {
       )
     })
 
-  const children: JSX.Element[] = ctx.state.logLabels.filter((label: LogLabelJSON) => {
+  let children: JSX.Element[] = ctx.state.logLabels.filter((label: LogLabelJSON) => {
     if (ctx.state.selectedParentLabel === null) {
       return false
     }
@@ -137,6 +139,9 @@ function LabelSelectPanel(props: PanelProps) {
       </Grid>
     )
   })
+  if (children.length === 0) {
+    children = [<Typography>No nested child labels</Typography>]
+  }
 
   return (
     <Grid container direction="column" spacing={0} style={{ width: "65%", minHeight: "400px" }}>
@@ -147,7 +152,7 @@ function LabelSelectPanel(props: PanelProps) {
         <Typography>Parent Labels</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <Grid container spacing={1} direction="row">{parents}</Grid>
+        <Grid container spacing={0} direction="row">{parents}</Grid>
       </AccordionDetails>
       </Accordion>
       <Accordion expanded={ctx.state.selectedParentLabel!==null}>
@@ -157,7 +162,7 @@ function LabelSelectPanel(props: PanelProps) {
         <Typography>Child Labels</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid container spacing={1} direction="row">{children}</Grid>
+          <Grid container spacing={0} direction="row">{children}</Grid>
         </AccordionDetails>
       </Accordion>
     </Grid>
@@ -252,10 +257,10 @@ function LabelEditPanel(props: EditPanelProps) {
       </Grid>,
       <Grid item key="edit-child-label-name">
         <TextField
+          variant="standard"
           label="Child Label Name"
           value={props.textField.childLabelName}
-          onChange={handleChildLabelNameChange}
-          fullWidth InputLabelProps={{ shrink: true }} />
+          onChange={handleChildLabelNameChange} />
       </Grid>,
       <Grid item key="child-button-group">
         <Button
@@ -288,17 +293,17 @@ function LabelEditPanel(props: EditPanelProps) {
       </Grid>,
       <Grid item key="edit-parent-label-name">
         <TextField
+          variant="standard"
           label="Parent Label Name"
           value={props.textField.parentLabelName}
-          onChange={handleParentLabelNameChange}
-          fullWidth InputLabelProps={{ shrink: true }} />
+          onChange={handleParentLabelNameChange} />
       </Grid>,
       <Grid item key="edit-child-label-name">
         <TextField
+          variant="standard"
           label="Child Label Name"
           value={props.textField.childLabelName}
-          onChange={handleChildLabelNameChange}
-          fullWidth InputLabelProps={{ shrink: true }} />
+          onChange={handleChildLabelNameChange} />
       </Grid>,
       <Grid item key="parent-button-group">
         <Button
@@ -329,12 +334,11 @@ function LabelEditPanel(props: EditPanelProps) {
     return [
       <Grid item key="edit-new-label-name">
         <TextField
+          variant="standard"
           label="New Label Name"
           value={props.textField.parentLabelName}
-          onChange={handleParentLabelNameChange}
-          fullWidth
-          InputLabelProps={{ shrink: true }} />
-        </Grid>,
+          onChange={handleParentLabelNameChange} />
+      </Grid>,
       <Grid item key="button-group">
         <Button
           style={{margin: "0.1rem"}}
@@ -386,12 +390,12 @@ function LabelEditPanel(props: EditPanelProps) {
 
   return (
     <Grid
+      container
       style={{ width: "30%", minHeight: "400px", "marginLeft": "0.5rem" }}
       direction="column"
       justifyContent="flex-start"
       alignItems="flex-start"
-      container
-      spacing={2}>
+      spacing={1}>
       {gridItems}
       {durationView()}
     </Grid>
