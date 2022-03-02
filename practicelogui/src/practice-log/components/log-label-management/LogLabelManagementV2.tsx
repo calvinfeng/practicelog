@@ -1,5 +1,8 @@
 import React from 'react'
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Button,
   Chip, Dialog,
   DialogActions,
@@ -12,7 +15,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import { MusicNote } from '@material-ui/icons';
+import { ExpandMore, MusicNote } from '@material-ui/icons';
 import { DeleteConfirmationTarget, LogLabelJSON, nilUUID } from '../../types';
 import { LogLabelContext } from '../../contexts/log_labels';
 import './LogLabelManagement.scss'
@@ -42,14 +45,9 @@ function LogLabelManagement() {
           alignItems="flex-start"
           container
           spacing={1}>
-          <ParentLabelPanel
+          <LabelSelectPanel
             textField={textField}
             setTextField={setTextField} />
-          <Divider orientation="vertical" flexItem />
-          <ChildLabelPanel
-            textField={textField}
-            setTextField={setTextField} />
-          <Divider orientation="vertical" flexItem />
           <LabelEditPanel
             textField={textField}
             setTextField={setTextField}
@@ -70,7 +68,7 @@ type PanelProps = {
   setTextField: (value: React.SetStateAction<TextFieldState>) => void
 }
 
-function ParentLabelPanel(props: PanelProps) {
+function LabelSelectPanel(props: PanelProps) {
   const ctx = React.useContext(LogLabelContext)
 
   const makeSelectParentLabelHandler = (label: LogLabelJSON | null) => () => {
@@ -83,42 +81,9 @@ function ParentLabelPanel(props: PanelProps) {
         inputParentLabelName: label.name,
       }))
       ctx.handleSelectParentLabel(label)
+      ctx.handleDeselectChildLabel()
     }
   }
-
-  const filter = (label: LogLabelJSON) => {
-    return label.parent_id === nilUUID
-  }
-  const mapper = (label: LogLabelJSON) => {
-    let style = { margin: "0.1rem" }
-    let handler = makeSelectParentLabelHandler(label)
-    if (ctx.state.selectedParentLabel !== null && ctx.state.selectedParentLabel.id === label.id) {
-      style["background"] = "green"
-      handler = makeSelectParentLabelHandler(null)
-    }
-    return (
-      <Grid item key={label.name}>
-        <Chip onClick={handler} style={style} label={label.name} icon={<MusicNote />} color="primary" />
-      </Grid>
-    )
-  }
-
-  const items: JSX.Element[] = ctx.state.logLabels.filter(filter).map(mapper)
-  return (
-    <Grid
-      style={{ width: "30%", margin: "0.5rem" }}
-      direction="row"
-      justifyContent="flex-start"
-      alignItems="center"
-      container
-      spacing={0}>
-      {items}
-    </Grid>
-  )
-}
-
-function ChildLabelPanel(props: PanelProps) {
-  const ctx = React.useContext(LogLabelContext)
 
   const makeSelectChildLabelHandler = (label: LogLabelJSON | null) => () => {
     if (label === null) {
@@ -136,14 +101,27 @@ function ChildLabelPanel(props: PanelProps) {
     }
   }
 
-  const filter = (label: LogLabelJSON) => {
+  const parents: JSX.Element[] = ctx.state.logLabels.filter((label: LogLabelJSON) => label.parent_id === nilUUID).
+    map((label: LogLabelJSON) => {
+      let style = { margin: "0.1rem" }
+      let handler = makeSelectParentLabelHandler(label)
+      if (ctx.state.selectedParentLabel !== null && ctx.state.selectedParentLabel.id === label.id) {
+        style["background"] = "green"
+        handler = makeSelectParentLabelHandler(null)
+      }
+      return (
+        <Grid item key={label.name}>
+          <Chip onClick={handler} style={style} label={label.name} icon={<MusicNote />} color="primary" />
+        </Grid>
+      )
+    })
+
+  const children: JSX.Element[] = ctx.state.logLabels.filter((label: LogLabelJSON) => {
     if (ctx.state.selectedParentLabel === null) {
       return false
     }
     return label.parent_id === ctx.state.selectedParentLabel.id
-  }
-
-  const mapper = (label: LogLabelJSON) => {
+  }).map((label: LogLabelJSON) => {
     let style = { margin: "0.1rem" }
     let handler = makeSelectChildLabelHandler(label)
 
@@ -158,18 +136,30 @@ function ChildLabelPanel(props: PanelProps) {
         <Chip onClick={handler} style={style} label={label.name} icon={<MusicNote />} color="primary" />
       </Grid>
     )
-  }
+  })
 
-  const items: JSX.Element[] = ctx.state.logLabels.filter(filter).map(mapper)
   return (
-    <Grid
-      style={{ width: "30%", margin: "0.5rem" }}
-      direction="row"
-      justifyContent="flex-start"
-      alignItems="center"
-      container
-      spacing={0}>
-      {items}
+    <Grid container direction="column" spacing={0} style={{ width: "65%", minHeight: "400px" }}>
+      <Accordion expanded={true}>
+        <AccordionSummary
+          // expandIcon={<ExpandMore />}
+          aria-controls="panel1a-content" id="panel1a-header">
+        <Typography>Parent Labels</Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+        <Grid container spacing={1} direction="row">{parents}</Grid>
+      </AccordionDetails>
+      </Accordion>
+      <Accordion expanded={ctx.state.selectedParentLabel!==null}>
+        <AccordionSummary
+          // expandIcon={<ExpandMore />}
+          aria-controls="child-labels-content" id="child-labels-header">
+        <Typography>Child Labels</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Grid container spacing={1} direction="row">{children}</Grid>
+        </AccordionDetails>
+      </Accordion>
     </Grid>
   )
 }
@@ -396,7 +386,7 @@ function LabelEditPanel(props: EditPanelProps) {
 
   return (
     <Grid
-      style={{ width: "30%", minHeight: "300px", "marginLeft": "0.5rem" }}
+      style={{ width: "30%", minHeight: "400px", "marginLeft": "0.5rem" }}
       direction="column"
       justifyContent="flex-start"
       alignItems="flex-start"
