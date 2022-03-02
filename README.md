@@ -29,58 +29,45 @@ Run it
 docker run --rm -p 8080:8080 practicelog
 ```
 
-## Deployment on Elastic Beanstalk
+## Heroku
 
-Create a zip using `git`,
+### Setup
 
-```bash
-git archive -v -o practicelog-v2021-01-01.zip --format=zip HEAD
+Heroku CLI creates git remote named `heroku` automatically. It also lets Heroku to auto detect app name.
+
+> App commands are typically executed from within an app’s local git clone. The app name is automatically detected by
+> scanning the git remotes for the current working copy
+
+```sh
+heroku git:remote -a guitar-practice-log
 ```
 
-Then upload it to Elastic Beanstalk. It's better to use `-` instead of `.` because `.` is a HTTP URL reserved keyword.
-
-### Connect to DB
-
-```bash
-psql -h ebdb.cjtqga7l9c3u.us-west-2.rds.amazonaws.com -p 5432 -U postgres
-```
-
-Then enter password
-
-### Migrate
-
-```bash
-practicelog --config=production db reset
-practicelog --config=production db migrate
-practicelog --config=production db seed
-```
-
-## Deployment on Heroku
+### Deploy
 
 Create a new branch and switch to that branch
 
-```bash
+```shell
 git branch main
 git checkout main
 ```
 
 Build the UI code
 
-```bash
+```shell
 cd practicelogui
 npm run build
 ```
 
 Test the deployment locally
 
-```bash
+```shell
 go build -o bin/practicelog -v .
 heroku local
 ```
 
 Package everything and commit
 
-```bash
+```shell
 go mod tidy
 go mod vendor
 git add -A
@@ -92,12 +79,12 @@ Don't push it to GitHub because it's too big.
 
 ### Check DB Connection Credentials
 
-```bash
+```shell
 heroku config
 ```
 
 Then use the connection URL and `psql` into it directly.
 
-```bash
+```shell
 psql <connection URL>
 ```

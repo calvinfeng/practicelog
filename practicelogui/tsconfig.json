@@ -23,6 +23,5 @@
   },
   "include": [
     "src",
-    "src/practice-log/.d.ts"
   ]
 }

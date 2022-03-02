@@ -13,7 +13,7 @@ import (
 func TestLogEntryConversion(t *testing.T) {
 	entry := &practicelog.Entry{
 		ID:       uuid.New(),
-		UserID:   "calvin.j.feng@gmail.com",
+		Username: "calvin.j.feng@gmail.com",
 		Date:     time.Now(),
 		Duration: 90,
 		Message:  "Example",
