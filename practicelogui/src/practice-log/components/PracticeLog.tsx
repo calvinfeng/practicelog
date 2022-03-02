@@ -235,7 +235,17 @@ export default function PracticeLog(props: Props) {
    */
   const handleFetchTimeSeries = async () => {
     dispatchLogTimeSeriesAction({ type: LogTimeSeriesActionType.Fetch })
-    const action = await fetchLogTimeSeries(http)
+
+    let labelID: string | undefined
+    if (logLabelState.selectedParentLabel !== null) {
+      labelID = logLabelState.selectedParentLabel.id
+    }
+    // Child can override parent filter
+    if (logLabelState.selectedChildLabel !== null) {
+      labelID = logLabelState.selectedChildLabel.id
+    }
+
+    const action = await fetchLogTimeSeries(http, labelID)
     dispatchLogTimeSeriesAction(action)
   }
 
@@ -277,7 +287,7 @@ export default function PracticeLog(props: Props) {
   }
 
   React.useEffect(() => { handleFetchLogEntries() }, [logEntryState.currPage])
-  React.useEffect(() => { handleFetchTimeSeries() }, [])
+  React.useEffect(() => { handleFetchTimeSeries() }, [logLabelState.selectedChildLabel, logLabelState.selectedParentLabel])
   React.useEffect(() => { handleFetchLogLabels() }, [])
 
   return (
