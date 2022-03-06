@@ -3,15 +3,12 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Box,
   Button,
   Chip, Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Divider,
-  FormControl,
   Grid,
   Paper,
   TextField,
@@ -103,8 +100,9 @@ function LabelSelectPanel(props: PanelProps) {
     }
   }
 
-  const parents: JSX.Element[] = ctx.state.logLabels.filter((label: LogLabelJSON) => label.parent_id === nilUUID).
-    map((label: LogLabelJSON) => {
+  const parents: JSX.Element[] = ctx.state.logLabels
+    .filter((label: LogLabelJSON) => label.parent_id === nilUUID)
+    .map((label: LogLabelJSON) => {
       let style = { margin: "0.1rem" }
       let handler = makeSelectParentLabelHandler(label)
       if (ctx.state.selectedParentLabel !== null && ctx.state.selectedParentLabel.id === label.id) {
@@ -118,12 +116,14 @@ function LabelSelectPanel(props: PanelProps) {
       )
     })
 
-  let children: JSX.Element[] = ctx.state.logLabels.filter((label: LogLabelJSON) => {
+  let children: JSX.Element[] = ctx.state.logLabels
+  .filter((label: LogLabelJSON) => {
     if (ctx.state.selectedParentLabel === null) {
       return false
     }
     return label.parent_id === ctx.state.selectedParentLabel.id
-  }).map((label: LogLabelJSON) => {
+  })
+  .map((label: LogLabelJSON) => {
     let style = { margin: "0.1rem" }
     let handler = makeSelectChildLabelHandler(label)
 
@@ -140,7 +140,7 @@ function LabelSelectPanel(props: PanelProps) {
     )
   })
   if (children.length === 0) {
-    children = [<Typography>No nested child labels</Typography>]
+    children = [<Typography key="no-nested-child">No nested child labels</Typography>]
   }
 
   return (

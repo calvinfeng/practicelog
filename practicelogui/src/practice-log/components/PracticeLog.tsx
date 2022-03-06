@@ -263,7 +263,6 @@ export default function PracticeLog(props: Props) {
   const handleDeselectLogEntry = () => {
     dispatchLogEntryAction({ type: LogEntryActionType.Deselect })
   }
-
   const handleSelectParentLabel = (label: LogLabelJSON) => {
     dispatchLogLabelAction({ type: LogLabelActionType.SelectParent, selectedLogLabel: label })
   }

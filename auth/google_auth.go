@@ -3,12 +3,13 @@ package auth
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/oauth2/v2"
-	"io/ioutil"
-	"net/http"
 )
 
 var emailWhiteList = map[string]struct{}{
@@ -58,7 +59,7 @@ func TokenValidationHandler(c echo.Context) error {
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
 
 	userInfoResp := GoogleUserInfoResponse{}
 	if err := json.Unmarshal(bodyBytes, &userInfoResp); err != nil {
