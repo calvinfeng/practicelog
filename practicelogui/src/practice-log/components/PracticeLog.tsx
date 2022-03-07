@@ -19,8 +19,16 @@ import {
   updateLogAssignment,
   updateLogEntry
 } from '../api/log_entries'
-import { fetchLogTimeSeries } from '../api/log_time_series'
-import { createLogLabel, deleteLogLabel, fetchLogLabelDurations, fetchLogLabels, updateLogLabel } from '../api/log_labels'
+import {
+  fetchLogTimeSeries
+} from '../api/log_time_series'
+import {
+  createLogLabel,
+  deleteLogLabel,
+  fetchLogLabelDurations,
+  fetchLogLabels,
+  updateLogLabel
+} from '../api/log_labels'
 
 // Contexts
 import {
@@ -43,13 +51,14 @@ import {
 
 // Components
 import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
+import PracticeTimeBarChart from './metrics/PracticeTimeBarChart'
 import AssignmentChecklistPopover from './AssignmentChecklistPopover'
 import Heatmap from './metrics/Heatmap'
 import LogTable from './LogTable'
 import './PracticeLog.scss'
 import { AlertActionType, alertReducer } from '../contexts/alert'
 import LogEntryManagementV2 from './log-entry-management/LogEntryManagementV2'
-import LogLabelManagementV2 from './log-label-management/LogLabelManagementV2'
+import LogLabelManagement from './log-label-management/LogLabelManagement'
 
 type Props = {
   currentUser: GoogleUserProfile | null
@@ -337,12 +346,12 @@ export default function PracticeLog(props: Props) {
           handleUpdateLogLabel,
           handleDeleteLogLabel
         }}>
-          <LogLabelManagementV2 />
+          <LogLabelManagement />
+          <Heatmap
+            timeSeries={logTimeSeriesState.byDay} />
+          <PracticeTimeBarChart
+            timeSeries={logTimeSeriesState.byMonth} />
         </LogLabelContext.Provider>
-        <Heatmap
-          timeSeries={logTimeSeriesState.byDay} />
-        <PracticeTimeLineChart
-          timeSeries={logTimeSeriesState.byMonth} />
         <Snackbar
           open={alert.shown}
           autoHideDuration={6000}

@@ -13,7 +13,7 @@ import {
 } from "react-router-dom"
 import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem, Avatar } from '@mui/material';
 import { MenuRounded } from '@mui/icons-material';
-import axios, { AxiosError, AxiosInstance, AxiosResponse }  from 'axios'
+import axios, { AxiosError, AxiosResponse }  from 'axios'
 
 import { GoogleUserProfile, GoogleError, AuthValidationResponse, Developer, Guest } from '../types'
 import Unauthorized from './Unauthorized'
@@ -26,13 +26,6 @@ import './App.scss'
  * Google Authentication
  * Token has scope [email, profile, openid, userinfo.profile, userinfo.email]
  */
-
-type Props = {}
-type State = {
-  currentUserProfile: GoogleUserProfile | null
-  anchorEl: HTMLElement | null
-  menuOpen: boolean
-}
 
 enum Path {
   Root = "/",

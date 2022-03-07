@@ -29,7 +29,7 @@ const initialState: TextFieldState = {
   childLabelName: "",
 }
 
-function LogLabelManagement() {
+export default function LogLabelManagement() {
   const [textField,setTextField] = React.useState<TextFieldState>(initialState)
   const [isDeleteDialogShown, setDeleteDialogShown] = React.useState<boolean>(false)
   const [deleteTarget, setDeleteTarget] = React.useState<DeleteConfirmationTarget>(DeleteConfirmationTarget.None)
@@ -481,5 +481,3 @@ function DeleteConfirmation(props: DeleteConfirmationProps) {
 
   return <div></div>
 }
-
-export default LogLabelManagement
