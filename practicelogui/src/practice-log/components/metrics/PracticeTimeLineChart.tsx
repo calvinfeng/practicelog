@@ -1,20 +1,42 @@
 import React from 'react'
-import { Paper, Typography } from '@material-ui/core';
+import { Paper, Typography, Chip, Grid } from '@mui/material';
 import { AreaChart, XAxis, YAxis, CartesianGrid, Area, Tooltip } from 'recharts';
 
 import { PracticeTimeSeriesDataPoint } from '../../types';
 import './PracticeTimeLineChart.scss'
+import { LogLabelContext } from '../../contexts/log_labels';
 
 type Props = {
   timeSeries: PracticeTimeSeriesDataPoint[]
 }
 
 export default function PracticeTimeLineChart(props: Props) {
+  const ctx = React.useContext(LogLabelContext)
+
+  const chips: JSX.Element[] = []
+  if (ctx.state.selectedParentLabel !== null) {
+    chips.push(
+      <Grid item>
+        <Chip label={ctx.state.selectedParentLabel.name} onDelete={ctx.handleDeselectParentLabel} />
+      </Grid>
+    )
+  }
+  if (ctx.state.selectedChildLabel != null) {
+    chips.push(
+      <Grid item>
+        <Chip label={ctx.state.selectedChildLabel.name} onDelete={ctx.handleDeselectChildLabel} />
+      </Grid>
+    )
+  }
+
   return (
     <Paper className="PracticeTimeLineChart">
       <Typography variant="h5">
         Practice Time Metrics
       </Typography>
+      <Grid container direction="row" justifyContent="center" spacing={1} marginTop="0.5rem">
+        {chips}
+      </Grid>
       <AreaChart width={1280} height={500}
         data={props.timeSeries}
         margin={{ top: 50, right: 0, left: 0, bottom: 30 }}>

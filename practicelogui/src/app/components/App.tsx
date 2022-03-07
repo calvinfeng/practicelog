@@ -13,11 +13,11 @@ import {
 } from "react-router-dom"
 import { AppBar, Toolbar, IconButton, Menu, Typography, MenuItem, Avatar } from '@mui/material';
 import { MenuRounded } from '@mui/icons-material';
-import axios, { AxiosInstance, AxiosResponse }  from 'axios'
+import axios, { AxiosError, AxiosResponse }  from 'axios'
 
 import { GoogleUserProfile, GoogleError, AuthValidationResponse, Developer, Guest } from '../types'
 import Unauthorized from './Unauthorized'
-import PracticeLogV2 from '../../practice-log/components/PracticeLog';
+import PracticeLog from '../../practice-log/components/PracticeLog';
 import Timeline from '../../timeline/components/Timeline'
 import Fretboard from '../../fretboard/Fretboard'
 import './App.scss'
@@ -27,274 +27,287 @@ import './App.scss'
  * Token has scope [email, profile, openid, userinfo.profile, userinfo.email]
  */
 
-type Props = {}
-type State = {
-  currentUserProfile: GoogleUserProfile | null
-  anchorEl: HTMLElement | null
-  menuOpen: boolean
-}
-
 enum Path {
   Root = "/",
   Fretboard = "/fretboard",
   Timeline = "/timeline"
 }
 
-export default class App extends React.Component<Props, State> {
-  private http: AxiosInstance
+export default function App() {
+  const http = axios.create({ baseURL: process.env.REACT_APP_API_URL })
+  const [currentUser, setCurrentUser] = React.useState<GoogleUserProfile | null>(null)
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null)
+  const [menuOpen, setMenuOpen] = React.useState<boolean>(false)
 
-  constructor(props: Props) {
-    super(props)
-    this.http = axios.create({ baseURL: process.env.REACT_APP_API_URL })
-    this.state = {
-      currentUserProfile: null,
-      anchorEl: null,
-      menuOpen: false
-    }
+  const clearStorageAndLogout = () => {
+    setCurrentUser(null)
+    localStorage.clear()
   }
 
-  validateToken = (IDToken: string, AccessToken: string): Promise<any> => {
-    this.http = axios.create({
+  const validateToken = async (IDToken: string, AccessToken: string) => {
+    const authenHTTP = axios.create({
       baseURL: process.env.REACT_APP_API_URL,
       timeout: 1000,
       headers: {
         "Authorization": IDToken
       }
-    });
-    return this.http.post('/api/v1/token/validate', { "access_token": AccessToken })
-      .then((resp: AxiosResponse) => {
-        if (resp.status === 200) {
-          const info = resp.data as AuthValidationResponse
-          this.setState({
-            currentUserProfile: {
-              id_token: IDToken,
-              access_token: AccessToken,
-              user_id: info.id,
-              email: info.email,
-              full_name: info.name,
-              first_name: info.given_name,
-              last_name: info.family_name,
-              avatar_url: info.picture
-            }
-          })
-          console.log('token expires in', info.expires_in)
-          setTimeout(this.clearStorageAndLogout, info.expires_in * 1000)
-        }
+    })
+    try {
+      const resp: AxiosResponse = await authenHTTP.post('/api/v1/token/validate', {"access_token": AccessToken})
+      const info = resp.data as AuthValidationResponse
+      setCurrentUser({
+        id_token: IDToken,
+        access_token: AccessToken,
+        user_id: info.id,
+        email: info.email,
+        full_name: info.name,
+        first_name: info.given_name,
+        last_name: info.family_name,
+        avatar_url: info.picture
       })
-      .catch((reason: any) => {
-        console.log('ID token in local storage is invalid', reason)
-        this.clearStorageAndLogout()
-      })
-  }
-
-  // TODO: Make use of this function
-  // TODO: What to do if video log fails to fetch? Create one for user!
-  fetchVideoLogProfile = (): Promise<any> => {
-    return this.http.get('/api/v2/videolog/profiles/mine')
-      .then((resp: AxiosResponse) => {
-        console.log(resp)
-      })
-  }
-
-  componentDidMount() {
-    const IDToken = localStorage.getItem('google_id_token')
-    const AccessToken = localStorage.getItem('google_access_token')
-    if (IDToken !== null && AccessToken !== null) {
-      this.validateToken(IDToken, AccessToken)
+      console.log('successfully authenticated using token from storage, token expires in', info.expires_in)
+      setTimeout(clearStorageAndLogout, info.expires_in * 1000)
+    } catch (err: unknown) {
+      const error = err as AxiosError
+      console.log('ID token in local storage is invalid:', error.message)
+      clearStorageAndLogout()
     }
   }
 
-  clearStorageAndLogout = () => {
-    this.setState({ currentUserProfile: null })
-    localStorage.clear()
-  }
-
-  handleLoginSuccess = (resp: GoogleLoginResponse | GoogleLoginResponseOffline) => {
+  const handleLoginSuccess = (resp: GoogleLoginResponse | GoogleLoginResponseOffline) => {
     if ((resp as GoogleLoginResponseOffline).code) {
       resp = resp as GoogleLoginResponseOffline
     } else {
       resp = resp as GoogleLoginResponse
       console.log('user has scopes', resp.getGrantedScopes())
-
-      this.setState({
-        currentUserProfile: {
-          id_token: resp.tokenId,
-          access_token: resp.accessToken,
-          user_id: resp.getBasicProfile().getId(),
-          email: resp.getBasicProfile().getEmail(),
-          full_name: resp.getBasicProfile().getName(),
-          first_name: resp.getBasicProfile().getGivenName(),
-          last_name: resp.getBasicProfile().getFamilyName(),
-          avatar_url: resp.getBasicProfile().getImageUrl()
-        }
+      setCurrentUser({
+        id_token: resp.tokenId,
+        access_token: resp.accessToken,
+        user_id: resp.getBasicProfile().getId(),
+        email: resp.getBasicProfile().getEmail(),
+        full_name: resp.getBasicProfile().getName(),
+        first_name: resp.getBasicProfile().getGivenName(),
+        last_name: resp.getBasicProfile().getFamilyName(),
+        avatar_url: resp.getBasicProfile().getImageUrl()
       })
-      console.log('token expires in', resp.tokenObj.expires_in)
+      console.log('login successful, token expires in', resp.tokenObj.expires_in)
       localStorage.setItem('google_id_token', resp.tokenId)
       localStorage.setItem('google_access_token', resp.accessToken)
-      setTimeout(this.clearStorageAndLogout, resp.tokenObj.expires_in * 1000)
+      setTimeout(clearStorageAndLogout, resp.tokenObj.expires_in * 1000)
     }
   }
 
-  handleLoginFailure = (resp: GoogleError) => {
+  const handleLoginFailure = (resp: GoogleError) => {
     console.log('Google login failed', resp.error, resp.details)
   }
 
-  handleMenuOnClose = (ev: React.MouseEvent<HTMLElement>) => {
-    this.setState({
-      anchorEl: null,
-      menuOpen: false
-    })
+  const handleMenuClose = (ev: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(null)
+    setMenuOpen(false)
   }
 
-  handleMenuOnClick = (ev: React.MouseEvent<HTMLElement>) => {
-    this.setState({
-      anchorEl: ev.currentTarget as HTMLElement,
-      menuOpen: true
-    })
+  const handleMenuClick = (ev: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(ev.currentTarget as HTMLElement)
+    setMenuOpen(true)
   }
 
-  appBar(profile: GoogleUserProfile) {
+  React.useEffect(() => {
+    const IDToken = localStorage.getItem('google_id_token')
+    const AccessToken = localStorage.getItem('google_access_token')
+    if (IDToken !== null && AccessToken !== null) {
+      validateToken(IDToken, AccessToken)
+    }
+  }, [])
+
+  // During development, authentication is disabled.
+  if (process.env.NODE_ENV !== 'production') {
     return (
-      <AppBar position="static" color="default" className="app-bar">
-        <section className="left-container">
-          <Toolbar>
-            <IconButton color="inherit" aria-label="Menu" onClick={this.handleMenuOnClick}>
-              <MenuRounded />
-            </IconButton>
-            <Menu
-              open={this.state.menuOpen}
-              onClose={this.handleMenuOnClose}
-              anchorEl={this.state.anchorEl}
-              anchorOrigin={{"vertical": "bottom", "horizontal": "center"}} >
-              <PracticeLogMenuItem />
-              <FretboardMenuItem />
-              <TimelineMenuItem />
-            </Menu>
-            <Typography color="inherit" variant="h6" className="title">Guitar Practice Log</Typography>
-          </Toolbar>
-        </section>
-        <section className="right-container">
-          <Avatar className="avatar" alt={profile.full_name} src={profile.avatar_url}/>
-          <Typography className="display-name" variant="body1">Hi, {profile.full_name}</Typography>
-        </section>
-      </AppBar>
+      <div className="App">
+        <BrowserRouter>
+          <MenuHeader
+            currentUser={Developer}
+            menuOpen={menuOpen}
+            anchorEl={anchorEl}
+            handleMenuClick={handleMenuClick}
+            handleMenuClose={handleMenuClose} />
+          <CoreContentPage currentUser={Developer} />
+        </BrowserRouter>
+      </div>
     )
   }
 
-  // TODO: Separate this out, make it a pretty landing page
-  get googleLogin() {
-    return (
-      <section style={{"margin": "1rem", "height": "100vh"}}>
-        <GoogleLogin
-          clientId={process.env.REACT_APP_OAUTH_CLIENT_ID as string}
-          buttonText={"Login with Google"}
-          onSuccess={this.handleLoginSuccess}
-          onFailure={this.handleLoginFailure} />
+  if (currentUser !== null) {
+    if (currentUser.email === "calvin.j.feng@gmail.com") {
+      return (
+        <div className="App">
+          <BrowserRouter>
+            <MenuHeader
+              currentUser={currentUser}
+              menuOpen={menuOpen}
+              anchorEl={anchorEl}
+              handleMenuClick={handleMenuClick}
+              handleMenuClose={handleMenuClose} />
+            <CoreContentPage currentUser={currentUser} />
+          </BrowserRouter>
+        </div>
+      )
+    } else {
+      return (
+        <div className="App">
+          <BrowserRouter>
+            <MenuHeader
+              currentUser={currentUser}
+              menuOpen={menuOpen}
+              anchorEl={anchorEl}
+              handleMenuClick={handleMenuClick}
+              handleMenuClose={handleMenuClose} />
+            <UnauthorizedPage currentUser={currentUser} clearStorageAndLogout={clearStorageAndLogout} />
+          </BrowserRouter>
+        </div>
+      )
+    }
+  }
+
+  return (
+    <div className="App">
+    <BrowserRouter>
+      <MenuHeader
+        currentUser={Guest}
+        menuOpen={menuOpen}
+        anchorEl={anchorEl}
+        handleMenuClick={handleMenuClick}
+        handleMenuClose={handleMenuClose} />
+      <LandingPage
+        currentUser={Guest}
+        handleLoginSuccess={handleLoginSuccess}
+        handleLoginFailure={handleLoginFailure} />
+    </BrowserRouter>
+    </div>
+  )
+}
+
+type MenuHeaderProps = {
+  currentUser: GoogleUserProfile
+  menuOpen: boolean
+  anchorEl: HTMLElement | null
+  handleMenuClick: (ev: React.MouseEvent<HTMLElement>) => void
+  handleMenuClose: (ev: React.MouseEvent<HTMLElement>) => void
+}
+
+function MenuHeader(props: MenuHeaderProps) {
+  return (
+    <AppBar position="static" color="default" className="app-bar">
+      <section className="left-container">
+        <Toolbar>
+          <IconButton color="inherit" aria-label="Menu" onClick={props.handleMenuClick}>
+            <MenuRounded />
+          </IconButton>
+          <Menu
+            open={props.menuOpen}
+            onClose={props.handleMenuClose}
+            anchorEl={props.anchorEl}
+            anchorOrigin={{"vertical": "bottom", "horizontal": "center"}} >
+            <PracticeLogMenuItem />
+            <FretboardMenuItem />
+            <TimelineMenuItem />
+          </Menu>
+          <Typography color="inherit" variant="h6" className="title">Guitar Practice Log</Typography>
+        </Toolbar>
       </section>
-    )
-  }
+      <section className="right-container">
+        <Avatar className="avatar" alt={props.currentUser.full_name} src={props.currentUser.avatar_url}/>
+        <Typography className="display-name" variant="body1">Hi, {props.currentUser.full_name}</Typography>
+      </section>
+    </AppBar>
+  )
+}
 
-  // TODO: Separate this out, make it a pretty unauthorized page
-  get googleUnauthorized() {
-    return (
-      <div className="App">
-        <Unauthorized
-          userProfile={this.state.currentUserProfile as GoogleUserProfile}
-          clearStorageAndLogout={this.clearStorageAndLogout} />
-      </div>
-    )
-  }
+type LandingPageProps = {
+  currentUser: GoogleUserProfile
+  handleLoginSuccess: (resp: GoogleLoginResponse | GoogleLoginResponseOffline) => void
+  handleLoginFailure: (resp: GoogleError) => void
+}
 
-  renderLandingPage(profile: GoogleUserProfile) {
-    return (
-      <div className="App">
-        <BrowserRouter>
-          {this.appBar(profile)}
-          <Routes>
-            <Route
-              path={Path.Root}
-              element={this.googleLogin} />
-            <Route
-              path={Path.Fretboard}
-              element={<Fretboard />} />
-            <Route
-              path={Path.Timeline}
-              element={<Timeline currentUserProfile={profile} />} />
-          </Routes>
-        </BrowserRouter>
-      </div>
-    )
-  }
+function LandingPage(props: LandingPageProps) {
+  const rootContent = (
+    <section style={{"margin": "1rem", "height": "100vh"}}>
+      <GoogleLogin clientId={process.env.REACT_APP_OAUTH_CLIENT_ID as string}
+        buttonText={"Login with Google"}
+        onSuccess={props.handleLoginSuccess}
+        onFailure={props.handleLoginFailure} />
+    </section>
+  )
 
-  renderUnauthorizedPage(profile: GoogleUserProfile) {
-    return (
-      <div className="App">
-        <BrowserRouter>
-          {this.appBar(profile)}
-          <Routes>
-            <Route
-              path={Path.Root}
-              element={this.googleUnauthorized} />
-            <Route
-              path={Path.Fretboard}
-              element={<Fretboard />} />
-            <Route
-              path={Path.Timeline}
-              element={<Timeline currentUserProfile={profile}/>} />
-          </Routes>
-        </BrowserRouter>
-      </div>
-    )
-  }
+  return (
+    <Routes>
+      <Route
+        path={Path.Root}
+        element={rootContent} />
+      <Route
+        path={Path.Fretboard}
+        element={<Fretboard />} />
+      <Route
+        path={Path.Timeline}
+        element={<Timeline currentUserProfile={props.currentUser} />} />
+    </Routes>
+  )
+}
 
-  renderCoreContent(profile: GoogleUserProfile) {
-    return (
-      <div className="App">
-        <BrowserRouter>
-          {this.appBar(profile)}
-          <Routes>
-            <Route
-              path={Path.Root}
-              element={<PracticeLogV2 currentUser={profile}/>} />
-            <Route
-              path={Path.Fretboard}
-              element={<Fretboard />} />
-            <Route
-              path={Path.Timeline + "/:profileID"}
-              element={<Timeline currentUserProfile={profile}/>} />
-          </Routes>
-        </BrowserRouter>
-      </div>
-    )
-  }
+type UnauthorizedPageProps = {
+  currentUser: GoogleUserProfile
+  clearStorageAndLogout: () => void
+}
 
-  render() {
-    // During development, authentication is disabled.
-    if (process.env.NODE_ENV !== 'production') {
-      return this.renderCoreContent(Developer)
-    }
+function UnauthorizedPage(props: UnauthorizedPageProps) {
+  const rootContent = (
+    <section>
+      <Unauthorized
+        userProfile={props.currentUser}
+        clearStorageAndLogout={props.clearStorageAndLogout} />
+    </section>
+  )
+  return (
+    <Routes>
+      <Route
+        path={Path.Root}
+        element={rootContent} />
+      <Route
+        path={Path.Fretboard}
+        element={<Fretboard />} />
+      <Route
+        path={Path.Timeline}
+        element={<Timeline currentUserProfile={props.currentUser}/>} />
+    </Routes>
+  )
+}
 
-    if (this.state.currentUserProfile !== null) {
-      if (this.state.currentUserProfile.email === "calvin.j.feng@gmail.com") {
-        return this.renderCoreContent(this.state.currentUserProfile)
-      }
-      return this.renderUnauthorizedPage(this.state.currentUserProfile)
-    }
+type CoreContentPageProps = {
+  currentUser: GoogleUserProfile
+}
 
-    return this.renderLandingPage(Guest)
-  }
+function CoreContentPage(props: CoreContentPageProps) {
+  return (
+    <Routes>
+      <Route
+        path={Path.Root}
+        element={<PracticeLog currentUser={props.currentUser}/>} />
+      <Route
+        path={Path.Fretboard}
+        element={<Fretboard />} />
+      <Route
+        path={Path.Timeline + "/:profileID"}
+        element={<Timeline currentUserProfile={props.currentUser}/>} />
+    </Routes>
+  )
 }
 
 function PracticeLogMenuItem() {
   const navigate = useNavigate()
   const location = useLocation()
-
-  function handleClick() {
-    navigate(Path.Root)
-  }
-
   return (
-    <MenuItem onClick={handleClick} disabled={location.pathname === Path.Root}>
+    <MenuItem
+      onClick={() => navigate(Path.Root)}
+      disabled={location.pathname === Path.Root}>
       Practice Log
     </MenuItem>
   );
@@ -302,14 +315,10 @@ function PracticeLogMenuItem() {
 
 function FretboardMenuItem() {
   const navigate = useNavigate()
-  const location = useLocation()
-
-  function handleClick() {
-    navigate(Path.Fretboard)
-  }
-
   return (
-    <MenuItem onClick={handleClick} disabled={true}>
+    <MenuItem
+      onClick={() => navigate(Path.Fretboard)}
+      disabled={true}>
       Fretboard
     </MenuItem>
   );
@@ -318,13 +327,10 @@ function FretboardMenuItem() {
 function TimelineMenuItem() {
   const navigate = useNavigate()
   const location = useLocation()
-
-  function handleClick() {
-    navigate(Path.Timeline + "/me");
-  }
-
   return (
-    <MenuItem onClick={handleClick} disabled={location.pathname === Path.Timeline}>
+    <MenuItem
+      onClick={() => navigate(Path.Timeline + "/me")}
+      disabled={location.pathname === Path.Timeline}>
         Progress Timeline
     </MenuItem>
   );

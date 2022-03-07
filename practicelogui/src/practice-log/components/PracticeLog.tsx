@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 
 import { GoogleUserProfile } from '../../app/types'
+import { LogEntryJSON, LogLabelJSON } from '../types'
 
 // API
 import {
@@ -18,8 +19,16 @@ import {
   updateLogAssignment,
   updateLogEntry
 } from '../api/log_entries'
-import { fetchLogTimeSeries } from '../api/log_time_series'
-import { createLogLabel, deleteLogLabel, fetchLogLabelDurations, fetchLogLabels, updateLogLabel } from '../api/log_labels'
+import {
+  fetchLogTimeSeries
+} from '../api/log_time_series'
+import {
+  createLogLabel,
+  deleteLogLabel,
+  fetchLogLabelDurations,
+  fetchLogLabels,
+  updateLogLabel
+} from '../api/log_labels'
 
 // Contexts
 import {
@@ -29,19 +38,27 @@ import {
   LogEntryContext,
   LogEntryState
 } from '../contexts/log_entries'
-import { LogEntryJSON, LogLabelJSON } from '../types'
-import { LogTimeSeriesActionType, logTimeSeriesReducer } from '../contexts/log_time_series'
-import { LogLabelAction, LogLabelActionType, logLabelReducer } from '../contexts/log_labels'
+import {
+  logTimeSeriesReducer,
+  LogTimeSeriesActionType
+} from '../contexts/log_time_series'
+import {
+  logLabelReducer,
+  LogLabelAction,
+  LogLabelActionType,
+  LogLabelContext
+} from '../contexts/log_labels'
 
 // Components
 import PracticeTimeLineChart from './metrics/PracticeTimeLineChart'
+import PracticeTimeBarChart from './metrics/PracticeTimeBarChart'
 import AssignmentChecklistPopover from './AssignmentChecklistPopover'
 import Heatmap from './metrics/Heatmap'
 import LogTable from './LogTable'
 import './PracticeLog.scss'
 import { AlertActionType, alertReducer } from '../contexts/alert'
 import LogEntryManagementV2 from './log-entry-management/LogEntryManagementV2'
-import LogLabelManagementV2 from './log-label-management/LogLabelManagementV2'
+import LogLabelManagement from './log-label-management/LogLabelManagement'
 
 type Props = {
   currentUser: GoogleUserProfile | null
@@ -227,7 +244,17 @@ export default function PracticeLog(props: Props) {
    */
   const handleFetchTimeSeries = async () => {
     dispatchLogTimeSeriesAction({ type: LogTimeSeriesActionType.Fetch })
-    const action = await fetchLogTimeSeries(http)
+
+    let labelID: string | undefined
+    if (logLabelState.selectedParentLabel !== null) {
+      labelID = logLabelState.selectedParentLabel.id
+    }
+    // Child can override parent filter
+    if (logLabelState.selectedChildLabel !== null) {
+      labelID = logLabelState.selectedChildLabel.id
+    }
+
+    const action = await fetchLogTimeSeries(http, labelID)
     dispatchLogTimeSeriesAction(action)
   }
 
@@ -245,6 +272,18 @@ export default function PracticeLog(props: Props) {
   const handleDeselectLogEntry = () => {
     dispatchLogEntryAction({ type: LogEntryActionType.Deselect })
   }
+  const handleSelectParentLabel = (label: LogLabelJSON) => {
+    dispatchLogLabelAction({ type: LogLabelActionType.SelectParent, selectedLogLabel: label })
+  }
+  const handleDeselectParentLabel = () => {
+    dispatchLogLabelAction({ type: LogLabelActionType.DeselectParent })
+  }
+  const handleSelectChildLabel = (label: LogLabelJSON) => {
+    dispatchLogLabelAction({ type: LogLabelActionType.SelectChild, selectedLogLabel: label })
+  }
+  const handleDeselectChildLabel = () => {
+    dispatchLogLabelAction({ type: LogLabelActionType.DeselectChild })
+  }
 
   /**
    *
@@ -256,7 +295,7 @@ export default function PracticeLog(props: Props) {
   }
 
   React.useEffect(() => { handleFetchLogEntries() }, [logEntryState.currPage])
-  React.useEffect(() => { handleFetchTimeSeries() }, [])
+  React.useEffect(() => { handleFetchTimeSeries() }, [logLabelState.selectedChildLabel, logLabelState.selectedParentLabel])
   React.useEffect(() => { handleFetchLogLabels() }, [])
 
   return (
@@ -297,15 +336,22 @@ export default function PracticeLog(props: Props) {
           handleDeselectLogEntry={handleDeselectLogEntry}
           handleHTTPUpdateLogEntry={handleUpdateLogEntry}
           handleHTTPCreateLogEntry={handleCreateLogEntry} />
-        <LogLabelManagementV2
-          logLabels={logLabelState.logLabels}
-          handleHTTPCreateLogLabel={handleCreateLogLabel}
-          handleHTTPUpdateLogLabel={handleUpdateLogLabel}
-          handleHTTPDeleteLogLabel={handleDeleteLogLabel} />
-        <Heatmap
-          timeSeries={logTimeSeriesState.byDay} />
-        <PracticeTimeLineChart
-          timeSeries={logTimeSeriesState.byMonth} />
+        <LogLabelContext.Provider value={{
+          state: logLabelState,
+          handleSelectParentLabel,
+          handleDeselectParentLabel,
+          handleSelectChildLabel,
+          handleDeselectChildLabel,
+          handleCreateLogLabel,
+          handleUpdateLogLabel,
+          handleDeleteLogLabel
+        }}>
+          <LogLabelManagement />
+          <Heatmap
+            timeSeries={logTimeSeriesState.byDay} />
+          <PracticeTimeBarChart
+            timeSeries={logTimeSeriesState.byMonth} />
+        </LogLabelContext.Provider>
         <Snackbar
           open={alert.shown}
           autoHideDuration={6000}

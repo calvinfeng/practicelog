@@ -16,6 +16,9 @@ interface ILogLabelContext {
   handleDeselectParentLabel: () => void
   handleSelectChildLabel: (label: LogLabelJSON) => void
   handleDeselectChildLabel: () => void
+  handleCreateLogLabel: (label: LogLabelJSON) => void
+  handleUpdateLogLabel: (label: LogLabelJSON) => void
+  handleDeleteLogLabel: (label: LogLabelJSON) => void
 }
 
 // Use {} as T to avoid complaints.
