@@ -67,7 +67,7 @@ export default function LogEntryManagementV2(props: Props) {
     setInputAssignmentList([])
   }, [props.logEntries])
 
-  const mode: Mode = props.selectedLogEntry === null ? Mode.NewEntry : Mode.EditEntry
+  let mode: Mode = props.selectedLogEntry !== null && props.selectedLogEntry.id.length > 0 ?  Mode.EditEntry : Mode.NewEntry
 
   const header = () => {
     switch(mode) {

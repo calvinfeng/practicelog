@@ -353,6 +353,7 @@ export default function PracticeLog(props: Props) {
             timeSeries={logTimeSeriesState.byMonth} />
         </LogLabelContext.Provider>
         <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
           open={alert.shown}
           autoHideDuration={6000}
           onClose={() => dispatchAlertAction({ type: AlertActionType.Hide })}>
